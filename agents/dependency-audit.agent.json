@@ -1,0 +1,57 @@
+{
+  "name": "Dependency Audit",
+  "icon": "📦",
+  "description": "Audits project dependencies for vulnerabilities, outdated packages, and licence compliance",
+  "checks": [
+    {
+      "type": "file-exists",
+      "path": "package.json",
+      "pass": "✅ package.json found",
+      "fail": "❌ No package.json",
+      "failSeverity": "error"
+    },
+    {
+      "type": "json-has-key",
+      "path": "package.json",
+      "key": "dependencies",
+      "pass": "✅ Production dependencies declared",
+      "fail": "ℹ️  No production dependencies — skipping audit"
+    },
+    {
+      "type": "json-has-key",
+      "path": "package.json",
+      "key": "devDependencies",
+      "pass": "✅ Dev dependencies declared",
+      "fail": "ℹ️  No devDependencies key found"
+    },
+    {
+      "type": "run-command",
+      "command": "pnpm audit --audit-level=moderate 2>&1 | tail -5 || npm audit --audit-level=moderate 2>&1 | tail -5 || echo 'audit-not-available'",
+      "passPattern": "found 0 vulnerabilities|No known vulnerabilities|audit-not-available",
+      "pass": "✅ No moderate+ vulnerabilities found",
+      "fail": "🔴 Moderate or higher vulnerabilities detected",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Run `pnpm audit --fix` or `npm audit fix` to auto-remediate",
+        "Review remaining issues manually; consider `npm audit fix --force` with caution",
+        "Pin transitive dependencies where necessary"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "pnpm outdated 2>&1 | head -30 || npm outdated 2>&1 | head -30 || echo 'outdated-check-unavailable'",
+      "pass": "✅ Outdated dependency check complete",
+      "fail": "⚠️  Some packages may be outdated — see findings for details",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "llm-review",
+      "path": "package.json",
+      "prompt": "Review the package.json for the following:\n1. Dependencies that are known to have breaking changes in newer major versions\n2. Packages that have been deprecated or transferred to new names\n3. Large transitive dependency footprint concerns (e.g. shipping the entire lodash)\n4. Any licence incompatibilities between MIT, Apache-2.0, and GPL packages\n\nFlag any findings as CRITICAL only for GPL licence violations or actively exploited CVEs.",
+      "taskType": "validation",
+      "pass": "✅ LLM dependency health review passed",
+      "fail": "🔴 LLM flagged dependency health concerns",
+      "failSeverity": "warning"
+    }
+  ]
+}

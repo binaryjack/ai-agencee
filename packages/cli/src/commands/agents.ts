@@ -5,7 +5,14 @@ import * as path from 'path';
 
 export const runDag = async (
   dagFile: string,
-  options: { project?: string; verbose?: boolean; dryRun?: boolean },
+  options: {
+    project?: string;
+    verbose?: boolean;
+    dryRun?: boolean;
+    interactive?: boolean;
+    budget?: string;   // raw string from CLI, parsed as float
+    provider?: string;
+  },
 ): Promise<void> => {
   const projectRoot = options.project ? path.resolve(options.project) : process.cwd();
   const dagFilePath = path.isAbsolute(dagFile) ? dagFile : path.resolve(projectRoot, dagFile);
@@ -42,8 +49,23 @@ export const runDag = async (
 
   console.log('');
 
+  const budgetCapUSD = options.budget !== undefined ? parseFloat(options.budget) : undefined;
+  if (options.budget !== undefined) {
+    console.log(`  Budget cap  : $${budgetCapUSD} USD`);
+  }
+  if (options.interactive) {
+    console.log('  Interactive : enabled (needs-human-review prompts will pause for operator input)');
+  }
+  if (options.provider) {
+    console.log(`  Provider    : ${options.provider}`);
+  }
+
   try {
-    const orchestrator = new DagOrchestrator(projectRoot, { verbose: options.verbose ?? true });
+    const orchestrator = new DagOrchestrator(projectRoot, {
+      verbose: options.verbose ?? true,
+      budgetCapUSD,
+      interactive: options.interactive,
+    });
     const result: DagResult = await orchestrator.run(dagFilePath);
     printDagSummary(result, projectRoot);
     if (result.status === 'failed') {

@@ -1,4 +1,5 @@
 export * from './lib/agent-types.js';
+export * from './lib/check-runner.js';
 // Phase 0 — Model routing, prompt management, cost tracking
 export * from './lib/cost-tracker.js';
 export * from './lib/llm-provider.js';
@@ -12,3 +13,4 @@ export * from './lib/dag-types.js';
 export * from './lib/intra-supervisor.js';
 export * from './lib/lane-executor.js';
 export * from './lib/supervised-agent.js';
+

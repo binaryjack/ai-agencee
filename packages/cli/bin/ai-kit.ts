@@ -41,11 +41,17 @@ program
   .option('-p, --project <path>', 'Project root directory (default: cwd)')
   .option('-v, --verbose', 'Enable verbose output with per-checkpoint details')
   .option('--dry-run', 'Validate the DAG config and print execution plan without running')
+  .option('-i, --interactive', 'Pause at needs-human-review checkpoints and prompt for operator decision')
+  .option('--budget <usd>', 'Abort the run when estimated LLM spend exceeds this USD amount')
+  .option('--provider <name>', 'Override the LLM provider for all lanes (e.g. anthropic, openai, mock)')
   .action((dagFile, options) =>
     runDag(dagFile ?? 'agents/dag.json', {
       project: options.project,
       verbose: options.verbose,
       dryRun: options.dryRun,
+      interactive: options.interactive,
+      budget: options.budget,
+      provider: options.provider,
     }),
   );
 

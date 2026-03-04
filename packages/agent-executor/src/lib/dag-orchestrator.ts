@@ -1,15 +1,40 @@
+import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { randomUUID } from 'crypto';
-import {
-  DagDefinition,
-  DagResult,
-  LaneDefinition,
-  LaneResult,
-} from './dag-types.js';
-import { ContractRegistry } from './contract-registry.js';
 import { BarrierCoordinator } from './barrier-coordinator.js';
+import { ContractRegistry } from './contract-registry.js';
+import { CostTracker } from './cost-tracker.js';
+import {
+    DagDefinition,
+    DagResult,
+    LaneDefinition,
+    LaneResult,
+} from './dag-types.js';
 import { runLane } from './lane-executor.js';
+import { SamplingCallback, VSCodeSamplingProvider } from './llm-provider.js';
+import { ModelRouter } from './model-router.js';
+
+// ─── DagRunOptions ──────────────────────────────────────────────────────────────
+
+export interface DagRunOptions {
+  verbose?: boolean;
+  resultsDir?: string;
+  /** USD spend cap for the entire run. Lanes stop when the cap is exceeded. */
+  budgetCapUSD?: number;
+  /** Pause at needs-human-review checkpoints and prompt the operator for a decision. */
+  interactive?: boolean;
+  /**
+   * Path to a model-router.json file (relative to projectRoot).
+   * Overrides dag.json’s modelRouterFile field when provided.
+   */
+  modelRouterFile?: string;
+  /**
+   * Inject a VS Code sampling callback (MCP server context).
+   * When provided a VSCodeSamplingProvider is registered as ‘vscode’ and set
+   * as the default provider, bypassing the need for API keys.
+   */
+  samplingCallback?: SamplingCallback;
+}
 
 // ─── DagOrchestrator ──────────────────────────────────────────────────────────
 
@@ -29,10 +54,12 @@ import { runLane } from './lane-executor.js';
 export class DagOrchestrator {
   private readonly projectRoot: string;
   private readonly resultsDir: string;
+  private readonly options: DagRunOptions;
   private verbose: boolean;
 
-  constructor(projectRoot: string, options?: { verbose?: boolean; resultsDir?: string }) {
+  constructor(projectRoot: string, options?: DagRunOptions) {
     this.projectRoot = projectRoot;
+    this.options = options ?? {};
     this.verbose = options?.verbose ?? false;
     this.resultsDir =
       options?.resultsDir ?? path.join(projectRoot, '.agents', 'results');
@@ -56,6 +83,38 @@ export class DagOrchestrator {
     this.log(`\n🚀  Starting DAG run: ${dag.name}  [${runId}]`);
     this.log(`   ${dag.description}\n`);
 
+    // ─ Cost tracking ─────────────────────────────────────────────────────────────
+    let aborted = false;
+    const costTracker =
+      this.options.budgetCapUSD !== undefined
+        ? new CostTracker(runId, this.options.budgetCapUSD, () => {
+            aborted = true;
+            this.log(`\n💸  Budget cap of $${this.options.budgetCapUSD} USD exceeded — aborting remaining lane groups`);
+          })
+        : undefined;
+
+    // ─ Model router ──────────────────────────────────────────────────────────
+    let modelRouter: ModelRouter | undefined;
+    const routerFile = this.options.modelRouterFile ?? dag.modelRouterFile;
+    if (routerFile) {
+      try {
+        const routerPath = path.resolve(this.projectRoot, routerFile);
+        modelRouter = await ModelRouter.fromFile(routerPath);
+        // Inject VS Code sampling callback (MCP context)
+        if (this.options.samplingCallback) {
+          modelRouter.registerProvider(new VSCodeSamplingProvider(this.options.samplingCallback));
+        }
+        await modelRouter.autoRegister();
+        this.log(`   🧠 Model router loaded: ${routerFile} (providers: ${modelRouter.registeredProviders.join(', ') || 'none'})`);
+      } catch (err) {
+        this.log(`   ⚠️  Failed to load model router: ${err}`);
+      }
+    } else if (this.options.samplingCallback) {
+      // No router file but sampling callback available — build a minimal mock router
+      // so VS Code context still works without a full router config
+      this.log('   🧠 VS Code sampling callback provided (no model-router.json; LLM checks disabled)');
+    }
+
     // Shared infrastructure for all lanes
     const registry = new ContractRegistry();
     const coordinator = new BarrierCoordinator(registry);
@@ -70,13 +129,15 @@ export class DagOrchestrator {
     const allLaneResults: LaneResult[] = [];
 
     for (let gi = 0; gi < groups.length; gi++) {
+      if (aborted) break; // budget exceeded
+
       const group = groups[gi];
       this.log(`▶  Group ${gi + 1}/${groups.length}: ${group.map((l) => l.id).join(' + ')}`);
 
       const groupStartMs = Date.now();
       const settled = await Promise.allSettled(
         group.map((lane) =>
-          runLane(lane, this.projectRoot, registry, coordinator, capabilityRegistry),
+          runLane(lane, this.projectRoot, registry, coordinator, capabilityRegistry, modelRouter, costTracker, this.options.interactive),
         ),
       );
 
@@ -143,6 +204,12 @@ export class DagOrchestrator {
     this.log(`   ${dagResult.findings.length} findings, ${dagResult.recommendations.length} recommendations\n`);
 
     await this.saveResult(runId, dagResult);
+
+    // Cost report
+    if (costTracker) {
+      this.log(costTracker.formatReport());
+      await costTracker.save(this.resultsDir);
+    }
 
     return dagResult;
   }

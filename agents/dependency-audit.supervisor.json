@@ -1,0 +1,32 @@
+{
+  "laneId": "dependency-audit",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-run all checks. Ensure package.json existence check, json-has-key checks, and pnpm audit step have all run."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "minFindings": 2
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Ensure both dependencies and devDependencies json-has-key checks produced findings."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}

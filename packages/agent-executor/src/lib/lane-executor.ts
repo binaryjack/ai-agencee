@@ -1,8 +1,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as readline from 'readline';
 import { AgentResult } from './agent-types.js';
 import { BarrierCoordinator } from './barrier-coordinator.js';
 import { ContractRegistry } from './contract-registry.js';
+import { CostTracker } from './cost-tracker.js';
 import {
     BarrierResolution,
     CheckpointPayload,
@@ -14,8 +16,40 @@ import {
     SupervisorVerdict,
 } from './dag-types.js';
 import { IntraSupervisor } from './intra-supervisor.js';
+import { ModelRouter, RoutedResponse } from './model-router.js';
 import { EscalationError, SupervisedAgent } from './supervised-agent.js';
+// ─── Interactive approval prompt ───────────────────────────────────────────────────
 
+async function promptHumanApproval(
+  payload: CheckpointPayload,
+  verdict: SupervisorVerdict,
+): Promise<SupervisorVerdict> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const findings = payload.partialResult.findings ?? [];
+  process.stdout.write('\n');
+  process.stdout.write('  🔔  HUMAN REVIEW CHECKPOINT\n');
+  process.stdout.write(`  Checkpoint : ${payload.checkpointId}\n`);
+  process.stdout.write(`  Supervisor : ${verdict.type}`);
+  if (verdict.type === 'RETRY') process.stdout.write(` (“${verdict.instructions ?? ''}”)`);
+  process.stdout.write('\n');
+  if (findings.length > 0) {
+    process.stdout.write('  Findings   :\n');
+    findings.slice(-5).forEach((f) => process.stdout.write(`    ${f}\n`));
+  }
+  process.stdout.write('\n  [a] Approve  [r] Retry  [e] Escalate  (Enter = accept verdict)\n> ');
+
+  return new Promise((resolve) => {
+    rl.once('line', (input) => {
+      rl.close();
+      const ch = input.trim().toLowerCase();
+      if (ch === 'a') return resolve({ type: 'APPROVE' });
+      if (ch === 'r') return resolve({ type: 'RETRY', instructions: 'Human-requested retry' });
+      if (ch === 'e')
+        return resolve({ type: 'ESCALATE', reason: 'Human escalated at review checkpoint' });
+      resolve(verdict); // accept supervisor verdict
+    });
+  });
+}
 // ─── LaneExecutor ─────────────────────────────────────────────────────────────
 
 /**
@@ -38,12 +72,19 @@ export class LaneExecutor {
   /** Optional: capability registry from the DagDefinition (laneId → capability names) */
   private readonly capabilityRegistry: Record<string, string[]>;
 
+  private readonly modelRouter: ModelRouter | undefined;
+  private readonly costTracker: CostTracker | undefined;
+  private readonly interactive: boolean;
+
   constructor(options: {
     registry: ContractRegistry;
     coordinator: BarrierCoordinator;
     projectRoot: string;
     capabilityRegistry?: Record<string, string[]>;
     checkpointBaseDir?: string;
+    modelRouter?: ModelRouter;
+    costTracker?: CostTracker;
+    interactive?: boolean;
   }) {
     this.registry = options.registry;
     this.coordinator = options.coordinator;
@@ -51,6 +92,9 @@ export class LaneExecutor {
     this.capabilityRegistry = options.capabilityRegistry ?? {};
     this.checkpointBaseDir =
       options.checkpointBaseDir ?? path.join(options.projectRoot, '.agents', 'checkpoints');
+    this.modelRouter = options.modelRouter;
+    this.costTracker = options.costTracker;
+    this.interactive = options.interactive ?? false;
   }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
@@ -140,8 +184,15 @@ export class LaneExecutor {
       };
     };
 
+    // Cost tracking: collect LLM responses fired inside the generator,
+    // then attribute them to each checkpoint when the payload yields.
+    const pendingCosts: RoutedResponse[] = [];
+    const onLlmResponse = this.costTracker
+      ? (resp: RoutedResponse) => { pendingCosts.push(resp); }
+      : undefined;
+
     // Start the generator
-    const generator = agent.run(this.projectRoot, 'self', publishContract);
+    const generator = agent.run(this.projectRoot, 'self', publishContract, this.modelRouter, onLlmResponse);
 
     // Drive the generator
     let currentVerdict: SupervisorVerdict = { type: 'APPROVE' };
@@ -150,6 +201,11 @@ export class LaneExecutor {
     while (!iteration.done) {
       const payload: CheckpointPayload = iteration.value;
       const checkpointStartMs = Date.now();
+
+      // Attribute any LLM costs fired while computing this checkpoint
+      for (const resp of pendingCosts.splice(0)) {
+        this.costTracker?.record(lane.id, payload.checkpointId, resp);
+      }
 
       // Publish any contracts the agent declared at this checkpoint
       if (payload.contracts) {
@@ -169,8 +225,15 @@ export class LaneExecutor {
           }
         : payload;
 
+      // needs-human-review: BarrierCoordinator uses 'self' for resolution;
+      // the human interaction happens after the supervisor verdict below.
+      const barrierPayload: CheckpointPayload =
+        effectivePayload.mode === 'needs-human-review'
+          ? { ...effectivePayload, mode: 'self' }
+          : effectivePayload;
+
       // Resolve barriers / read contracts from other lanes
-      const barrierResolution: BarrierResolution = await this.coordinator.resolve(effectivePayload);
+      const barrierResolution: BarrierResolution = await this.coordinator.resolve(barrierPayload);
 
       // Get verdict from supervisor
       let verdict: SupervisorVerdict = supervisor.evaluate(
@@ -178,6 +241,11 @@ export class LaneExecutor {
         payload.partialResult,
         barrierResolution,
       );
+
+      // Interactive human review: pause and let the human override the supervisor verdict
+      if (this.interactive && effectivePayload.mode === 'needs-human-review') {
+        verdict = await promptHumanApproval(effectivePayload, verdict);
+      }
 
       // Track retry count for this checkpoint
       let retryCount = 0;
@@ -373,12 +441,18 @@ export async function runLane(
   registry: ContractRegistry,
   coordinator: BarrierCoordinator,
   capabilityRegistry?: Record<string, string[]>,
+  modelRouter?: ModelRouter,
+  costTracker?: CostTracker,
+  interactive?: boolean,
 ): Promise<LaneResult> {
   const executor = new LaneExecutor({
     registry,
     coordinator,
     projectRoot,
     capabilityRegistry,
+    modelRouter,
+    costTracker,
+    interactive,
   });
   return executor.runLane(lane);
 }

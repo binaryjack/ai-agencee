@@ -1,0 +1,32 @@
+{
+  "laneId": "pr-description",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Ensure the git-diff step and package.json checks have run. Re-run if any check was skipped."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "minFindings": 2
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-check that both json-field checks (name and version) ran and produced findings."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}
