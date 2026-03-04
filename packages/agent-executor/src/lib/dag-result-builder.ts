@@ -5,9 +5,9 @@
  * and independently testable.
  */
 
-import * as fs    from 'fs/promises';
-import * as path  from 'path';
-import type { DagResult, LaneResult } from './dag-types.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { DagResult, LaneResult } from './dag-types.js'
 
 export class DagResultBuilder {
   // ─── Build ────────────────────────────────────────────────────────────────

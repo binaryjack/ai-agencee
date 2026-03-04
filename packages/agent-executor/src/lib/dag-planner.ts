@@ -10,7 +10,7 @@
  * can focus exclusively on coordination and lane dispatch.
  */
 
-import type { DagDefinition, LaneDefinition } from './dag-types.js';
+import type { DagDefinition, LaneDefinition } from './dag-types.js'
 
 export class DagPlanner {
   // ─── Validation ───────────────────────────────────────────────────────────

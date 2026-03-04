@@ -1,7 +1,7 @@
-import * as fs   from 'fs/promises';
-import * as path from 'path';
-import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js';
-import type { CheckContext } from './check-context.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { CheckContext } from './check-context.js'
+import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js'
 
 /**
  * Recursively searches files under `check.path` for `check.pattern`.

@@ -10,9 +10,9 @@
  * The chain makes each tier independently testable and trivially extensible.
  */
 
-import { ChatRenderer, promptChoice } from './chat-renderer.js';
-import type { ModelRouter }   from './model-router.js';
-import type { DecisionOption, PendingDecision } from './plan-types.js';
+import { ChatRenderer, promptChoice } from './chat-renderer.js'
+import type { ModelRouter } from './model-router.js'
+import type { DecisionOption, PendingDecision } from './plan-types.js'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 

@@ -5,8 +5,8 @@
  * new fields never requires touching handler method signatures.
  */
 
-import type { CheckDefinition } from '../agent-types.js';
-import type { ModelRouter, RoutedResponse } from '../model-router.js';
+import type { CheckDefinition } from '../agent-types.js'
+import type { ModelRouter, RoutedResponse } from '../model-router.js'
 
 export interface CheckContext {
   /** The check definition from the agent JSON. */

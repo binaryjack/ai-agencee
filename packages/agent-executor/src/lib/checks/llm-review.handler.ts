@@ -1,7 +1,7 @@
-import * as fs   from 'fs/promises';
-import type { TaskType } from '../llm-provider.js';
-import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js';
-import type { CheckContext } from './check-context.js';
+import * as fs from 'fs/promises'
+import type { TaskType } from '../llm-provider.js'
+import type { CheckContext } from './check-context.js'
+import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js'
 
 /**
  * Reviews a file or directory via LLM and reports findings.

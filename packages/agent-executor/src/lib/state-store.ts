@@ -12,8 +12,8 @@
  * async persistence is unnecessary and would complicate error handling).
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'fs'
+import * as path from 'path'
 
 export class StateStore<T> {
   constructor(private readonly filePath: string) {}

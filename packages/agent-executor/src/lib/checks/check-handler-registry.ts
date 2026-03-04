@@ -6,25 +6,25 @@
  * extend or override behaviour without touching existing code.
  */
 
-import * as path from 'path';
-import type { CheckType }   from '../agent-types.js';
-import type { StepResult }  from '../check-runner.js';
-import type { ModelRouter, RoutedResponse } from '../model-router.js';
-import type { CheckContext } from './check-context.js';
-import type { ICheckHandler } from './check-handler.interface.js';
-import { formatCheckResult } from './check-result-formatter.js';
+import * as path from 'path'
+import type { CheckType } from '../agent-types.js'
+import type { StepResult } from '../check-runner.js'
+import type { ModelRouter, RoutedResponse } from '../model-router.js'
+import type { CheckContext } from './check-context.js'
+import type { ICheckHandler } from './check-handler.interface.js'
+import { formatCheckResult } from './check-result-formatter.js'
 
 // ─── Handlers ─────────────────────────────────────────────────────────────────
-import { CountDirsHandler }  from './count-dirs.handler.js';
-import { CountFilesHandler } from './count-files.handler.js';
-import { DirExistsHandler }  from './dir-exists.handler.js';
-import { FileExistsHandler } from './file-exists.handler.js';
-import { GrepHandler }       from './grep.handler.js';
-import { JsonFieldHandler }  from './json-field.handler.js';
-import { JsonHasKeyHandler } from './json-has-key.handler.js';
-import { LlmGenerateHandler } from './llm-generate.handler.js';
-import { LlmReviewHandler }  from './llm-review.handler.js';
-import { RunCommandHandler } from './run-command.handler.js';
+import { CountDirsHandler } from './count-dirs.handler.js'
+import { CountFilesHandler } from './count-files.handler.js'
+import { DirExistsHandler } from './dir-exists.handler.js'
+import { FileExistsHandler } from './file-exists.handler.js'
+import { GrepHandler } from './grep.handler.js'
+import { JsonFieldHandler } from './json-field.handler.js'
+import { JsonHasKeyHandler } from './json-has-key.handler.js'
+import { LlmGenerateHandler } from './llm-generate.handler.js'
+import { LlmReviewHandler } from './llm-review.handler.js'
+import { RunCommandHandler } from './run-command.handler.js'
 
 export class CheckHandlerRegistry {
   private readonly handlers = new Map<CheckType, ICheckHandler>();

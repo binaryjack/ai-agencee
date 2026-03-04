@@ -1,4 +1,4 @@
-import type { LLMMessage, LLMPrompt, LLMProvider, LLMResponse } from '../llm-provider.js';
+import type { LLMMessage, LLMPrompt, LLMProvider, LLMResponse } from '../llm-provider.js'
 
 // ─── SamplingCallback ─────────────────────────────────────────────────────────
 //

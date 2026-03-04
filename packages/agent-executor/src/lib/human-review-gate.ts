@@ -9,8 +9,8 @@
  * Tests override with AutoApproveHumanReviewGate (or a custom spy).
  */
 
-import * as readline from 'readline';
-import type { CheckpointPayload, SupervisorVerdict } from './dag-types.js';
+import * as readline from 'readline'
+import type { CheckpointPayload, SupervisorVerdict } from './dag-types.js'
 
 // ─── Interface ────────────────────────────────────────────────────────────────
 

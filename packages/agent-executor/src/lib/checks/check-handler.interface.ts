@@ -6,8 +6,8 @@
  * maps CheckType → ICheckHandler and dispatches accordingly.
  */
 
-import type { CheckType } from '../agent-types.js';
-import type { CheckContext } from './check-context.js';
+import type { CheckType } from '../agent-types.js'
+import type { CheckContext } from './check-context.js'
 
 // ─── Raw result ────────────────────────────────────────────────────────────────
 
