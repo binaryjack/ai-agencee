@@ -13,20 +13,22 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type {
-  PlanDefinition,
-  PlanRunOptions,
-  PlanPhase,
-  StepDefinition,
-  DiscoveryResult,
-} from './plan-types.js';
-import { ChatRenderer } from './chat-renderer.js';
-import { DiscoverySession } from './discovery-session.js';
-import { BacklogBoard } from './backlog.js';
-import { PlanSynthesizer } from './plan-synthesizer.js';
 import { Arbiter } from './arbiter.js';
+import { BacklogBoard } from './backlog.js';
+import { ChatRenderer } from './chat-renderer.js';
 import { DagOrchestrator } from './dag-orchestrator.js';
 import type { DagResult } from './dag-types.js';
+import { DiscoverySession } from './discovery-session.js';
+import type { ModelRouter } from './model-router.js';
+import { PlanModelAdvisor } from './plan-model-advisor.js';
+import { PlanSynthesizer } from './plan-synthesizer.js';
+import type {
+    DiscoveryResult,
+    PlanDefinition,
+    PlanPhase,
+    PlanRunOptions,
+    StepDefinition,
+} from './plan-types.js';
 
 // ─── PlanResult ───────────────────────────────────────────────────────────────
 
@@ -54,12 +56,14 @@ export interface PlanResult {
 
 export class PlanOrchestrator {
   private readonly projectRoot: string;
-  private readonly options: Required<PlanRunOptions>;
+  private readonly options: Required<Omit<PlanRunOptions, 'modelRouter'>> & { modelRouter?: ModelRouter };
   private readonly renderer: ChatRenderer;
   private readonly stateDir: string;
+  private readonly modelRouter?: ModelRouter;
 
   constructor(projectRoot: string, options: PlanRunOptions = {}) {
-    this.projectRoot = path.resolve(projectRoot);
+    this.projectRoot   = path.resolve(projectRoot);
+    this.modelRouter   = options.modelRouter as ModelRouter | undefined;
     this.options = {
       startFrom:    options.startFrom    ?? 'discover',
       skipApproval: options.skipApproval ?? false,
@@ -81,13 +85,21 @@ export class PlanOrchestrator {
     r.say('system', `PlanOrchestrator  ·  project: ${this.projectRoot}`);
     r.say('system', `Start phase: ${this.options.startFrom}`);
     r.newline();
-
+    // ── Model Advisor (before Phase 0) ───────────────────────────────────────
+    if (this.modelRouter) {
+      const advisor = new PlanModelAdvisor(r, this.modelRouter);
+      await advisor.display();
+    } else {
+      r.say('system', '⚠  No ModelRouter configured — phases will run in heuristic mode.');
+      r.say('system', 'Tip: set ANTHROPIC_API_KEY or OPENAI_API_KEY for LLM-backed phase reasoning.');
+    }
+    r.newline();
     let discovery: DiscoveryResult | null = null;
     let plan: PlanDefinition | null = null;
 
     // ── Phase 0: DISCOVER ─────────────────────────────────────────────────
     if (this._shouldRun('discover')) {
-      const session = new DiscoverySession(r, this.projectRoot);
+      const session = new DiscoverySession(r, this.projectRoot, this.modelRouter);
       const saved = DiscoverySession.load(this.projectRoot);
       if (saved && this.options.startFrom !== 'discover') {
         r.system('Resuming — discovery.json found, skipping Phase 0');
@@ -102,7 +114,7 @@ export class PlanOrchestrator {
 
     // ── Phase 1: SYNTHESIZE ───────────────────────────────────────────────
     if (this._shouldRun('synthesize')) {
-      const synth = new PlanSynthesizer(r, this.projectRoot);
+      const synth = new PlanSynthesizer(r, this.projectRoot, this.modelRouter);
       const saved = PlanSynthesizer.load(this.projectRoot);
       if (saved && this.options.startFrom !== 'synthesize') {
         r.system('Resuming — plan.json found, skipping Phase 1');
@@ -119,14 +131,14 @@ export class PlanOrchestrator {
     const board = new BacklogBoard(r, this.projectRoot);
     if (this._shouldRun('decompose')) {
       board.load();
-      const synth = new PlanSynthesizer(r, this.projectRoot);
+      const synth = new PlanSynthesizer(r, this.projectRoot, this.modelRouter);
       await synth.runSprintPlanning(plan!, discovery!, board);
     }
 
     // ── Phase 3: WIRE (decisions + dependency pass) ───────────────────────
     if (this._shouldRun('wire')) {
       r.phaseHeader('wire');
-      const arbiter = new Arbiter(r, this.projectRoot);
+      const arbiter = new Arbiter(r, this.projectRoot, this.modelRouter);
       await arbiter.runStandardDecisions(plan!, board);
 
       // Micro-alignments from standard cross-agent boundaries

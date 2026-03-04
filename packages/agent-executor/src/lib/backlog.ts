@@ -11,13 +11,13 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type {
-  BacklogItem,
-  BacklogItemStatus,
-  ActorId,
-  ChecklistDisplayItem,
-} from './plan-types.js';
 import { ChatRenderer } from './chat-renderer.js';
+import type {
+    ActorId,
+    BacklogItem,
+    BacklogItemStatus,
+    ChecklistDisplayItem,
+} from './plan-types.js';
 
 // ─── BacklogBoard ─────────────────────────────────────────────────────────────
 

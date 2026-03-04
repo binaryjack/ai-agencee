@@ -11,20 +11,21 @@
  * displays it live, and runs the alignment loop with all agents.
  */
 
+import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { randomUUID } from 'crypto';
-import type {
-  DiscoveryResult,
-  PlanDefinition,
-  StepDefinition,
-  AlignmentGate,
-  ActorId,
-  PlanItemStatus,
-  QualityGrade,
-} from './plan-types.js';
-import { ChatRenderer, promptUser } from './chat-renderer.js';
 import { BacklogBoard } from './backlog.js';
+import { ChatRenderer, promptUser } from './chat-renderer.js';
+import type { ModelRouter } from './model-router.js';
+import type {
+    ActorId,
+    AlignmentGate,
+    DiscoveryResult,
+    PlanDefinition,
+    PlanItemStatus,
+    QualityGrade,
+    StepDefinition,
+} from './plan-types.js';
 
 // ─── Agent roster ─────────────────────────────────────────────────────────────
 
@@ -205,10 +206,12 @@ function buildSteps(discovery: DiscoveryResult, agents: ActorId[]): StepDefiniti
 export class PlanSynthesizer {
   private readonly renderer: ChatRenderer;
   private readonly stateDir: string;
+  private readonly modelRouter?: ModelRouter;
 
-  constructor(renderer: ChatRenderer, projectRoot: string) {
-    this.renderer = renderer;
-    this.stateDir = path.join(projectRoot, '.agents', 'plan-state');
+  constructor(renderer: ChatRenderer, projectRoot: string, modelRouter?: ModelRouter) {
+    this.renderer    = renderer;
+    this.stateDir    = path.join(projectRoot, '.agents', 'plan-state');
+    this.modelRouter = modelRouter;
   }
 
   async synthesize(discovery: DiscoveryResult): Promise<PlanDefinition> {
@@ -226,16 +229,17 @@ export class PlanSynthesizer {
     r.say('ba', `Selected agents: ${agents.map((a) => `${a}`).join(' · ')}`);
     r.newline();
 
-    // ── Announce team ───────────────────────────────────────────────────────
+    // ── Announce team (LLM-backed introductions) ────────────────────────────
     r.separator();
     for (const agentId of agents.filter((a) => a !== 'ba')) {
-      r.say(agentId as ActorId, 'Ready to contribute to this plan.');
+      const intro = await this._agentIntroduction(agentId as ActorId, discovery);
+      r.say(agentId as ActorId, intro);
     }
     r.separator();
     r.newline();
 
-    // ── Build skeleton ──────────────────────────────────────────────────────
-    const steps = buildSteps(discovery, agents);
+    // ── Build skeleton (LLM-backed when router available) ──────────────────
+    const steps = await this._buildStepsWithFallback(discovery, agents);
 
     r.say('ba', `Plan skeleton ready — ${steps.length} steps:`);
     r.newline();
@@ -258,8 +262,9 @@ export class PlanSynthesizer {
         r.say('ba', 'Plan skeleton approved. Moving to sprint planning.');
       } else {
         r.say('ba', `Understood — "${response}". Let me adjust…`);
-        r.warn('Plan modification loop is not yet fully automated. Proceeding with current skeleton.');
-        r.say('ba', 'Type "ok" to continue with the current plan, or Ctrl+C to abort.');
+        const feedback = await this._processApprovalFeedback(response, steps, discovery);
+        r.say('ba', feedback);
+        r.say('ba', 'Type "ok" to continue with the current plan, or describe another change.');
       }
     }
 
@@ -368,6 +373,137 @@ export class PlanSynthesizer {
       `${board.progress().done}/${board.progress().total} backlog items resolved`,
       `${board.getOpen().length} items still open (will be carried forward)`,
     ]);
+  }
+
+  // ─── LLM-backed helpers ────────────────────────────────────────────────────
+
+  /**
+   * Try to build steps via LLM (opus); fall back to deterministic buildSteps().
+   * LLM is asked to return JSON matching the step IDs plus name/goal/outputs/parallel.
+   * We merge that with the deterministic skeleton to keep typing correct.
+   */
+  private async _buildStepsWithFallback(
+    discovery: DiscoveryResult,
+    agents: ActorId[],
+  ): Promise<StepDefinition[]> {
+    const deterministic = buildSteps(discovery, agents);
+    if (!this.modelRouter) return deterministic;
+
+    try {
+      const resp = await this.modelRouter.route('architecture-decision', {
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a senior software architect building a project plan skeleton. '
+              + 'Given a discovery document, return ONLY a JSON array of step objects. '
+              + 'Each object must have these exact keys: id, name, goal, outputs (string[]), parallel (bool). '
+              + 'Use these step ids: ' + deterministic.map((s) => s.id).join(', ') + '. '
+              + 'Tailor name, goal, and outputs to the specific project. No markdown, no explanation.',
+          },
+          {
+            role: 'user',
+            content: `Discovery:\n${JSON.stringify(discovery, null, 2)}`,
+          },
+        ],
+        maxTokens: 800,
+      });
+
+      // Strip code fences if model includes them
+      const raw = resp.content.replace(/```(?:json)?/gi, '').trim();
+      const llmSteps = JSON.parse(raw) as Array<{
+        id: string; name: string; goal: string; outputs: string[]; parallel: boolean;
+      }>;
+
+      // Merge LLM content into deterministic skeleton (preserves types + dependencies)
+      return deterministic.map((det) => {
+        const llm = llmSteps.find((l) => l.id === det.id);
+        if (!llm) return det;
+        return {
+          ...det,
+          name:     llm.name     ?? det.name,
+          goal:     llm.goal     ?? det.goal,
+          outputs:  llm.outputs  ?? det.outputs,
+          parallel: llm.parallel ?? det.parallel,
+        };
+      });
+    } catch {
+      return deterministic;
+    }
+  }
+
+  /**
+   * Generate a contextual introduction for each agent based on the project.
+   * Uses haiku (fast, cheap) — one sentence per agent.
+   */
+  private async _agentIntroduction(agent: ActorId, discovery: DiscoveryResult): Promise<string> {
+    if (this.modelRouter) {
+      try {
+        const resp = await this.modelRouter.route('file-analysis', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are roleplaying as a software development agent. '
+                + 'Write ONE sentence (20-40 words) introducing yourself and what you will contribute '
+                + 'to this specific project. Be specific about the project, not generic. No markdown.',
+            },
+            {
+              role: 'user',
+              content:
+                `Agent role: ${agent}\n`
+                + `Project: ${discovery.projectName}\n`
+                + `Problem: ${discovery.problem}\n`
+                + `Stack: ${discovery.stackConstraints || 'not specified'}\n`
+                + `Layers: ${discovery.layers.join(', ')}`,
+            },
+          ],
+          maxTokens: 80,
+        });
+        const text = resp.content.trim();
+        if (text.length > 10) return text;
+      } catch { /* fall through */ }
+    }
+    return 'Ready to contribute to this plan.';
+  }
+
+  /**
+   * Process user change request during the approval loop.
+   * Uses sonnet (api-design) to interpret the request and suggest what changed.
+   */
+  private async _processApprovalFeedback(
+    feedback: string,
+    steps: StepDefinition[],
+    discovery: DiscoveryResult,
+  ): Promise<string> {
+    if (this.modelRouter) {
+      try {
+        const stepList = steps.map((s) => `${s.id}: ${s.name} — ${s.goal}`).join('\n');
+        const resp = await this.modelRouter.route('api-design', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a Business Analyst. The user has requested changes to a plan skeleton. '
+                + 'Acknowledge the change request, explain what would need to change in the plan, '
+                + 'and recommend whether the change requires re-running discovery or can be applied inline. '
+                + 'Be concise (2-3 sentences). No markdown.',
+            },
+            {
+              role: 'user',
+              content:
+                `User change request: "${feedback}"\n\n`
+                + `Current plan steps:\n${stepList}\n\n`
+                + `Project context: ${discovery.problem.slice(0, 200)}`,
+            },
+          ],
+          maxTokens: 200,
+        });
+        const text = resp.content.trim();
+        if (text.length > 10) return text;
+      } catch { /* fall through */ }
+    }
+    return 'Plan modification noted — proceeding with current skeleton. Type "ok" to approve.';
   }
 
   // ─── Persistence ──────────────────────────────────────────────────────────
