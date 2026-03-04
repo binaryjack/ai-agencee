@@ -1,0 +1,44 @@
+{
+  "name": "PR Description Generator",
+  "icon": "📝",
+  "description": "Inspects git diff and source changes to draft a structured pull request description",
+  "checks": [
+    {
+      "type": "file-exists",
+      "path": ".git",
+      "pass": "✅ Git repository detected",
+      "fail": "❌ No .git directory — not a git repository",
+      "failSeverity": "error"
+    },
+    {
+      "type": "run-command",
+      "command": "git diff --stat HEAD~1 HEAD 2>/dev/null || git diff --stat HEAD 2>/dev/null || echo 'no-commits'",
+      "passPattern": ".",
+      "pass": "✅ Git diff summary collected",
+      "fail": "⚠️  Could not collect git diff — ensure at least one commit exists",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "json-field",
+      "path": "package.json",
+      "field": "name",
+      "pass": "📦 Project name: {value}",
+      "fail": "⚠️  No project name in package.json"
+    },
+    {
+      "type": "json-field",
+      "path": "package.json",
+      "field": "version",
+      "pass": "🏷️  Version: {value}",
+      "fail": "ℹ️  No version field in package.json"
+    },
+    {
+      "type": "llm-generate",
+      "prompt": "You are a senior engineer writing a GitHub pull request description. Based on the project structure and recent changes, generate a concise, professional PR description with the following sections:\n\n## Summary\n(1–3 sentence overview of what this PR does)\n\n## Changes\n(Bullet list of key changes)\n\n## Testing\n(How the changes were tested)\n\n## Notes\n(Any important caveats, migration steps, or follow-up items)\n\nKeep the total length under 400 words. Use plain Markdown.",
+      "taskType": "code-generation",
+      "outputKey": "prDescription",
+      "pass": "✅ PR description generated",
+      "fail": "⚠️  Could not generate PR description (LLM unavailable — provide text manually)"
+    }
+  ]
+}

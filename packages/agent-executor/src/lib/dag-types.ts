@@ -41,12 +41,18 @@ export interface SupervisorVerdict {
 
 /**
  * How a checkpoint is resolved:
- *   self          → supervisor validates this lane's own output only
- *   read-contract → read another lane's current snapshot non-blocking
- *   soft-align    → wait up to timeoutMs for another lane's snapshot
- *   hard-barrier  → all named lanes must reach this point before any continues
+ *   self               → supervisor validates this lane's own output only
+ *   read-contract      → read another lane's current snapshot non-blocking
+ *   soft-align         → wait up to timeoutMs for another lane's snapshot
+ *   hard-barrier       → all named lanes must reach this point before any continues
+ *   needs-human-review → pause for human decision when running with --interactive
  */
-export type CheckpointMode = 'self' | 'read-contract' | 'soft-align' | 'hard-barrier';
+export type CheckpointMode =
+  | 'self'
+  | 'read-contract'
+  | 'soft-align'
+  | 'hard-barrier'
+  | 'needs-human-review';
 
 /**
  * What an agent yields to the executor at a pause point.
@@ -193,6 +199,16 @@ export interface LaneDefinition {
 
   /** Capability names this lane can handle for HANDOFF routing */
   capabilities?: string[];
+
+  /**
+   * Declared shape of this lane's ContractExports, expressed as
+   * fieldName → TypeScript type string.  Used for validation and
+   * documentation; not enforced at runtime.
+   *
+   * Example:
+   *   { "apiRoutes": "RouteContract[]", "errorTypes": "ErrorContract[]" }
+   */
+  contractSchema?: Record<string, string>;
 }
 
 /** A named synchronization point that requires all participant lanes to arrive */

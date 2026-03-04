@@ -11,6 +11,9 @@ export type CheckType =
   | 'json-has-key'     // Does a JSON file contain a specific key?
   | 'grep'             // Does any file content match a string or pattern?
   | 'dir-exists'       // Does a directory exist?
+  | 'run-command'      // Run a shell command and check exit code / output pattern
+  | 'llm-generate'     // Generate content via LLM; stores result under outputKey
+  | 'llm-review'       // Review a file or directory via LLM and report findings
 
 export interface CheckDefinition {
   /** The type of check to perform */
@@ -45,6 +48,34 @@ export interface CheckDefinition {
 
   /** Recommendations to add only when check passes */
   passRecommendations?: string[];
+
+  // ─── run-command ────────────────────────────────────────────────────────────
+
+  /** Shell command to run (cwd = projectRoot, timeout = 30 s) */
+  command?: string;
+
+  /** Regex applied to stdout+stderr; check passes when it matches */
+  passPattern?: string;
+
+  /** Regex applied to stdout+stderr; check passes when it does NOT match */
+  failPattern?: string;
+
+  // ─── llm-generate / llm-review ──────────────────────────────────────────────
+
+  /**
+   * Prompt template sent to the LLM.
+   * Placeholders: {content}, {path}, {retryContext}
+   */
+  prompt?: string;
+
+  /** TaskType override for model routing (default: 'code-generation' / 'validation') */
+  taskType?: string;
+
+  /**
+   * For llm-generate: key under which the LLM output is stored in
+   * details / ContractExports for downstream lanes to read.
+   */
+  outputKey?: string;
 }
 
 export interface AgentDefinition {

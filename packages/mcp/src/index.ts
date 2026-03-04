@@ -1,17 +1,19 @@
 #!/usr/bin/env node
+import { DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
-  ListToolsRequestSchema,
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ReadResourceRequestSchema,
-  Tool,
-  CallToolRequest,
-  ReadResourceRequest,
+    CallToolRequest,
+    CallToolRequestSchema,
+    ListResourcesRequestSchema,
+    ListToolsRequestSchema,
+    ReadResourceRequest,
+    ReadResourceRequestSchema,
+    Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as path from 'path';
+import { createVSCodeSamplingBridge } from './vscode-lm-bridge.js';
 
 const server = new Server(
   {
@@ -22,6 +24,7 @@ const server = new Server(
     capabilities: {
       tools: {},
       resources: {},
+      sampling: {},
     },
   }
 );
@@ -104,6 +107,36 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             enum: ['markdown', 'text', 'config'],
             description: 'Output format',
             default: 'markdown',
+          },
+        },
+      },
+    },
+    {
+      name: 'agent-dag',
+      description:
+        'Run a multi-lane supervised DAG execution using the on-disk dag.json. ' +
+        'LLM calls are delegated back to VS Code via the MCP sampling protocol — no API keys required.',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          dagFile: {
+            type: 'string',
+            description:
+              'Path to the dag.json file, relative to projectRoot (default: agents/dag.json)',
+            default: 'agents/dag.json',
+          },
+          projectRoot: {
+            type: 'string',
+            description: 'Absolute path to the project root (default: process.cwd())',
+          },
+          verbose: {
+            type: 'boolean',
+            description: 'Emit per-checkpoint log lines',
+            default: false,
+          },
+          budgetCapUSD: {
+            type: 'number',
+            description: 'Abort the run when estimated LLM spend exceeds this USD amount',
           },
         },
       },
@@ -263,6 +296,48 @@ Status: Ready to validate
       case 'bootstrap': {
         const bootstrapContent = await readProjectFile('src/.ai/bootstrap.md');
         return { content: [{ type: 'text', text: bootstrapContent }] };
+      }
+
+      case 'agent-dag': {
+        const a = (args as Record<string, unknown> | undefined) ?? {};
+        const dagFile = typeof a.dagFile === 'string' ? a.dagFile : 'agents/dag.json';
+        const projectRoot = typeof a.projectRoot === 'string' ? a.projectRoot : process.cwd();
+        const verbose = typeof a.verbose === 'boolean' ? a.verbose : false;
+        const budgetCapUSD = typeof a.budgetCapUSD === 'number' ? a.budgetCapUSD : undefined;
+
+        // Wire VS Code LM sampling so DAG uses Copilot rather than raw API keys
+        const samplingCallback = createVSCodeSamplingBridge(server);
+
+        const orchestrator = new DagOrchestrator(projectRoot, {
+          verbose,
+          budgetCapUSD,
+          samplingCallback,
+        });
+
+        const dagFilePath = path.isAbsolute(dagFile) ? dagFile : path.join(projectRoot, dagFile);
+        const result = await orchestrator.run(dagFilePath);
+
+        const summary = [
+          `# DAG Result: ${result.dagName}`,
+          `**Status:** ${result.status.toUpperCase()}  |  **Duration:** ${result.totalDurationMs}ms  |  **Run ID:** ${result.runId}`,
+          '',
+          '## Lanes',
+          ...result.lanes.map(
+            (l) =>
+              `- **${l.laneId}** — ${l.status}  (${l.checkpoints.length} checkpoints, ${l.totalRetries} retries, ${l.durationMs}ms)${l.error ? `\n  > ⚠️ ${l.error}` : ''}`,
+          ),
+        ];
+        if (result.findings.length > 0) {
+          summary.push('', '## Findings', ...result.findings.map((f) => `- ${f}`));
+        }
+        if (result.recommendations.length > 0) {
+          summary.push('', '## Recommendations', ...result.recommendations.map((r) => `- ${r}`));
+        }
+
+        return {
+          content: [{ type: 'text', text: summary.join('\n') }],
+          isError: result.status === 'failed',
+        };
       }
 
       case 'agent-breakdown': {

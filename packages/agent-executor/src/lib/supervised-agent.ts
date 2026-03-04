@@ -1,194 +1,16 @@
 import * as fs from 'fs/promises';
-import * as path from 'path';
-import { AgentDefinition, AgentResult, CheckDefinition } from './agent-types.js';
+import { AgentDefinition, AgentResult } from './agent-types.js';
+import { StepResult, runCheckStep } from './check-runner.js';
 import {
     CheckpointMode,
     CheckpointPayload,
     ContractSnapshot,
     SupervisorVerdict,
 } from './dag-types.js';
+import { ModelRouter, RoutedResponse } from './model-router.js';
 
-// ─── Internal check runner (mirrors agent-chain.ts; kept local to avoid coupling) ──
-
-interface StepResult {
-  findings: string[];
-  recommendations: string[];
-  detail?: { key: string; value: unknown };
-}
-
-async function runCheckStep(
-  check: CheckDefinition,
-  projectRoot: string,
-  retryInstructions?: string,
-): Promise<StepResult> {
-  const fullPath = path.join(projectRoot, check.path);
-  const findings: string[] = [];
-  const recommendations: string[] = [];
-
-  // For LLM-based future agents: attach retry instructions to context.
-  // For filesystem checks: log them so they can be inspected.
-  if (retryInstructions) {
-    findings.push(`ℹ️ Retry context: ${retryInstructions}`);
-  }
-
-  let passed = false;
-  let value: string | number | undefined;
-
-  try {
-    switch (check.type) {
-      case 'file-exists':
-      case 'dir-exists': {
-        try {
-          await fs.access(fullPath);
-          passed = true;
-        } catch {
-          passed = false;
-        }
-        break;
-      }
-
-      case 'count-dirs': {
-        try {
-          const entries = await fs.readdir(fullPath, { withFileTypes: true });
-          const dirs = entries.filter((e) => e.isDirectory());
-          value = dirs.length;
-          passed = dirs.length > 0;
-        } catch {
-          passed = false;
-          value = 0;
-        }
-        break;
-      }
-
-      case 'count-files': {
-        try {
-          const glob = check.glob ?? '**/*';
-          const entries = (await fs.readdir(fullPath, { recursive: true })) as string[];
-          const ext = glob.replace('**/*', '').replace('*', '');
-          const matched = entries.filter((f) => typeof f === 'string' && f.endsWith(ext));
-          value = matched.length;
-          passed = matched.length > 0;
-        } catch {
-          passed = false;
-          value = 0;
-        }
-        break;
-      }
-
-      case 'json-field': {
-        try {
-          const raw = await fs.readFile(fullPath, 'utf-8');
-          const json = JSON.parse(raw);
-          const parts = (check.field ?? '').split('.');
-          let v: unknown = json;
-          for (const part of parts) {
-            v = (v as Record<string, unknown>)?.[part];
-          }
-          if (v === undefined || v === null) {
-            passed = false;
-          } else if (typeof v === 'object') {
-            value = Object.keys(v as object).length;
-            passed = value > 0;
-          } else {
-            value = String(v);
-            passed = true;
-          }
-        } catch {
-          passed = false;
-        }
-        break;
-      }
-
-      case 'json-has-key': {
-        try {
-          const raw = await fs.readFile(fullPath, 'utf-8');
-          const json = JSON.parse(raw);
-          const parts = (check.field ?? '').split('.');
-          let v: unknown = json;
-          for (const part of parts) {
-            v = (v as Record<string, unknown>)?.[part];
-          }
-          passed = v !== undefined && v !== null;
-        } catch {
-          passed = false;
-        }
-        break;
-      }
-
-      case 'grep': {
-        try {
-          const entries = (await fs.readdir(fullPath, { recursive: true })) as string[];
-          const pattern = check.pattern ?? '';
-          for (const entry of entries) {
-            if (typeof entry !== 'string') continue;
-            try {
-              const content = await fs.readFile(path.join(fullPath, entry), 'utf-8');
-              if (content.includes(pattern)) {
-                passed = true;
-                value = entry;
-                break;
-              }
-            } catch {
-              // skip unreadable files
-            }
-          }
-        } catch {
-          passed = false;
-        }
-        break;
-      }
-
-      default:
-        passed = false;
-    }
-  } catch (err) {
-    passed = false;
-    findings.push(`❌ Check error: ${err}`);
-  }
-
-  // Interpolate message templates
-  const interpolate = (tpl: string) =>
-    tpl
-      .replace('{count}', String(value ?? 0))
-      .replace('{value}', String(value ?? ''))
-      .replace('{path}', check.path)
-      .replace('{pattern}', check.pattern ?? '')
-      .replace('{field}', check.field ?? '');
-
-  const severityIcon =
-    !passed && check.failSeverity === 'error'
-      ? '❌'
-      : !passed && check.failSeverity === 'warning'
-        ? '⚠️ '
-        : !passed
-          ? 'ℹ️ '
-          : '';
-
-  if (passed && check.pass) {
-    findings.push(interpolate(check.pass));
-  } else if (!passed && check.fail) {
-    findings.push(severityIcon + interpolate(check.fail));
-  }
-
-  if (check.recommendations) {
-    recommendations.push(...check.recommendations.map(interpolate));
-  }
-  if (passed && check.passRecommendations) {
-    recommendations.push(...check.passRecommendations.map(interpolate));
-  }
-  if (!passed && check.failRecommendations) {
-    recommendations.push(...check.failRecommendations.map(interpolate));
-  }
-
-  return {
-    findings,
-    recommendations,
-    detail:
-      value !== undefined ? { key: check.path.replace(/\W+/g, '_'), value } : undefined,
-  };
-}
-
-// ─── SupervisedAgent ──────────────────────────────────────────────────────────
+// Re-export StepResult so callers that imported it from here still work
+export type { StepResult };
 
 /**
  * An AsyncGenerator wrapper over a JSON-driven agent definition.
@@ -241,6 +63,8 @@ export class SupervisedAgent {
     projectRoot: string,
     defaultMode: CheckpointMode = 'self',
     publishContract?: () => ContractSnapshot,
+    modelRouter?: ModelRouter,
+    onLlmResponse?: (response: RoutedResponse) => void,
   ): AsyncGenerator<CheckpointPayload, AgentResult | null, SupervisorVerdict> {
     const findings: string[] = [];
     const recommendations: string[] = [];
@@ -257,7 +81,7 @@ export class SupervisedAgent {
       let stepResult: StepResult;
 
       try {
-        stepResult = await runCheckStep(check, projectRoot, retryInstructions);
+        stepResult = await runCheckStep(check, projectRoot, retryInstructions, modelRouter, onLlmResponse);
       } catch (err) {
         stepResult = {
           findings: [`❌ Unexpected step error: ${err}`],

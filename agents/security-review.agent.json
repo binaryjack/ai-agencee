@@ -1,0 +1,73 @@
+{
+  "name": "Security Review",
+  "icon": "🔐",
+  "description": "Scans source files for common security anti-patterns and dangerous API usage",
+  "checks": [
+    {
+      "type": "file-exists",
+      "path": "package.json",
+      "pass": "✅ package.json found",
+      "fail": "❌ No package.json — cannot perform dependency analysis",
+      "failSeverity": "error"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -r \"eval(\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -20 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No eval() usage found in src/",
+      "fail": "🔴 eval() detected — arbitrary code execution risk",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Replace eval() with safer alternatives (JSON.parse, Function constructors are also dangerous)",
+        "Audit all dynamic code execution paths"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -r \"dangerouslySetInnerHTML\" src --include=\"*.tsx\" --include=\"*.jsx\" -l 2>/dev/null | head -20 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No dangerouslySetInnerHTML usage found",
+      "fail": "🔴 dangerouslySetInnerHTML found — XSS risk",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Sanitize all HTML content before rendering",
+        "Use DOMPurify or a similar library",
+        "Replace with safe text interpolation wherever possible"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"(password|secret|apiKey|api_key|token)\\s*=\\s*['\\\"][^'\\\"]{6,}['\\\"]\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -10 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No hardcoded credentials detected in src/",
+      "fail": "🔴 Possible hardcoded secret detected",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Move all secrets to environment variables or a secrets manager",
+        "Rotate any secrets that were committed",
+        "Add a pre-commit hook (e.g. gitleaks) to prevent future leaks"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"require\\(['\\\"]child_process['\\\"]\\)\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -10 || true",
+      "pass": "✅ No direct child_process usage in src/ (or acceptable usage found)",
+      "fail": "⚠️  child_process imported in source files — review for command injection",
+      "failSeverity": "warning",
+      "failRecommendations": [
+        "Sanitize all user-supplied data before passing to exec/spawn",
+        "Prefer execFile over exec to avoid shell injection",
+        "Consider using a shell-quoting library"
+      ]
+    },
+    {
+      "type": "llm-review",
+      "path": "package.json",
+      "prompt": "Review the package.json dependencies and devDependencies for packages with known security vulnerabilities, deprecated packages, or packages commonly associated with supply-chain attacks. Flag any findings as CRITICAL if they have active CVEs or are known malicious packages.",
+      "taskType": "validation",
+      "pass": "✅ LLM dependency security review passed",
+      "fail": "🔴 LLM flagged dependency security concerns",
+      "failSeverity": "error"
+    }
+  ]
+}
