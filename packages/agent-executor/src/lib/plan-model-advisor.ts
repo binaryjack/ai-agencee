@@ -13,10 +13,10 @@
  * rather than hardcoded marketing text.
  */
 
-import type { ModelRouter } from './model-router.js';
-import type { TaskType } from './llm-provider.js';
-import type { QualityGrade } from './plan-types.js';
 import { ChatRenderer } from './chat-renderer.js';
+import type { TaskType } from './llm-provider.js';
+import type { ModelRouter } from './model-router.js';
+import type { QualityGrade } from './plan-types.js';
 
 // ─── Phase → task-type mapping ────────────────────────────────────────────────
 
