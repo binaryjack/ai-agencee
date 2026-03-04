@@ -1,6 +1,6 @@
 {
   "name": "@ai-agencee/ai-kit-cli",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "CLI for @ai-agencee/ai-starter-kit",
   "type": "commonjs",
   "bin": {
