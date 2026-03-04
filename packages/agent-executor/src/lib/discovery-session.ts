@@ -14,6 +14,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ChatRenderer, promptUser } from './chat-renderer.js';
+import type { ModelRouter } from './model-router.js';
 import type {
     DiscoveryQuestion,
     DiscoveryResult,
@@ -173,12 +174,14 @@ function buildModelRecommendation(
 export class DiscoverySession {
   private readonly renderer: ChatRenderer;
   private readonly stateDir: string;
+  private readonly modelRouter?: ModelRouter;
   private questions: DiscoveryQuestion[];
 
-  constructor(renderer: ChatRenderer, projectRoot: string) {
-    this.renderer = renderer;
-    this.stateDir = path.join(projectRoot, '.agents', 'plan-state');
-    this.questions = QUESTION_BANK.map((q) => ({ ...q, answered: false }));
+  constructor(renderer: ChatRenderer, projectRoot: string, modelRouter?: ModelRouter) {
+    this.renderer    = renderer;
+    this.stateDir    = path.join(projectRoot, '.agents', 'plan-state');
+    this.modelRouter = modelRouter;
+    this.questions   = QUESTION_BANK.map((q) => ({ ...q, answered: false }));
   }
 
   async run(): Promise<DiscoveryResult> {
@@ -215,9 +218,10 @@ export class DiscoverySession {
       q.answered = true;
       q.answer = answers[q.id];
 
-      // Brief BA acknowledgement
+      // BA acknowledgement — LLM-generated when router available
       if (answer && answer !== '(skipped)') {
-        r.say('ba', this._acknowledgeAnswer(q.id, answer));
+        const ack = await this._acknowledgeAnswer(q.id, answer, answers);
+        r.say('ba', ack);
       }
       r.newline();
     }
@@ -241,7 +245,7 @@ export class DiscoverySession {
     const rec = buildModelRecommendation(grade, budgetSensitivity);
 
     const result: DiscoveryResult = {
-      projectName: this._extractProjectName(answers['q-problem'] ?? ''),
+      projectName: await this._extractProjectName(answers['q-problem'] ?? ''),
       problem:               answers['q-problem']      ?? '',
       primaryUser:           answers['q-user']         ?? '',
       successCriteria:       answers['q-success']       ?? '',
@@ -263,9 +267,16 @@ export class DiscoverySession {
       completedAt:           new Date().toISOString(),
     };
 
+    // ── LLM-generated insight synthesis ────────────────────────────────────
+    const insights = await this._synthesizeInsights(result);
+    if (insights) {
+      r.newline();
+      r.say('ba', insights);
+    }
+
     // ── Display model recommendation ────────────────────────────────────────
     r.newline();
-    r.say('ba', 'Great — I have everything I need. Here\'s the model recommendation based on your quality grade and budget sensitivity:');
+    r.say('ba', 'Here is the model recommendation based on your quality grade and budget sensitivity:');
     r.modelRecommendation(rec);
 
     // ── Discovery summary ───────────────────────────────────────────────────
@@ -283,27 +294,119 @@ export class DiscoverySession {
     return result;
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  // ─── LLM-backed helpers (fall back to heuristics when no router) ──────────
 
-  private _acknowledgeAnswer(qId: string, answer: string): string {
+  /**
+   * Generate a contextual 1-2 sentence acknowledgement after each user answer.
+   * Uses haiku (cheap, fast) — shows the BA genuinely understood the answer.
+   */
+  private async _acknowledgeAnswer(
+    qId: string,
+    answer: string,
+    allAnswers: Record<string, string>,
+  ): Promise<string> {
+    if (this.modelRouter) {
+      try {
+        const questionText = QUESTION_BANK.find((q) => q.id === qId)?.text ?? qId;
+        const ctx = Object.entries(allAnswers)
+          .filter(([, v]) => v && v !== '(skipped)')
+          .map(([k, v]) => `${k}: ${v.slice(0, 80)}`)
+          .join('\n');
+        const resp = await this.modelRouter.route('file-analysis', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a Business Analyst conducting a project discovery interview. '
+                + 'Respond with a single concise acknowledgement (1-2 sentences max). '
+                + 'Show you understood the answer. Optionally note ONE brief concern or '
+                + 'insight if relevant. Be conversational, not formal. No markdown.',
+            },
+            {
+              role: 'user',
+              content:
+                `Question asked: ${questionText}\n`
+                + `User answered: "${answer}"\n`
+                + `Conversation so far:\n${ctx}\n\nAcknowledge in 1-2 sentences:`,
+            },
+          ],
+          maxTokens: 120,
+        });
+        const text = resp.content.trim();
+        if (text.length > 5) return text;
+      } catch { /* fall through to heuristic */ }
+    }
+    // Heuristic fallback
     const short = answer.slice(0, 60) + (answer.length > 60 ? '…' : '');
     switch (qId) {
       case 'q-problem':  return `Understood — "${short}". Good problem statement.`;
       case 'q-user':     return `Got it. Primary user: ${short}.`;
       case 'q-success':  return `Good success criteria. I'll align agents to that.`;
-      case 'q-stories':  return `I see ${answer.split('\n').filter(Boolean).length} potential story lines. Good.`;
-      case 'q-quality':  return `Quality grade noted. This will affect which models I recommend.`;
-      case 'q-stack':    return answer.includes('no constraint')
+      case 'q-stories':  return `I see ${answer.split('\n').filter(Boolean).length} potential story line(s).`;
+      case 'q-quality':  return `Quality grade noted. This shapes the model recommendations.`;
+      case 'q-stack':    return answer.toLowerCase().includes('no constrain')
                                ? 'No constraints — agents will make optimal choices.'
                                : `Stack: ${short}. Noted.`;
-      default:           return `Noted.`;
+      default:           return 'Noted.';
     }
   }
 
-  private _extractProjectName(problem: string): string {
-    // Take first 4 words as a rough project name
-    const words = problem.split(/\s+/).slice(0, 4).join(' ');
-    return words || 'Unnamed Project';
+  /**
+   * After all questions are answered, use sonnet to generate a brief
+   * "key risks and open questions" synthesis from the full discovery context.
+   */
+  private async _synthesizeInsights(result: DiscoveryResult): Promise<string | null> {
+    if (!this.modelRouter) return null;
+    try {
+      const resp = await this.modelRouter.route('api-design', {
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a senior Business Analyst reviewing a completed project discovery. '
+              + 'Based on the discovery document, identify 2-3 key risks or open questions '
+              + 'that the team should address early. Be specific and actionable. '
+              + 'Format as a short numbered list. No markdown headers.',
+          },
+          {
+            role: 'user',
+            content: `Discovery document:\n${JSON.stringify(result, null, 2)}`,
+          },
+        ],
+        maxTokens: 300,
+      });
+      const text = resp.content.trim();
+      return text.length > 10 ? `Key insights from discovery:\n${text}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Extract a meaningful project name from the problem statement.
+   * Uses LLM when available for a more natural name.
+   */
+  private async _extractProjectName(problem: string): Promise<string> {
+    if (this.modelRouter && problem.length > 10) {
+      try {
+        const resp = await this.modelRouter.route('file-analysis', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Extract a short, memorable project name (2-4 words, title case) from '
+                + 'this problem statement. Reply with ONLY the name, nothing else.',
+            },
+            { role: 'user', content: problem },
+          ],
+          maxTokens: 20,
+        });
+        const name = resp.content.trim().replace(/["']/g, '');
+        if (name.length > 2 && name.length < 50) return name;
+      } catch { /* fall through */ }
+    }
+    // Heuristic fallback — first 4 words
+    return problem.split(/\s+/).slice(0, 4).join(' ') || 'Unnamed Project';
   }
 
   private _save(result: DiscoveryResult): void {

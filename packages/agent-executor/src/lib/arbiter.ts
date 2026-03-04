@@ -10,19 +10,18 @@
  * affected agents and triggers any micro-alignments needed.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'crypto'
+import * as fs from 'fs'
+import * as path from 'path'
+import type { BacklogBoard } from './backlog.js'
+import { ChatRenderer, promptChoice } from './chat-renderer.js'
+import type { ModelRouter } from './model-router.js'
 import type {
-  PendingDecision,
-  DecisionOption,
-  ActorId,
-  PlanDefinition,
-  BacklogItem,
-} from './plan-types.js';
-import { ACTORS } from './plan-types.js';
-import { ChatRenderer, promptUser, promptChoice } from './chat-renderer.js';
-import type { BacklogBoard } from './backlog.js';
+    ActorId,
+    DecisionOption,
+    PendingDecision,
+    PlanDefinition
+} from './plan-types.js'
 
 // ─── Decision registry ────────────────────────────────────────────────────────
 
@@ -95,11 +94,13 @@ const COMMON_DECISIONS: Record<string, Omit<PendingDecision, 'id' | 'raisedAt' |
 export class Arbiter {
   private readonly renderer: ChatRenderer;
   private readonly stateDir: string;
+  private readonly modelRouter?: ModelRouter;
   private decisions: ArbiterDecision[] = [];
 
-  constructor(renderer: ChatRenderer, projectRoot: string) {
-    this.renderer = renderer;
-    this.stateDir = path.join(projectRoot, '.agents', 'plan-state');
+  constructor(renderer: ChatRenderer, projectRoot: string, modelRouter?: ModelRouter) {
+    this.renderer    = renderer;
+    this.stateDir    = path.join(projectRoot, '.agents', 'plan-state');
+    this.modelRouter = modelRouter;
   }
 
   // ─── Main entry: raise a decision ─────────────────────────────────────────
@@ -126,7 +127,7 @@ export class Arbiter {
     };
 
     // Step 1: BA attempts to resolve
-    const baResolution = this._baResolve(pending, params.preferSimple ?? true);
+    const baResolution = await this._baResolve(pending, params.preferSimple ?? true);
     if (baResolution) {
       r.say('ba', `I can resolve this: "${params.question}" → ${baResolution.label}`);
       r.system(`Rationale: ${baResolution.description} — ${baResolution.implications}`);
@@ -138,7 +139,7 @@ export class Arbiter {
     const isArchitectural = params.raisedBy === 'architecture' || params.affectedActors.includes('architecture');
     if (isArchitectural && params.options.length > 0) {
       r.say('architecture', `This is in my domain — let me assess: "${params.question}"`);
-      const archPick = this._architectureResolve(pending);
+      const archPick = await this._architectureResolve(pending);
       if (archPick) {
         r.say('architecture', `Architecture recommendation: ${archPick.label} — ${archPick.description}`);
         r.say('ba', `Architecture has resolved this. Proceeding with: ${archPick.label}`);
@@ -148,7 +149,8 @@ export class Arbiter {
     }
 
     // Step 3: Escalate to User
-    r.say('ba', `This requires your decision as PO. ${params.affectedActors.length} agents are waiting.`);
+    const escalationMsg = await this._escalationContext(pending);
+    r.say('ba', escalationMsg);
     r.decision(pending);
 
     const choice = await promptChoice(r, params.options.length);
@@ -238,7 +240,7 @@ export class Arbiter {
 
   /**
    * Run a targeted alignment between 2 agents after a key decision.
-   * Returns a brief reconciliation note.
+   * When ModelRouter is available, generates substantive alignment notes via LLM.
    */
   async microAlign(
     actorA: ActorId,
@@ -247,7 +249,35 @@ export class Arbiter {
     context: string,
   ): Promise<string> {
     const r = this.renderer;
-    r.say('ba', `Micro-alignment: ${topic} — engaging ${actorA} ↔ ${actorB}`);
+    r.say('ba', `Micro-alignment: ${topic} \u2014 engaging ${actorA} \u2194 ${actorB}`);
+
+    if (this.modelRouter) {
+      try {
+        const resp = await this.modelRouter.route('api-design', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a Technical Architect facilitating alignment between two software agents. '
+                + 'Write 2-3 brief bullet points describing what each agent needs to agree on at their '
+                + 'shared boundary. Be concrete and specific to the topic. No markdown headers.',
+            },
+            {
+              role: 'user',
+              content: `Agents: ${actorA} and ${actorB}\nTopic: ${topic}\nContext: ${context}`,
+            },
+          ],
+          maxTokens: 200,
+        });
+        const text = resp.content.trim();
+        if (text.length > 10) {
+          r.system(text);
+          r.newline();
+          return `${actorA} \u2194 ${actorB}: ${topic} \u2014 aligned`;
+        }
+      } catch { /* fall through to heuristic */ }
+    }
+
     r.say(actorA, `Acknowledged. My concern on "${topic}": aligning on shared contract.`);
     r.say(actorB, `Confirmed. I'll consume the output from ${actorA} at this boundary.`);
     r.system(`✓ ${actorA} ↔ ${actorB} aligned on: ${topic}`);
@@ -263,29 +293,88 @@ export class Arbiter {
 
   /**
    * BA tries to resolve by picking the simplest/most standard option.
-   * BA can auto-resolve if there is a clear "default" low-complexity option.
+   * Uses haiku (validation) when ModelRouter is available.
    */
-  private _baResolve(
+  private async _baResolve(
     pending: PendingDecision,
     preferSimple: boolean,
-  ): DecisionOption | null {
-    // BA only auto-resolves when there's exactly one option that is clearly
-    // standard and has no major trade-off implications.
+  ): Promise<DecisionOption | null> {
     if (!preferSimple) return null;
     const opts = pending.options;
     if (opts.length === 0) return null;
-    // BA picks first option as the "default" only if it's a single-option list
     if (opts.length === 1) return opts[0];
-    // For multi-option lists BA defers (product/architecture decisions)
+
+    // LLM-backed: haiku reasons about simplest standard choice
+    if (this.modelRouter) {
+      try {
+        const optList = opts.map((o, i) =>
+          `${String.fromCharCode(65 + i)}) ${o.label}: ${o.description} — ${o.implications}`
+        ).join('\n');
+        const resp = await this.modelRouter.route('validation', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a Business Analyst. Given a decision and its options, decide if there is '
+                + 'a clearly simplest or most standard option that does NOT require architectural expertise '
+                + 'or product input. If yes, reply with ONLY the letter (A/B/C/D). '
+                + 'If it requires architectural expertise or product input, reply with exactly: DEFER',
+            },
+            {
+              role: 'user',
+              content: `Decision: ${pending.question}\n\nOptions:\n${optList}`,
+            },
+          ],
+          maxTokens: 10,
+        });
+        const ans = resp.content.trim().toUpperCase();
+        if (ans === 'DEFER') return null;
+        const idx = ans.charCodeAt(0) - 65;
+        if (idx >= 0 && idx < opts.length) return opts[idx];
+      } catch { /* fall through to heuristic */ }
+    }
+
+    // Heuristic: BA defers multi-option decisions
     return null;
   }
 
   /**
-   * Architecture agent resolves by preferring scalable, tested options.
-   * Uses heuristics: picks the option whose implications mention
-   * "scale", "ACID", "type-safe", "standard" etc.
+   * Architecture agent resolves by performing technical trade-off analysis.
+   * Uses opus (hard-barrier-resolution) for robust reasoning.
    */
-  private _architectureResolve(pending: PendingDecision): DecisionOption | null {
+  private async _architectureResolve(pending: PendingDecision): Promise<DecisionOption | null> {
+    // LLM-backed: opus analyses trade-offs deeply
+    if (this.modelRouter) {
+      try {
+        const optList = pending.options.map((o, i) =>
+          `${String.fromCharCode(65 + i)}) ${o.label}: ${o.description} — ${o.implications}`
+        ).join('\n');
+        const resp = await this.modelRouter.route('hard-barrier-resolution', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a senior software architect. Analyse the technical trade-offs and pick '
+                + 'the best option for a production system. Reply with ONLY the option letter (A/B/C/D). '
+                + 'No explanation.',
+            },
+            {
+              role: 'user',
+              content:
+                `Decision: ${pending.question}\n`
+                + `Context: ${pending.context}\n\n`
+                + `Options:\n${optList}`,
+            },
+          ],
+          maxTokens: 10,
+        });
+        const ans = resp.content.trim().toUpperCase();
+        const idx = ans.charCodeAt(0) - 65;
+        if (idx >= 0 && idx < pending.options.length) return pending.options[idx];
+      } catch { /* fall through to heuristic */ }
+    }
+
+    // Heuristic fallback: keyword scoring
     const signals = ['standard', 'acid', 'scale', 'type-safe', 'relational', 'familiar', 'production'];
     const scored = pending.options.map((opt) => {
       const text = `${opt.label} ${opt.description} ${opt.implications}`.toLowerCase();
@@ -293,8 +382,40 @@ export class Arbiter {
       return { opt, score };
     });
     scored.sort((a, b) => b.score - a.score);
-    // Only auto-resolve if the top option has at least one positive signal
     return scored[0].score > 0 ? scored[0].opt : null;
+  }
+
+  /**
+   * Generate context message for why this decision requires PO input.
+   * Uses haiku (fast) — explains the business impact concisely.
+   */
+  private async _escalationContext(pending: PendingDecision): Promise<string> {
+    if (this.modelRouter) {
+      try {
+        const resp = await this.modelRouter.route('file-analysis', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a Scrum Master escalating a technical decision to the Product Owner. '
+                + 'Write ONE sentence explaining the business impact of this decision and why '
+                + 'the PO must decide. Be direct and non-technical. No markdown.',
+            },
+            {
+              role: 'user',
+              content:
+                `Decision: ${pending.question}\n`
+                + `Context: ${pending.context}\n`
+                + `Affected agents: ${pending.affectedActors.join(', ')}`,
+            },
+          ],
+          maxTokens: 80,
+        });
+        const text = resp.content.trim();
+        if (text.length > 10) return text;
+      } catch { /* fall through */ }
+    }
+    return `This requires your decision as PO. ${pending.affectedActors.length} agents are waiting.`;
   }
 
   private _broadcastDecision(

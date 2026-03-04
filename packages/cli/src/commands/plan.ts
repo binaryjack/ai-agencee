@@ -3,12 +3,21 @@
  *
  * Runs the full 5-phase Plan System interactively.
  * Each phase can be individually skipped via --start-from.
+ *
+ * LLM provider selection:
+ *   --provider anthropic   Use ANTHROPIC_API_KEY  (default when key is set)
+ *   --provider openai      Use OPENAI_API_KEY
+ *   --provider vscode      Use VS Code Copilot via MCP sampling (no key needed)
+ *
+ *   If no --provider flag is given we auto-detect from env ($ANTHROPIC_API_KEY,
+ *   $OPENAI_API_KEY) at startup.  When no provider is available the plan runs
+ *   completely offline in heuristic mode.
  */
 
-import * as path from 'path';
-import * as fs from 'fs';
-import { PlanOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
 import type { PlanPhase, PlanResult } from '@ai-agencee/ai-kit-agent-executor';
+import { ModelRouter, PlanOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const PHASE_ORDER: PlanPhase[] = ['discover', 'synthesize', 'decompose', 'wire', 'execute'];
 
@@ -18,6 +27,10 @@ export interface PlanOptions {
   agentsDir?: string;
   verbose?: boolean;
   skipApproval?: boolean;
+  /** Force a specific LLM provider: anthropic | openai | vscode */
+  provider?: string;
+  /** Path to a custom model-router.json config file */
+  modelRouterConfig?: string;
 }
 
 export const runPlan = async (options: PlanOptions): Promise<void> => {
@@ -33,11 +46,44 @@ export const runPlan = async (options: PlanOptions): Promise<void> => {
     process.exit(1);
   }
 
+  // ── ModelRouter setup ────────────────────────────────────────────────────
+  let modelRouter: ModelRouter | undefined;
+  try {
+    const routerConfigPath = options.modelRouterConfig
+      ?? path.join(agentsBaseDir, 'model-router.json');
+
+    const router = fs.existsSync(routerConfigPath)
+      ? await ModelRouter.fromFile(routerConfigPath)
+      // Minimal in-memory fallback config  
+      : ModelRouter.fromConfig({
+          defaultProvider: options.provider ?? 'anthropic',
+          taskProfiles: {},
+          providers: {},
+        });
+
+    // Auto-detect providers from env vars (ANTHROPIC_API_KEY, OPENAI_API_KEY)
+    await router.autoRegister();
+
+    if (router.registeredProviders.length > 0) {
+      modelRouter = router;
+    }
+  } catch {
+    // Non-fatal — plan runs offline if router init fails
+  }
+
   console.log('\n📋  AI Plan Orchestrator');
   console.log('─'.repeat(52));
   console.log(`  Project      : ${projectRoot}`);
   console.log(`  Agents dir   : ${agentsBaseDir}`);
   console.log(`  Start phase  : ${startFrom}`);
+  if (modelRouter) {
+    console.log(`  LLM provider : ${modelRouter.registeredProviders.join(', ')} (${modelRouter.defaultProvider})`);
+  } else {
+    console.log(`  LLM provider : none — heuristic mode`);
+    if (!options.provider) {
+      console.log(`  Tip          : set ANTHROPIC_API_KEY or OPENAI_API_KEY to enable AI reasoning`);
+    }
+  }
   if (options.skipApproval) {
     console.log(`  Mode         : non-interactive (--skip-approval)`);
   }
@@ -56,6 +102,7 @@ export const runPlan = async (options: PlanOptions): Promise<void> => {
       skipApproval: options.skipApproval ?? false,
       agentsBaseDir,
       verbose: options.verbose ?? true,
+      modelRouter,
     });
 
     const result: PlanResult = await orchestrator.run();

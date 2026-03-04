@@ -225,8 +225,12 @@ export interface PlanRunOptions {
   projectRoot?: string;
   /** Base directory for agent/supervisor JSON files */
   agentsBaseDir?: string;
-  verbose?: boolean;
-}
+  verbose?: boolean;  /**
+   * Optional ModelRouter for LLM-backed phase reasoning.
+   * When omitted, all phases fall back to heuristic mode.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  modelRouter?: any;}
 
 // ─── Plan Session State ───────────────────────────────────────────────────────
 
