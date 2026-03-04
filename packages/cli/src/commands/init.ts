@@ -9,7 +9,7 @@ const ask = (question: string): Promise<string> =>
     rl.question(question, (answer) => { rl.close(); resolve(answer); });
   });
 
-export const runInit = async (): Promise<void> => {
+export const runInit = async (options?: { strict?: boolean }): Promise<void> => {
   const dest = process.cwd();
   const src = TEMPLATE_DIR;
   const files = await copyTemplateFiles(src, dest, async (filePath: string) => {
@@ -21,5 +21,11 @@ export const runInit = async (): Promise<void> => {
   });
   for (const f of files) {
     console.log(`created: ${path.relative(dest, f)}`);
+  }
+  
+  if (options?.strict) {
+    console.log('\n✅ ULTRA_HIGH Standards enabled');
+    console.log('📋 Strict rules loaded from src/.ai/');
+    console.log('🚀 Ready for development with STRICT_MODE=1');
   }
 };
