@@ -1,0 +1,27 @@
+{
+  "name": "Security & Dependency Audit DAG",
+  "description": "Run security scanning and dependency health analysis in parallel",
+  "lanes": [
+    {
+      "id": "security-review",
+      "agentFile": "security-review.agent.json",
+      "supervisorFile": "security-review.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["security-scanning", "vulnerability-detection"]
+    },
+    {
+      "id": "dependency-audit",
+      "agentFile": "dependency-audit.agent.json",
+      "supervisorFile": "dependency-audit.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["dependency-health", "licence-review"]
+    }
+  ],
+  "capabilityRegistry": {
+    "security-scanning": ["security-review"],
+    "vulnerability-detection": ["security-review"],
+    "dependency-health": ["dependency-audit"],
+    "licence-review": ["dependency-audit"]
+  },
+  "modelRouterFile": "model-router.json"
+}
