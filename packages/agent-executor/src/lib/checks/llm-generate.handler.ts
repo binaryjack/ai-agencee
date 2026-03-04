@@ -1,6 +1,6 @@
-import type { TaskType } from '../llm-provider.js';
-import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js';
-import type { CheckContext } from './check-context.js';
+import type { TaskType } from '../llm-provider.js'
+import type { CheckContext } from './check-context.js'
+import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js'
 
 /**
  * Generates content via LLM and stores the result.

@@ -1,4 +1,4 @@
-import type { LLMPrompt, LLMProvider, LLMResponse } from '../llm-provider.js';
+import type { LLMPrompt, LLMProvider, LLMResponse } from '../llm-provider.js'
 
 /**
  * Mock LLM provider for unit tests.

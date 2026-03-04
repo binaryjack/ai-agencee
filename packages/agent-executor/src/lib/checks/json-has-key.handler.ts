@@ -1,6 +1,6 @@
-import * as fs from 'fs/promises';
-import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js';
-import type { CheckContext } from './check-context.js';
+import * as fs from 'fs/promises'
+import type { CheckContext } from './check-context.js'
+import type { ICheckHandler, RawCheckResult } from './check-handler.interface.js'
 
 /**
  * Checks for the existence of a key (dot-notation) in a JSON file.

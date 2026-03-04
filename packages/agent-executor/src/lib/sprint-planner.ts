@@ -10,10 +10,10 @@
  * instead of the old `new PlanSynthesizer(...).runSprintPlanning(...)`.
  */
 
-import { BacklogBoard } from './backlog.js';
-import { ChatRenderer, promptUser } from './chat-renderer.js';
-import type { ModelRouter } from './model-router.js';
-import type { ActorId, DiscoveryResult, PlanDefinition } from './plan-types.js';
+import { BacklogBoard } from './backlog.js'
+import { ChatRenderer, promptUser } from './chat-renderer.js'
+import type { ModelRouter } from './model-router.js'
+import type { ActorId, DiscoveryResult, PlanDefinition } from './plan-types.js'
 
 export class SprintPlanner {
   constructor(

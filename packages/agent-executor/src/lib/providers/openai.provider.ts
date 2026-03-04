@@ -1,4 +1,4 @@
-import type { LLMPrompt, LLMProvider, LLMResponse } from '../llm-provider.js';
+import type { LLMPrompt, LLMProvider, LLMResponse } from '../llm-provider.js'
 
 /**
  * OpenAI / Azure OpenAI provider.

@@ -6,10 +6,10 @@
  * one dedicated place.
  */
 
-import * as path from 'path';
-import { ModelRouter } from './model-router.js';
-import type { SamplingCallback } from './llm-provider.js';
-import { VSCodeSamplingProvider } from './providers/vscode-sampling.provider.js';
+import * as path from 'path'
+import type { SamplingCallback } from './llm-provider.js'
+import { ModelRouter } from './model-router.js'
+import { VSCodeSamplingProvider } from './providers/vscode-sampling.provider.js'
 
 export interface RouterFactoryOptions {
   /** Resolved path to the model-router.json file, or undefined when not provided. */

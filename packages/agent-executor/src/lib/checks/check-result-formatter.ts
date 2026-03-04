@@ -5,9 +5,9 @@
  * Extracted from the bottom of the original runCheckStep() switch statement.
  */
 
-import type { CheckDefinition } from '../agent-types.js';
-import type { StepResult } from '../check-runner.js';
-import type { RawCheckResult } from './check-handler.interface.js';
+import type { CheckDefinition } from '../agent-types.js'
+import type { StepResult } from '../check-runner.js'
+import type { RawCheckResult } from './check-handler.interface.js'
 
 /**
  * Interpolate `{count}`, `{value}`, `{path}`, `{pattern}`, `{field}`
