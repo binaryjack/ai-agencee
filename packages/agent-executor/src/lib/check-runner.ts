@@ -1,6 +1,6 @@
 import { CheckDefinition } from './agent-types.js';
-import { ModelRouter, RoutedResponse } from './model-router.js';
 import { CheckHandlerRegistry } from './checks/check-handler-registry.js';
+import { ModelRouter, RoutedResponse } from './model-router.js';
 
 // ─── StepResult ───────────────────────────────────────────────────────────────
 
