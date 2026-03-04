@@ -28,8 +28,13 @@ export interface DagRunOptions {
    * Overrides dag.json’s modelRouterFile field when provided.
    */
   modelRouterFile?: string;
-  /**
-   * Inject a VS Code sampling callback (MCP server context).
+  /**   * Override the directory that contains agent/supervisor JSON files.
+   * When not set, defaults to the directory of the dag.json file itself
+   * (most common case). Set this explicitly if your agent files live
+   * somewhere other than next to the dag.json.
+   */
+  agentsBaseDir?: string;
+  /**   * Inject a VS Code sampling callback (MCP server context).
    * When provided a VSCodeSamplingProvider is registered as ‘vscode’ and set
    * as the default provider, bypassing the need for API keys.
    */
@@ -69,13 +74,20 @@ export class DagOrchestrator {
 
   /** Load a dag.json file, validate it, then execute all lanes */
   async run(dagFile: string): Promise<DagResult> {
-    const dagPath = path.resolve(this.projectRoot, dagFile);
+    const dagPath = path.isAbsolute(dagFile) ? dagFile : path.resolve(this.projectRoot, dagFile);
+    const dagDir = path.dirname(dagPath);
     const dag = await this.loadDag(dagPath);
-    return this.execute(dag);
+    return this.execute(dag, dagDir);
   }
 
-  /** Execute a pre-loaded DagDefinition */
-  async execute(dag: DagDefinition): Promise<DagResult> {
+  /**
+   * Execute a pre-loaded DagDefinition.
+   * @param dag         Parsed DAG definition
+   * @param dagDir      Directory of the dag.json file — used to resolve agent/supervisor/router
+   *                    JSON paths. Defaults to projectRoot when not provided.
+   */
+  async execute(dag: DagDefinition, dagDir?: string): Promise<DagResult> {
+    const agentsBaseDir = this.options.agentsBaseDir ?? dagDir ?? this.projectRoot;
     const runId = randomUUID();
     const startedAt = new Date().toISOString();
     const startMs = Date.now();
@@ -98,7 +110,9 @@ export class DagOrchestrator {
     const routerFile = this.options.modelRouterFile ?? dag.modelRouterFile;
     if (routerFile) {
       try {
-        const routerPath = path.resolve(this.projectRoot, routerFile);
+        const routerPath = path.isAbsolute(routerFile)
+          ? routerFile
+          : path.resolve(agentsBaseDir, routerFile);
         modelRouter = await ModelRouter.fromFile(routerPath);
         // Inject VS Code sampling callback (MCP context)
         if (this.options.samplingCallback) {
@@ -137,7 +151,7 @@ export class DagOrchestrator {
       const groupStartMs = Date.now();
       const settled = await Promise.allSettled(
         group.map((lane) =>
-          runLane(lane, this.projectRoot, registry, coordinator, capabilityRegistry, modelRouter, costTracker, this.options.interactive),
+          runLane(lane, this.projectRoot, registry, coordinator, capabilityRegistry, modelRouter, costTracker, this.options.interactive, agentsBaseDir),
         ),
       );
 

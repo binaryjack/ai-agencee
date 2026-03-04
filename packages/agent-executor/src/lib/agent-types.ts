@@ -19,11 +19,14 @@ export interface CheckDefinition {
   /** The type of check to perform */
   type: CheckType;
 
-  /** Path to the file or directory to check (relative to projectRoot) */
-  path: string;
+  /** Path to the file or directory to check (relative to projectRoot). Optional for shell/LLM checks. */
+  path?: string;
 
   /** For json-field: dot-notation path into the JSON e.g. "dependencies" or "compilerOptions.strict" */
   field?: string;
+
+  /** For json-has-key: the JSON key to check for existence (dot-notation). Alias for field. */
+  key?: string;
 
   /** For grep: the string to search for */
   pattern?: string;

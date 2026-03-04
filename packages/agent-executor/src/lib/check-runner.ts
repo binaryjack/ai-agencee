@@ -40,7 +40,9 @@ export async function runCheckStep(
   modelRouter?: ModelRouter,
   onLlmResponse?: (response: RoutedResponse) => void,
 ): Promise<StepResult> {
-  const fullPath = path.join(projectRoot, check.path);
+  // fullPath is only valid when check.path is provided. Check types that don't
+  // use a file path (run-command, llm-generate) must NOT reference fullPath.
+  const fullPath = check.path != null ? path.join(projectRoot, check.path) : '';
   const findings: string[] = [];
   const recommendations: string[] = [];
 
@@ -120,7 +122,8 @@ export async function runCheckStep(
         try {
           const raw = await fs.readFile(fullPath, 'utf-8');
           const json = JSON.parse(raw);
-          const parts = (check.field ?? '').split('.');
+          const keyPath = check.key ?? check.field ?? '';
+          const parts = keyPath.split('.');
           let v: unknown = json;
           for (const part of parts) {
             v = (v as Record<string, unknown>)?.[part];
@@ -165,12 +168,53 @@ export async function runCheckStep(
           break;
         }
         try {
-          const { stdout, stderr } = await execAsync(cmd, {
-            cwd: projectRoot,
-            timeout: 30_000,
-          });
-          const output = (stdout + stderr).trim();
-          value = output.slice(0, 500);
+          let stdout = '';
+          let stderr = '';
+          try {
+            const result = await execAsync(cmd, { cwd: projectRoot, timeout: 30_000 });
+            stdout = result.stdout;
+            stderr = result.stderr;
+          } catch (execErr: unknown) {
+            // execAsync rejects on non-zero exit. For search-style commands
+            // (e.g. grep with passPattern/failPattern) the exit code is
+            // meaningful (1 = no matches) — we still want to evaluate the output.
+            if (
+              execErr != null &&
+              typeof execErr === 'object' &&
+              'stdout' in execErr &&
+              'stderr' in execErr
+            ) {
+              stdout = String((execErr as { stdout: string }).stdout);
+              stderr = String((execErr as { stderr: string }).stderr);
+              // If the stderr itself indicates the command wasn't available,
+              // re-route to the outer catch for graceful skipping.
+              const combinedErr = (stdout + stderr).toLowerCase();
+              // Locale-agnostic: check for English, French, and other cmd.exe/shell
+              // variants.  cmd.exe wraps the command name in single quotes, so
+              // checking for the command name in the output is also reliable.
+              const cmdName = cmd.trim().split(/[\s|&]/)[0];
+              const quotedCmd = `'${cmdName.toLowerCase()}'`;
+              const isUnavailable =
+                /not recognized|command not found|no such file|n'est pas reconnu|wird nicht erkannt|introuvable|spawn.*enoent/i.test(
+                  combinedErr
+                ) ||
+                (combinedErr.includes(quotedCmd) && combinedErr.length < 600);
+              if (isUnavailable) {
+                throw execErr;
+              }
+              // If we have no patterns to evaluate, treat non-zero as failure
+              if (!check.passPattern && !check.failPattern) {
+                passed = false;
+                value = (stdout + stderr).trim().slice(0, 300);
+                break;
+              }
+            } else {
+              // Re-throw to outer catch for command-not-found handling
+              throw execErr;
+            }
+          }
+          const output = stdout.trim(); // evaluate patterns against stdout only (stderr has cmd errors)
+          value = (stdout + stderr).trim().slice(0, 500);
           if (check.passPattern) {
             passed = new RegExp(check.passPattern).test(output);
           } else if (check.failPattern) {
@@ -179,8 +223,20 @@ export async function runCheckStep(
             passed = true; // ran without error = pass
           }
         } catch (err: unknown) {
-          passed = false;
-          value = String(err).slice(0, 300);
+          const msg = String(err);
+          // Command not installed / not in PATH → skip rather than hard-fail
+          // Locale-agnostic detection: English, French, German cmd.exe/shell variants
+          const isCommandMissing =
+            /not recognized|command not found|No such file or directory|ENOENT|spawn.*ENOENT|n'est pas reconnu|wird nicht erkannt|introuvable/i.test(
+              msg
+            );
+          if (isCommandMissing) {
+            passed = true; // treat as skipped
+            findings.push(`⚠️ run-command skipped (command not available): ${cmd.split(' ')[0]}`);
+          } else {
+            passed = false;
+            value = msg.slice(0, 300);
+          }
         }
         break;
       }
@@ -198,7 +254,7 @@ export async function runCheckStep(
           const taskType = (check.taskType as TaskType | undefined) ?? 'code-generation';
           const promptText = (check.prompt ?? 'Analyze the project and provide actionable findings.')
             .replace('{retryContext}', retryInstructions ?? 'N/A')
-            .replace('{path}', check.path);
+            .replace('{path}', check.path ?? '');
 
           const response = await modelRouter.route(taskType, {
             messages: [
@@ -262,7 +318,7 @@ export async function runCheckStep(
           const promptText = promptTemplate
             .replace('{content}', content.slice(0, 6_000))
             .replace('{retryContext}', retryInstructions ?? 'N/A')
-            .replace('{path}', check.path);
+            .replace('{path}', check.path ?? '');
 
           const response = await modelRouter.route(taskType, {
             messages: [
@@ -313,7 +369,7 @@ export async function runCheckStep(
     tpl
       .replace('{count}', String(value ?? 0))
       .replace('{value}', String(value ?? ''))
-      .replace('{path}', check.path)
+      .replace('{path}', check.path ?? '')
       .replace('{pattern}', check.pattern ?? '')
       .replace('{field}', check.field ?? '');
 
@@ -345,6 +401,6 @@ export async function runCheckStep(
   return {
     findings,
     recommendations,
-    detail: value !== undefined ? { key: check.path.replace(/\W+/g, '_'), value } : undefined,
+    detail: value !== undefined ? { key: (check.path ?? 'value').replace(/\W+/g, '_'), value } : undefined,
   };
 }

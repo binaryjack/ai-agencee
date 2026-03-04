@@ -75,11 +75,20 @@ export class LaneExecutor {
   private readonly modelRouter: ModelRouter | undefined;
   private readonly costTracker: CostTracker | undefined;
   private readonly interactive: boolean;
+  /**
+   * Base directory for resolving agent/supervisor JSON files.
+   * Defaults to projectRoot when not supplied (backward-compatible).
+   * Set to the DAG file's directory when running agents against a
+   * different project root (--project flag).
+   */
+  private readonly agentsBaseDir: string;
 
   constructor(options: {
     registry: ContractRegistry;
     coordinator: BarrierCoordinator;
     projectRoot: string;
+    /** Directory that contains agent/supervisor JSON files (default: projectRoot) */
+    agentsBaseDir?: string;
     capabilityRegistry?: Record<string, string[]>;
     checkpointBaseDir?: string;
     modelRouter?: ModelRouter;
@@ -89,6 +98,7 @@ export class LaneExecutor {
     this.registry = options.registry;
     this.coordinator = options.coordinator;
     this.projectRoot = options.projectRoot;
+    this.agentsBaseDir = options.agentsBaseDir ?? options.projectRoot;
     this.capabilityRegistry = options.capabilityRegistry ?? {};
     this.checkpointBaseDir =
       options.checkpointBaseDir ?? path.join(options.projectRoot, '.agents', 'checkpoints');
@@ -159,7 +169,7 @@ export class LaneExecutor {
     checkpoints: CheckpointRecord[],
     counters: { retries: { count: number }; handoffsRef: { count: number } },
   ): Promise<AgentResult | null> {
-    const agentFilePath = path.resolve(this.projectRoot, lane.agentFile);
+    const agentFilePath = path.resolve(this.agentsBaseDir, lane.agentFile);
 
     // Load agent
     const agent = await SupervisedAgent.fromFile(agentFilePath);
@@ -167,7 +177,7 @@ export class LaneExecutor {
     // Load supervisor (no-op if no supervisorFile)
     let supervisor: IntraSupervisor;
     if (lane.supervisorFile) {
-      const supPath = path.resolve(this.projectRoot, lane.supervisorFile);
+      const supPath = path.resolve(this.agentsBaseDir, lane.supervisorFile);
       supervisor = await IntraSupervisor.fromFile(supPath);
     } else {
       supervisor = IntraSupervisor.noOp(lane.id);
@@ -360,17 +370,17 @@ export class LaneExecutor {
   ): Promise<LaneDefinition | null> {
     // The DagOrchestrator will pass the full lane map; for now we build a minimal one
     // by convention: agents/<laneId>.agent.json + agents/<laneId>.supervisor.json
-    const agentFile = `agents/${targetLaneId}.agent.json`;
-    const supervisorFile = `agents/${targetLaneId}.supervisor.json`;
+    const agentFile = `${targetLaneId}.agent.json`;
+    const supervisorFile = `${targetLaneId}.supervisor.json`;
 
-    const agentFilePath = path.resolve(this.projectRoot, agentFile);
+    const agentFilePath = path.resolve(this.agentsBaseDir, agentFile);
     try {
       await fs.access(agentFilePath);
     } catch {
       return null; // Agent file doesn't exist
     }
 
-    const supPath = path.resolve(this.projectRoot, supervisorFile);
+    const supPath = path.resolve(this.agentsBaseDir, supervisorFile);
     let hasSupervisor = false;
     try {
       await fs.access(supPath);
@@ -444,11 +454,13 @@ export async function runLane(
   modelRouter?: ModelRouter,
   costTracker?: CostTracker,
   interactive?: boolean,
+  agentsBaseDir?: string,
 ): Promise<LaneResult> {
   const executor = new LaneExecutor({
     registry,
     coordinator,
     projectRoot,
+    agentsBaseDir,
     capabilityRegistry,
     modelRouter,
     costTracker,
