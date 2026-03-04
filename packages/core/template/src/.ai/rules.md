@@ -1,29 +1,58 @@
-# Project Rules
+# Project Rules - ULTRA_HIGH Standards
 
-Document your project-specific coding rules and standards.
+## Core Configuration
+```
+U=TADEO
+STD=ULTRA_HIGH
+COM=BRUTAL
+VERBOSITY=0
+POLITE=0
+PROSE=0
+HEADLESS=1
+DELEGATE=0
+STRICT_MODE=1
+IGNORE_HISTORY=1
+NO_CHAT=1
+```
 
-## Examples
+## Code Style
+- **NAMING**: kebab-case (file names and constants)
+- **FILE**: one-item-per-file (one export per file)
+- **ANY**: forbidden (no `any` types)
+- **UNION**: strict (no union types without explicit handling)
+- **REACT**: declarative-only (no imperative patterns)
+- **CLASS**: forbidden (use functions only)
 
-### Naming Conventions
-- Use `camelCase` for variables and functions
-- Use `PascalCase` for classes and components
-- Use `UPPER_SNAKE_CASE` for constants
+## Type Definitions
+```typescript
+// Correct Constructor Pattern
+export const Name = function(...) { ... }
 
-### Code Organization
-- Keep files under 300 lines
-- One main class/component per file
-- Group related utilities in modules
+// Correct Method Pattern
+// Use prototype/* for methods
 
-### Dependencies
-- Minimize external dependencies
-- Document all third-party packages in `DEPENDENCIES.md`
-- Keep `package.json` organized and up-to-date
+// Non-enumerable Properties
+Object.defineProperty(this, 'x', { enumerable: false })
+```
 
-### Error Handling
-- Always handle promises with try/catch
-- Log errors with context information
-- Return meaningful error messages to clients
+## File Naming Convention
+- `*.types.ts` - Type definitions
+- `feature.ts` - Constructor functions
+- `create-feature.ts` - Factory functions
+- `index.ts` - Exports only
 
-## Your Custom Rules
+## Testing & Performance
+- **TEST.min_coverage**: 95% (minimum code coverage)
+- **PERF.target**: <=10% solid-js (performance target)
 
-Add your team's specific rules here...
+## Required Checks
+```
+CHECKS=["tsc","eslint","jest"]
+```
+
+## Forbidden Patterns
+❌ `useImperativeHandle`
+❌ `class` keyword
+❌ ` any ` type
+❌ `camelCase` (use kebab-case)
+❌ Verbose code

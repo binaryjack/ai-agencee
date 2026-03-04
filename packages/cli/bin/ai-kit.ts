@@ -9,12 +9,13 @@ const program = new Command();
 program
   .name('ai-kit')
   .description('AI starter kit CLI')
-  .version('1.0.0');
+  .version('1.0.5');
 
 program
   .command('init')
   .description('Scaffold AI rule files into the current project')
-  .action(runInit);
+  .option('-t, --strict', 'Initialize with ULTRA_HIGH strict standards (TADEO rules)')
+  .action((options) => runInit({ strict: options.strict }));
 
 program
   .command('sync')

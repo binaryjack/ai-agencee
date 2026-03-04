@@ -36,6 +36,10 @@
   </test>
   <perf>
     <target>&lt;=10% solid-js</target>
+    <target>&lt;=10% react</target>
+    <target>&lt;=10% svelte</target>
+    <target>&lt;=10% angular</target>
+    <target>&lt;=10% vue</target>
   </perf>
   <checks>
     <item>tsc</item>
@@ -43,10 +47,10 @@
     <item>jest</item>
   </checks>
   <reject>
-    <item>useImperativeHandle</item>
     <item>class </item>
     <item> any </item>
     <item>camelCase</item>
     <item>verbose</item>
+    <item>as const</item>
   </reject>
 </manifest>

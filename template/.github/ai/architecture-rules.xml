@@ -14,7 +14,8 @@
   <react>
     <rule id="react-1">declarative-only style</rule>
     <rule id="react-2">class components forbidden</rule>
-    <rule id="react-3">no useImperativeHandle</rule>
+    <rule id="react-3">one component per file</rule>
+    <rule id="react-4"></rule>
   </react>
   <proto>
     <rule id="proto-1">export const Name = function(...) { ... }</rule>
@@ -24,5 +25,7 @@
   <types>
     <rule id="type-1">no any</rule>
     <rule id="type-2">strict union types</rule>
+    <rule id="type-2">no stub type</rule>
+    <rule id="type-2">use `satisfies` instead of `as const`</rule>
   </types>
 </architecture-rules>

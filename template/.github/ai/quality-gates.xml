@@ -20,11 +20,16 @@
   </coverage>
   <performance>
     <target>&lt;=10% solid-js</target>
+    <target>&lt;=10% react</target>
+    <target>&lt;=10% svelte</target>
+    <target>&lt;=10% angular</target>
+    <target>&lt;=10% vue</target>
   </performance>
   <reject>
     <pattern>class </pattern>
     <pattern> any </pattern>
     <pattern>camelCase</pattern>
     <pattern>verbose</pattern>
+    <pattern>as const</pattern>
   </reject>
 </quality-gates>
