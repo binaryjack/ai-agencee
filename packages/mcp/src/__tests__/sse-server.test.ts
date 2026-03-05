@@ -5,7 +5,7 @@
  * Each test uses a fresh port to avoid conflicts.
  */
 
-import * as http from 'http';
+import * as http from 'http'
 
 // The module exports startSseServer / stopSseServer — import after mocking event bus
 jest.mock('@ai-agencee/ai-kit-agent-executor', () => ({
@@ -24,7 +24,7 @@ jest.mock('../oidc-auth.js', () => ({
   ),
 }));
 
-import { startSseServer, stopSseServer } from '../sse-server';
+import { startSseServer, stopSseServer } from '../sse-server'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
