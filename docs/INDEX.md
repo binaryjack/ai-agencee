@@ -42,6 +42,12 @@ Welcome to the **Multi-Agent Orchestration System** for the AI Starter Kit! This
 - **Covers**: What was built, deliverables checklist, next steps
 - **Time**: ~10 minutes for status overview
 
+### 🔒 **Enterprise Readiness** (15 minutes)
+- **File**: [docs/enterprise-readiness.md](enterprise-readiness.md)
+- **Best for**: Security engineers, enterprise architects, SOC2 preparation
+- **Covers**: OIDC JWT auth, rate limiting, PII scrubbing, multi-tenant isolation, GDPR CLI, DAG visualizer — all enforced at runtime
+- **Time**: ~15 minutes
+
 ---
 
 ## 🎓 Learning Paths
