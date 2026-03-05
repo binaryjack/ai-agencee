@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ai-starter-kit/schemas/dag.schema.json",
+  "title": "DAG Definition",
+  "description": "Schema for ai-starter-kit DAG pipeline definitions (dag.json / *.dag.json)",
+  "type": "object",
+  "required": ["name", "lanes"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name for this DAG pipeline"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional longer description of what this pipeline does"
+    },
+    "modelRouterFile": {
+      "type": "string",
+      "description": "Relative path to model-router.json"
+    },
+    "lanes": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Parallel execution lanes in this pipeline",
+      "items": {
+        "$ref": "#/$defs/lane"
+      }
+    },
+    "globalBarriers": {
+      "type": "array",
+      "description": "Synchronization points between lanes",
+      "items": {
+        "$ref": "#/$defs/globalBarrier"
+      }
+    },
+    "capabilityRegistry": {
+      "type": "object",
+      "description": "Maps capability name → lane id(s) that provide it",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" } }
+        ]
+      }
+    },
+    "budget": {
+      "$ref": "#/$defs/budget"
+    },
+    "rbac": {
+      "$ref": "#/$defs/rbac"
+    }
+  },
+
+  "$defs": {
+    "lane": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Unique lane identifier"
+        },
+        "agentFile": {
+          "type": "string",
+          "description": "Relative path to the agent .json or .md file"
+        },
+        "supervisorFile": {
+          "type": "string",
+          "description": "Relative path to the supervisor .json file"
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Lane IDs that must complete before this lane starts"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Capability tags this lane fulfils"
+        },
+        "providerOverride": {
+          "type": "string",
+          "enum": ["anthropic", "openai", "gemini", "ollama", "vscode", "mock"],
+          "description": "Force a specific LLM provider for all calls in this lane"
+        },
+        "checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/check" },
+          "description": "Inline check definitions (alternative to agentFile)"
+        }
+      }
+    },
+
+    "check": {
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique check identifier within the lane"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["llm-review", "dependency-audit", "code-run", "custom"],
+          "description": "Check handler type"
+        },
+        "taskType": {
+          "type": "string",
+          "description": "Task type hint passed to the model router (e.g. 'code-review')"
+        },
+        "path": {
+          "type": "string",
+          "description": "Relative path of files to analyse"
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Optional explicit prompt override"
+        }
+      }
+    },
+
+    "globalBarrier": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "after": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "participants": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "type": {
+          "type": "string",
+          "enum": ["hard", "soft"],
+          "default": "hard"
+        },
+        "timeoutMs": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxCostUSD": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum spend allowed per run in USD"
+        },
+        "alertThresholdUSD": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Emit a budget:exceeded event when spend crosses this threshold"
+        }
+      }
+    },
+
+    "rbac": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowedPrincipals": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of principals allowed to trigger this DAG"
+        },
+        "requiredRoles": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,93 @@
+name: 'AI Code Review Kit'
+description: >
+  Run parallel AI code review, security scanning, and dependency auditing on
+  every pull request.  Powered by Claude, GPT-4, Gemini, or local Ollama.
+
+author: 'AI Starter Kit'
+
+branding:
+  icon: 'cpu'
+  color: 'purple'
+
+inputs:
+  anthropic_api_key:
+    description: 'Anthropic API key for Claude models'
+    required: false
+    default: ''
+  openai_api_key:
+    description: 'OpenAI API key for GPT models'
+    required: false
+    default: ''
+  gemini_api_key:
+    description: 'Google Gemini API key'
+    required: false
+    default: ''
+  ollama_host:
+    description: 'Ollama host URL (e.g. http://localhost:11434) for local models'
+    required: false
+    default: ''
+  dag_file:
+    description: 'Path to a dag.json file relative to the repo root'
+    required: false
+    default: 'agents/dag.json'
+  budget_usd:
+    description: 'Maximum spend per run in USD'
+    required: false
+    default: '0.10'
+  post_pr_comment:
+    description: 'Post review summary as a PR comment (true/false)'
+    required: false
+    default: 'true'
+  working_directory:
+    description: 'Directory to analyse (relative to repo root)'
+    required: false
+    default: '.'
+
+outputs:
+  report_path:
+    description: 'Path to the JSON report written by the run'
+  status:
+    description: 'Overall DAG run status: success | partial | failed'
+  cost_usd:
+    description: 'Actual spend in USD for this run'
+
+runs:
+  using: 'node20'
+  main: 'dist/action/index.js'
+
+# ─── Composite run steps (all-in-one mode — no pre-built dist required) ───────
+# Uncomment the block below and remove the `using: node20` block above to run
+# the action directly via pnpm without a pre-compiled dist file.
+#
+# runs:
+#   using: composite
+#   steps:
+#     - name: Setup Node.js
+#       uses: actions/setup-node@v4
+#       with:
+#         node-version: '20'
+#
+#     - name: Install pnpm
+#       uses: pnpm/action-setup@v3
+#       with:
+#         version: '9'
+#
+#     - name: Install dependencies
+#       shell: bash
+#       run: pnpm install --frozen-lockfile
+#       working-directory: ${{ github.action_path }}
+#
+#     - name: Run AI review
+#       shell: bash
+#       working-directory: ${{ inputs.working_directory }}
+#       env:
+#         ANTHROPIC_API_KEY:    ${{ inputs.anthropic_api_key }}
+#         OPENAI_API_KEY:       ${{ inputs.openai_api_key }}
+#         GEMINI_API_KEY:       ${{ inputs.gemini_api_key }}
+#         OLLAMA_HOST:          ${{ inputs.ollama_host }}
+#         AIKIT_DAG_FILE:       ${{ inputs.dag_file }}
+#         AIKIT_BUDGET:         ${{ inputs.budget_usd }}
+#         AIKIT_POST_PR_COMMENT: ${{ inputs.post_pr_comment }}
+#         GITHUB_TOKEN:         ${{ github.token }}
+#         GITHUB_PR_NUMBER:     ${{ github.event.number }}
+#       run: node ${{ github.action_path }}/packages/cli/dist/bin/ai-kit.js run
