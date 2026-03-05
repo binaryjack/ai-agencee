@@ -1,3 +1,5 @@
+'use client'
+
 import dagre from 'dagre'
 import { useMemo } from 'react'
 import type { DagEdge, DagNode } from './types.js'

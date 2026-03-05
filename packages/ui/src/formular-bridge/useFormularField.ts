@@ -1,4 +1,6 @@
-import { useRef, useSyncExternalStore } from 'react'
+'use client'
+
+import { useCallback, useRef, useSyncExternalStore } from 'react'
 import type { ErrorLike, IFormularLike } from './FormProvider.js'
 
 export interface FieldSnapshot<T = unknown> {
@@ -13,22 +15,24 @@ export interface FieldSnapshot<T = unknown> {
  * `useSyncExternalStore`. Re-renders only when that specific field's value
  * or validation state changes — no render on unrelated fields.
  *
- * formular.dev uses a channel-based NotificationManager:
- *   field.notificationManager.observers.subscribe(channel, cb, weakRef)
- *
- * Falls back to a no-op subscription when the field has no
- * notificationManager (e.g. during SSR / test stubs).
+ * Two rules required by useSyncExternalStore:
+ *   1. `subscribe` must be stable (same reference across renders) so the store
+ *      is not re-subscribed on every render. We use useCallback with [fieldName].
+ *   2. `getSnapshot` must return the *same object reference* when the data has
+ *      not changed. We cache the last snapshot in a ref and compare primitives
+ *      before allocating a new object — otherwise Object.is() always returns
+ *      false and React loops infinitely.
  */
 export function useFormularField<T = unknown>(
   form:      IFormularLike,
   fieldName: string,
 ): FieldSnapshot<T> {
-  // Stable ref so subscribe/getSnapshot capture the latest form instance
-  // without triggering re-subscription on every render.
+  // Stable ref so callbacks always read the latest form without re-subscribing.
   const formRef = useRef(form)
   formRef.current = form
 
-  const subscribe = (onStoreChange: () => void) => {
+  // Stable subscribe — identity only changes when fieldName changes.
+  const subscribe = useCallback((onStoreChange: () => void) => {
     const field = formRef.current.getField(fieldName)
     const obs   = field?.notificationManager?.observers
 
@@ -39,20 +43,38 @@ export function useFormularField<T = unknown>(
 
     // No observable available (test stub, readonly field, etc.)
     return () => { /* no-op cleanup */ }
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldName])
 
-  const getSnapshot = (): FieldSnapshot<T> => {
-    const field  = formRef.current.getField(fieldName)
-    const errors = formRef.current.getErrors()[fieldName] ?? []
-    return {
-      value:     (field?.value ?? undefined) as T,
-      errors,
-      isDirty:   field?.isDirty   ?? false,
-      isTouched: field?.isTouched ?? false,
+  // Cache the previous snapshot. useSyncExternalStore uses Object.is() to
+  // detect changes — a freshly allocated object on every call causes React to
+  // think the store changed on every render, producing an infinite loop.
+  const snapshotRef = useRef<FieldSnapshot<T> | null>(null)
+
+  const getSnapshot = useCallback((): FieldSnapshot<T> => {
+    const field     = formRef.current.getField(fieldName)
+    const errors    = formRef.current.getErrors()[fieldName] ?? []
+    const value     = (field?.value ?? undefined) as T
+    const isDirty   = field?.isDirty   ?? false
+    const isTouched = field?.isTouched ?? false
+
+    const prev = snapshotRef.current
+    if (
+      prev !== null &&
+      Object.is(prev.value, value) &&
+      prev.isDirty   === isDirty   &&
+      prev.isTouched === isTouched &&
+      prev.errors.length === errors.length &&
+      prev.errors.every((e, i) => Object.is(e, errors[i]))
+    ) {
+      return prev
     }
-  }
 
-  // Third argument = server snapshot (same as client — no SSR in dag-editor,
-  // but showcase-web may use Next.js so we keep this safe).
+    const next: FieldSnapshot<T> = { value, errors, isDirty, isTouched }
+    snapshotRef.current = next
+    return next
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldName])
+
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
