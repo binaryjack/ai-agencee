@@ -33,8 +33,8 @@
  *   instance to ensure it is discoverable and erasable.
  */
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

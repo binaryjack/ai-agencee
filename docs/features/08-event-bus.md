@@ -22,13 +22,13 @@ The typed event bus enables **real-time subscription** to DAG execution events. 
 
 ### Event Bus Architecture
 
-```
-DAG Execution → Events emitted
-                     │
-          ┌──────────┼──────────┐
-          ▼          ▼          ▼
-    CLI Display   WebSocket   File Logger
-    (streaming)   (UI updates) (audit)
+```mermaid
+graph LR
+    DAG["<b>DAG Execution</b><br/>Events emitted"]
+    
+    DAG -->|cli:stream| Stdout["📊 CLI Display<br/>streaming"]
+    DAG -->|websocket:send| WebSocket["🌐 WebSocket<br/>UI updates"]
+    DAG -->|file:log| Logger["📁 File Logger<br/>audit"]
 ```
 
 ### Event Types

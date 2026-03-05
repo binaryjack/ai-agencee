@@ -9,15 +9,16 @@ import { getGlobalEventBus } from './dag-events.js'
 import { DagPlanner } from './dag-planner.js'
 import { DagResultBuilder } from './dag-result-builder.js'
 import {
-    DagDefinition,
-    DagResult,
-    LaneResult,
+  DagDefinition,
+  DagResult,
+  LaneResult,
 } from './dag-types.js'
 import { runLane } from './lane-executor.js'
 import { SamplingCallback } from './llm-provider.js'
 import { ModelRouterFactory } from './model-router-factory.js'
 import { ModelRouter } from './model-router.js'
 import { getGlobalTracer } from './otel.js'
+import { RateLimiter } from './rate-limiter.js'
 import { RbacPolicy } from './rbac.js'
 import { RunRegistry } from './run-registry.js'
 import { createDefaultSecretsProvider, injectSecretsToEnv, SecretsProvider } from './secrets.js'
@@ -156,6 +157,18 @@ export class DagOrchestrator {
     const rbac      = this.options.rbacPolicy ?? await RbacPolicy.load(this.projectRoot);
     this.log(`   Principal: ${principal}`);
     void auditLog.decision(principal, 'run-start', JSON.stringify(rbac.summarize()));
+    // ─ Rate limiting ──────────────────────────────────────────────────────────
+    const rateLimiter  = new RateLimiter(this.projectRoot);
+    const rateLimits   = rbac.getRateLimits(principal);
+    if (rateLimits) {
+      // Throws RateLimitExceededError before the run starts if any limit is exceeded
+      await rateLimiter.assertWithinLimits(principal, rateLimits);
+    }
+    // Acquire the concurrent-run slot (released in the finally block)
+    let releaseRateLimit: (() => void) | undefined;
+    if (rateLimits) {
+      releaseRateLimit = await rateLimiter.acquireRun(principal);
+    }
 
     // �"� OpenTelemetry root span �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     const rootSpan = getGlobalTracer().startDagRun(runId, dag.name);
@@ -336,6 +349,17 @@ export class DagOrchestrator {
 
     // ─ Mark run complete in registry ──────────────────────────────────────────
     await runRegistry.complete(runId, dagResult.status as import('./run-registry.js').RunStatus, totalDurationMs);
+
+    // ─ Rate limit: release slot + record tokens ────────────────────────────────
+    releaseRateLimit?.();
+    if (rateLimits && costTracker) {
+      const report = costTracker.summary();
+      await rateLimiter.recordTokens(
+        principal,
+        report.totalInputTokens,
+        report.totalOutputTokens,
+      ).catch(() => undefined); // never fail a completed run on accounting errors
+    }
 
     return dagResult;
   }

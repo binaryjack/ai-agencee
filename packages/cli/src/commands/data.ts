@@ -19,9 +19,9 @@
  * package.json (same heuristic used by the rest of the CLI).
  */
 
-import * as path from 'path'
-import * as fs from 'fs/promises'
-import { TenantRunRegistry } from '@ai-agencee/ai-kit-agent-executor'
+import { TenantRunRegistry } from '@ai-agencee/ai-kit-agent-executor';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 // ─── Project root resolution ──────────────────────────────────────────────────
 

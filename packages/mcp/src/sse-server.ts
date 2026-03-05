@@ -22,6 +22,7 @@
 
 import { getGlobalEventBus, type DagEventMap } from '@ai-agencee/ai-kit-agent-executor'
 import * as http from 'http'
+import { createOidcMiddleware, type MinimalResponse } from './oidc-auth.js'
 
 type SseClient = {
   res: http.ServerResponse;
@@ -66,16 +67,39 @@ export function startSseServer(port = 3747): http.Server {
     });
   }
 
+  // ─── OIDC middleware (active when AIKIT_OIDC_ISSUER is set) ────────────────
+  const oidcMiddleware = createOidcMiddleware();
+
+  // Helper: adapt http.ServerResponse to MinimalResponse for the OIDC middleware
+  function toMinimalRes(res: http.ServerResponse): MinimalResponse {
+    let _statusCode = 200;
+    return {
+      status(code: number) { _statusCode = code; return this; },
+      json(body: unknown) {
+        if (!res.headersSent) {
+          res.writeHead(_statusCode, { 'Content-Type': 'application/json' });
+        }
+        res.end(JSON.stringify(body));
+      },
+    } as MinimalResponse;
+  }
+
   // ─── HTTP server ─────────────────────────────────────────────────────────────
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', `http://localhost:${port}`);
 
-    // Health check
+    // Health check is always open — required by load balancers and k8s probes
     if (url.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, clients: clients.size }));
       return;
     }
+
+    // Apply OIDC authentication to all non-health routes.
+    // If AIKIT_OIDC_ISSUER is unset, the middleware is a no-op.
+    let authPassed = false;
+    await oidcMiddleware(req, toMinimalRes(res), () => { authPassed = true; });
+    if (!authPassed) return; // middleware already sent 401
 
     // SSE event stream
     if (url.pathname === '/events') {

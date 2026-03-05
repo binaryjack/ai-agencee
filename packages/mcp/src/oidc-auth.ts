@@ -260,7 +260,7 @@ async function verifyJwt(token: string, issuer: string, audience: string | undef
   }
 
   let cryptoKey: CryptoKey;
-  let algorithm: AlgorithmIdentifier;
+  let algorithm: AlgorithmIdentifier | EcdsaParams;
 
   if (header.alg === 'RS256' || (!header.alg && jwk.kty === 'RSA')) {
     cryptoKey = await importRsaKey(jwk);

@@ -1,5 +1,5 @@
-import { DagOrchestrator } from '../lib/dag-orchestrator';
-import { DagDefinition, LaneResult } from '../lib/dag-types';
+import { DagOrchestrator } from '../lib/dag-orchestrator'
+import { DagDefinition, LaneResult } from '../lib/dag-types'
 
 // ─── mocks ────────────────────────────────────────────────────────────────────
 
@@ -36,9 +36,18 @@ jest.mock('../lib/rbac', () => ({
         Object.fromEntries(laneIds.map((id) => [id, true])),
       ),
       summarize: jest.fn().mockReturnValue([]),
+      getRateLimits: jest.fn().mockReturnValue(undefined),
     }),
     resolvePrincipal: jest.fn().mockReturnValue('test-user'),
   },
+}));
+
+jest.mock('../lib/rate-limiter', () => ({
+  RateLimiter: jest.fn().mockImplementation(() => ({
+    assertWithinLimits: jest.fn().mockResolvedValue(undefined),
+    acquireRun:         jest.fn().mockResolvedValue(() => undefined),
+    recordTokens:       jest.fn().mockResolvedValue(undefined),
+  })),
 }));
 
 jest.mock('../lib/run-registry', () => ({
@@ -87,8 +96,8 @@ jest.mock('../lib/model-router-factory', () => ({
   },
 }));
 
-import * as fsMod from 'fs/promises';
-import { runLane } from '../lib/lane-executor';
+import * as fsMod from 'fs/promises'
+import { runLane } from '../lib/lane-executor'
 
 const mockFs = fsMod as jest.Mocked<typeof fsMod>;
 const mockRunLane = runLane as jest.MockedFunction<typeof runLane>;

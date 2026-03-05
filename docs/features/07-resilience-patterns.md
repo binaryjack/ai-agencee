@@ -56,24 +56,34 @@ interface RetryPolicy {
 
 ### Circuit Breaker States
 
-```
-CLOSED (Normal)
-  ├─ Requests pass through
-  └─ Track errors
-      ├─ Error threshold reached?
-      │   └─ → OPEN
-      └─ No, stay CLOSED
-
-OPEN (Failing)
-  ├─ Block requests (fail immediately)
-  └─ Wait timeout
-      └─ → HALF_OPEN
-
-HALF_OPEN (Testing)
-  ├─ Allow test request
-  └─ Success?
-      ├─ Yes → CLOSED
-      └─ No → OPEN
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED
+    
+    CLOSED --> CLOSED: Request succeeds
+    CLOSED --> CLOSED: Error count &lt; threshold
+    CLOSED --> OPEN: Error threshold reached
+    
+    OPEN --> OPEN: Reject requests immediately
+    OPEN --> HALF_OPEN: Timeout expires
+    
+    HALF_OPEN --> CLOSED: Test request succeeds
+    HALF_OPEN --> OPEN: Test request fails
+    
+    note right of CLOSED
+        Normal operation
+        Track error rate
+    end note
+    
+    note right of OPEN
+        Provider failing
+        Fast-fail mode
+    end note
+    
+    note right of HALF_OPEN
+        Testing recovery
+        Single request allowed
+    end note
 ```
 
 ---
@@ -227,6 +237,25 @@ For rate-limited providers (retry aggressively):
 ```
 
 **Timeline**:
+```mermaid
+gantt
+    title Exponential Backoff Retry Timeline
+    dateFormat HH:mm:ss
+    
+    section Attempts
+    Attempt 1 :done, 00:00:00, 100ms
+    Wait 500ms :crit, 00:00:00, 500ms
+    Attempt 2 :done, 00:00:01, 100ms
+    Wait 1250ms :crit, 00:00:01, 1250ms
+    Attempt 3 :done, 00:00:02, 100ms
+    Wait 3125ms :crit, 00:00:02, 3125ms
+    Attempt 4 :done, 00:00:05, 100ms
+    Wait 7125ms :crit, 00:00:05, 7125ms
+    Attempt 5 :done, 00:00:12, 100ms
+    Max timeout :milestone, 00:01:00, 1m
+```
+
+**Detailed breakdown**:
 ```
 Attempt 1: 0s        - Try now
 Attempt 2: 0.5s      - Wait 500ms

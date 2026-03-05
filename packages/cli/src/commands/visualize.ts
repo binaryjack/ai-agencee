@@ -24,8 +24,8 @@
  * ```mermaid … ``` fences and GitHub will render it natively.
  */
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 // ─── DAG schema (minimal — must match agents/dag.json structure) ─────────────
 

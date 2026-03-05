@@ -67,23 +67,24 @@ interface AuditEvent {
 
 Each event includes SHA256 hash of previous event for tamper-evidence:
 
-```
-Event 1: { action: 'run:start', eventHash: abc123... }
-Event 2: { action: 'lane:start', previousHash: abc123..., eventHash: def456... }
-Event 3: { action: 'check:complete', previousHash: def456..., eventHash: ghi789... }
-
-If someone modifies Event 2 offline:
-Event 2-modified: { action: 'approve:tool', previousHash: abc123..., eventHash: NEW... }
-                                                          ↑
-                                            Still points to Event 1
-
-Event 3 now fails validation:
-Event 3 expects: previousHash = hash(Event 2)
-Event 3 has:     previousHash = def456...
-But Event 2-modified has: eventHash = NEW...
-                                     ≠ def456...
-
-INTEGRITY COMPROMISED ❌
+```mermaid
+graph LR
+    E1["<b>Event 1</b><br/>action: run:start<br/>eventHash: abc123..."]
+    E2["<b>Event 2</b><br/>action: lane:start<br/>previousHash: abc123...<br/>eventHash: def456..."]
+    E3["<b>Event 3</b><br/>action: check:complete<br/>previousHash: def456...<br/>eventHash: ghi789..."]
+    
+    E1 -->|hash link| E2
+    E2 -->|hash link| E3
+    
+    E2_Modified["<b>Event 2 MODIFIED</b><br/>action: approve:tool<br/>previousHash: abc123...<br/>eventHash: NEW...<br/>❌ TAMPERING DETECTED"]
+    
+    E3_Check["<b>Event 3 Validation</b><br/>Expects: previousHash = def456...<br/>Got: previousHash = def456...<br/>But Event 2 modified hash ≠ def456...<br/>❌ CHAIN BROKEN"]
+    
+    style E1 fill:#e8f5e9
+    style E2 fill:#e8f5e9
+    style E3 fill:#e8f5e9
+    style E2_Modified fill:#ffcdd2
+    style E3_Check fill:#ffcdd2
 ```
 
 ---

@@ -1,5 +1,5 @@
-import { PiiScrubber, createPiiSafeProvider, ScrubResult } from '../lib/pii-scrubber'
-import type { LLMProvider, LLMPrompt, LLMResponse, ToolExecutorFn } from '../lib/llm-provider'
+import type { LLMPrompt, LLMProvider, LLMResponse, ToolExecutorFn } from '../lib/llm-provider'
+import { createPiiSafeProvider, PiiScrubber, ScrubResult } from '../lib/pii-scrubber'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
