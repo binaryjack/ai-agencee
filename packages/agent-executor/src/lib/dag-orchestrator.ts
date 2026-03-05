@@ -18,6 +18,7 @@ import { SamplingCallback } from './llm-provider.js'
 import { ModelRouterFactory } from './model-router-factory.js'
 import { ModelRouter } from './model-router.js'
 import { getGlobalTracer } from './otel.js'
+import { createInjectionSafeProvider, InjectionDetectionMode, InjectionSignature } from './prompt-injection-detector.js'
 import { RateLimiter } from './rate-limiter.js'
 import { RbacPolicy } from './rbac.js'
 import { RunRegistry } from './run-registry.js'
@@ -59,6 +60,24 @@ export interface DagRunOptions {
    * Defaults to `RbacPolicy.resolvePrincipal()` (env var ? git author ? username).
    */
   principal?: string;
+  /**
+   * E8 — Prompt injection detection.
+   * When `enabled` is true all LLM providers are wrapped with an injection-
+   * detection layer before any lane executes.
+   *
+   * mode:
+   *   'warn'  (default) — logs to stderr and continues.
+   *   'block'           — throws PromptInjectionError before the LLM call.
+   *
+   * skipRoles: message roles to exclude from scanning (e.g. ['system']).
+   * customSignatures: additional project-specific detection patterns.
+   */
+  injectionDetection?: {
+    enabled?: boolean;
+    mode?: InjectionDetectionMode;
+    skipRoles?: Array<'system' | 'user' | 'assistant'>;
+    customSignatures?: InjectionSignature[];
+  };
   /**
    * Pre-loaded RBAC policy.  When not provided the policy is loaded from
    * `.agents/rbac.json`; permissive if the file is absent.
@@ -198,6 +217,19 @@ export class DagOrchestrator {
       forceProvider:    this.options.forceProvider,
       log: (msg) => this.log(msg),
     });
+
+    // ─ E8: Prompt injection detection ────────────────────────────────────────
+    const injCfg = this.options.injectionDetection;
+    if (modelRouter && injCfg?.enabled) {
+      modelRouter.wrapAllProviders((p) =>
+        createInjectionSafeProvider(p, {
+          mode:             injCfg.mode ?? 'warn',
+          skipRoles:        injCfg.skipRoles,
+          customSignatures: injCfg.customSignatures,
+        }),
+      );
+      this.log(`   🔍 Prompt injection detection enabled (mode=${injCfg.mode ?? 'warn'})`);
+    }
 
     // ─ Shared infrastructure ──────────────────────────────────────────────────
     const registry       = new ContractRegistry();

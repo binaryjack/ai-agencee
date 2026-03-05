@@ -61,7 +61,6 @@ import type {
 export type InjectionDetectionMode = 'warn' | 'block';
 
 export interface InjectionSignature {
-  /** Human-readable name used in detection reports */
   name: string;
   /**
    * One or more patterns to test against a single normalised message string.
@@ -296,32 +295,42 @@ export class PromptInjectionDetector {
 // ─── Provider wrapper ─────────────────────────────────────────────────────────
 
 /**
- * Wraps any LLMProvider with injection detection on every `complete()` and
- * `stream()` call.  Identical API to `createPiiSafeProvider()`.
+ * Wraps any LLMProvider with injection detection on every `complete()`,
+ * `stream()`, and `completeWithTools()` call.
+ * Identical drop-in API to `createPiiSafeProvider()`.
  *
- * @param provider - The underlying provider (Anthropic, OpenAI, Mock, etc.)
- * @param options  - Detection options (mode, skipRoles, customSignatures)
+ * @param inner   - The underlying provider (Anthropic, OpenAI, Mock, etc.)
+ * @param options - Detection options (mode, skipRoles, customSignatures)
  */
 export function createInjectionSafeProvider(
-  provider: LLMProvider,
+  inner: LLMProvider,
   options: InjectionDetectorOptions = {},
 ): LLMProvider {
   const detector = new PromptInjectionDetector(options);
   const mode = options.mode ?? 'warn';
 
   return {
-    complete(prompt: LLMPrompt): Promise<LLMResponse> {
+    name: inner.name,
+
+    isAvailable: () => inner.isAvailable(),
+
+    async complete(prompt: LLMPrompt, modelId: string): Promise<LLMResponse> {
       detector.enforce(prompt, mode);
-      return provider.complete(prompt);
+      return inner.complete(prompt, modelId);
     },
 
-    stream(
-      prompt: LLMPrompt,
-      onChunk: (chunk: LLMStreamChunk) => void,
-      toolExecutor?: ToolExecutorFn,
-    ): Promise<LLMResponse> {
-      detector.enforce(prompt, mode);
-      return provider.stream(prompt, onChunk, toolExecutor);
-    },
+    stream: inner.stream
+      ? async function* (prompt: LLMPrompt, modelId: string): AsyncIterable<LLMStreamChunk> {
+          detector.enforce(prompt, mode);
+          yield* inner.stream!(prompt, modelId);
+        }
+      : undefined,
+
+    completeWithTools: inner.completeWithTools
+      ? async (prompt: LLMPrompt, modelId: string, executor: ToolExecutorFn): Promise<LLMResponse> => {
+          detector.enforce(prompt, mode);
+          return inner.completeWithTools!(prompt, modelId, executor);
+        }
+      : undefined,
   };
 }
