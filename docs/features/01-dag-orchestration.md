@@ -29,37 +29,32 @@ A DAG consists of:
 3. **Barriers** — Synchronization gates between phases
 4. **Supervisors** — Validation rules at checkpoints
 
-```
-          ┌─────────────────────┐
-          │   Start (Phase 0)   │
-          └──────────┬──────────┘
-                     │
-    ┌────────────────┼────────────────┐
-    │                │                │
-    ▼                ▼                ▼
-┌────────┐      ┌────────┐      ┌────────┐
-│Backend │      │Frontend│      │Testing │
-│ Lane   │      │ Lane   │      │ Lane   │
-└────┬───┘      └────┬───┘      └────┬───┘
-     │               │               │
-     │  Check 1      │  Check 1      │  Check 1
-     ├─────────────┤  ├─────────────┤  ├─────────────┤
-     │  Check 2    │  │  Check 2    │  │  Check 2    │
-     │               │               │
-     └────────────────┼────────────────┘
-                      │
-          ┌───────────▼───────────┐
-          │  Barrier (Hard Sync)  │
-          └───────────┬───────────┘
-                      │
-          ┌───────────▼──────────────┐
-          │  Supervisor Checkpoint   │
-          │  (Verdict Phase)         │
-          └───────────┬──────────────┘
-                      │
-          ┌───────────▼──────────────┐
-          │   End (Results)          │
-          └──────────────────────────┘
+```mermaid
+graph TD
+    Start([Start Phase 0]) --> Split{Execute in Parallel}
+    
+    Split -->|Lane 1| Backend["🔧 Backend Lane"]
+    Split -->|Lane 2| Frontend["🎨 Frontend Lane"]
+    Split -->|Lane 3| Testing["✓ Testing Lane"]
+    
+    Backend --> B1["Check 1<br/>Subtask A"]
+    Backend --> B2["Check 2<br/>Subtask B"]
+    
+    Frontend --> F1["Check 1<br/>Subtask A"]
+    Frontend --> F2["Check 2<br/>Subtask B"]
+    
+    Testing --> T1["Check 1<br/>Subtask A"]
+    Testing --> T2["Check 2<br/>Subtask B"]
+    
+    B2 --> Barrier["🚧 Barrier<br/>Hard Sync"]
+    F2 --> Barrier
+    T2 --> Barrier
+    
+    Barrier --> Supervisor{"👨‍⚖️ Supervisor<br/>Checkpoint"}
+    
+    Supervisor -->|APPROVE| End(["✅ End Phase<br/>Results"])
+    Supervisor -->|RETRY| Backend
+    Supervisor -->|ESCALATE| Escalate["⚠️ Escalation<br/>Required"]
 ```
 
 ---

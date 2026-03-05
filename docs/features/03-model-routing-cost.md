@@ -47,18 +47,31 @@ type TaskType =
 
 ### Routing Decision Tree
 
-```
-Task comes in → Check taskType
-                    │
-                    ├─ 'validation' → Haiku ($0.80/1M)
-                    ├─ 'code-review' → Sonnet ($3.00/1M)
-                    ├─ 'code-generation' → Sonnet
-                    └─ 'architecture-decision' → Opus ($15.00/1M)
-                         │
-                         ├─ Budget has room? → Use Opus
-                         └─ Low on budget? → Fall back to Sonnet
-                              │
-                              └─ Still over? → Fail with cost estimate
+```mermaid
+graph TD
+    Start([Task Arrives]) --> CheckType{Check<br/>taskType}
+    
+    CheckType -->|validation| Haiku["🚀 Haiku<br/>$0.80/1M tokens"]
+    CheckType -->|code-review| Sonnet1["⚖️ Sonnet<br/>$3.00/1M tokens"]
+    CheckType -->|code-generation| Sonnet2["⚖️ Sonnet<br/>$3.00/1M tokens"]
+    CheckType -->|architecture-decision| OpusDecide{Budget<br/>Available?}
+    
+    OpusDecide -->|Yes| Opus["🧠 Opus<br/>$15.00/1M tokens"]
+    OpusDecide -->|Limited| SonnetFallback["⚖️ Fallback Sonnet"]
+    
+    Haiku --> Result1(["🔨 Execute<br/>with Haiku"])
+    Sonnet1 --> Result2(["🔨 Execute<br/>with Sonnet"])
+    Sonnet2 --> Result2
+    Opus --> Result3(["🔨 Execute<br/>with Opus"])
+    SonnetFallback --> Result4(["🔨 Execute<br/>with Sonnet"])
+    
+    Result1 --> Success(["✅ Complete"])
+    Result2 --> BudgetCheck{Budget<br/>Remaining?}
+    Result3 --> Success
+    Result4 --> Success
+    
+    BudgetCheck -->|Yes| Success
+    BudgetCheck -->|No| Fail(["❌ Failed<br/>Cost Exceeded"])
 ```
 
 ---

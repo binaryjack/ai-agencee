@@ -29,22 +29,31 @@ Agent → Generate response → Returns "Here's what you should do:"
 
 ### Tool-Use (Goal)
 
-```
-Agent → Decide to call tool
-        ↓
-Calls read_file("src/api.ts")
-        ↓
-Receives file content
-        ↓
-Calls grep_project("interface User")
-        ↓
-Receives grep results
-        ↓
-Calls write_file("FINDINGS.md", ...)
-        ↓
-Supervisor approves write
-        ↓
-Proceeds to next tool or returns response
+```mermaid
+sequenceDiagram
+    participant LLM
+    participant Executor as Orchestrator
+    participant FS as File System
+    participant Supervisor
+    
+    LLM->>Executor: Decide: need to read_file<br/>src/api.ts
+    Executor->>FS: Execute read_file
+    FS->>Executor: Return file content
+    Executor->>LLM: Tool result: file content
+    
+    LLM->>Executor: Decide: need to grep_project<br/>interface User
+    Executor-->>Executor: Search codebase
+    Executor->>LLM: Tool result: grep matches
+    
+    LLM->>Executor: Decide: need to write_file<br/>FINDINGS.md
+    Executor->>Supervisor: Request approval
+    Supervisor->>Supervisor: Evaluate policy
+    Supervisor->>Executor: ✅ APPROVED
+    Executor->>FS: Execute write_file
+    FS->>Executor: Write confirmed
+    Executor->>LLM: Tool result: success
+    
+    LLM->>Executor: Final response ready
 ```
 
 ---

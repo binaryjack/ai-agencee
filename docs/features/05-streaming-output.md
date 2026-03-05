@@ -22,16 +22,24 @@ Streaming output delivers **real-time token-by-token feedback** from LLM provide
 
 ### Non-Streaming (Current)
 
-```
-Request → Wait 30s → Full response → Display
-(User sits idle)
-```
-
-### Streaming (Goal)
-
-```
-Request → Token 1 → Token 2 → Token 3 → ... → Complete
-         (immediate feedback)
+```mermaid
+timeline
+    title Response Delivery Comparison
+    
+    section Non-Streaming (Current)
+        : T=0ms : Request sent
+        : T=0-30000ms : Waiting... (idle)
+        : T=30000ms : Full response received
+        : USER EXPERIENCE: 30 second wait
+    
+    section Streaming (Goal)
+        : T=0ms : Request sent
+        : T=100ms : First token appears
+        : T=200ms : Second token appears
+        : T=300ms : Third token appears
+        : ... : More tokens streaming...
+        : T=30000ms : Response complete
+        : USER EXPERIENCE: Immediate feedback!
 ```
 
 Example: Generating 1000-token response

@@ -17,6 +17,13 @@ jest.mock('@ai-agencee/ai-kit-agent-executor', () => ({
   }),
 }));
 
+jest.mock('../oidc-auth.js', () => ({
+  createOidcMiddleware: jest.fn(() =>
+    // no-op: immediately calls next so auth never blocks tests
+    (_req: unknown, _res: unknown, next: () => void) => { next(); },
+  ),
+}));
+
 import { startSseServer, stopSseServer } from '../sse-server';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

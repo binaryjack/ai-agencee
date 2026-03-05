@@ -265,6 +265,14 @@ export class RbacPolicy {
     return Object.keys(this.policyFile.principals).filter((p) => this.can(p, action));
   }
 
+  /**
+   * Return the rate-limit config for a principal, or `undefined` if none is configured.
+   * Used by `RateLimiter.assertWithinLimits()` in the DAG orchestrator.
+   */
+  getRateLimits(principal: string): RbacPrincipalDefinition['rateLimits'] {
+    return this.policyFile.principals[principal]?.rateLimits;
+  }
+
   /** Return a summary of the loaded policy for logging / audit. */
   summarize(): Record<string, unknown> {
     return {
