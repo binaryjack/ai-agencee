@@ -1,0 +1,66 @@
+import { useMemo }              from 'react'
+import { createForm, f, DirectSubmissionStrategy } from '@pulsar-framework/formular.dev'
+import { FormProvider, Input, Select, CheckBox } from '@ai-agencee/ui/formular-bridge'
+import { Button }               from '@ai-agencee/ui/atoms'
+import type { WorkerNodeData }  from '@ai-agencee/ui/dag'
+
+const MODEL_OPTIONS = [
+  { value: 'claude-opus-4-5',    label: 'Claude Opus 4.5' },
+  { value: 'claude-sonnet-4-5',  label: 'Claude Sonnet 4.5' },
+  { value: 'gpt-4o',             label: 'GPT-4o' },
+  { value: 'mock',               label: 'Mock (free)' },
+]
+
+// ── Entity schema ────────────────────────────────────────────────────────────
+const workerSchema = f.object({
+  label:          f.string().nonempty(),
+  agentFile:      f.string().nonempty(),
+  model:          f.enum(['claude-opus-4-5', 'claude-sonnet-4-5', 'gpt-4o', 'mock']),
+  laneId:         f.string().optional(),
+  retries:        f.number().min(0).max(10).int().default(2),
+  budgetUSD:      f.number().positive().optional(),
+  timeoutMs:      f.number().min(1000).default(120000),
+  continueOnFail: f.boolean().default(false),
+})
+
+interface WorkerNodePanelProps {
+  nodeId:    string
+  data:      WorkerNodeData
+  onUpdate:  (id: string, data: WorkerNodeData) => void
+}
+
+export function WorkerNodePanel({ nodeId, data, onUpdate }: WorkerNodePanelProps) {
+  // ── Form creation ────────────────────────────────────────────────────────
+  const form = useMemo(
+    () =>
+      createForm({
+        schema:        workerSchema,
+        defaultValues: data,
+        submissionStrategy: new DirectSubmissionStrategy(async (values) => {
+          onUpdate(nodeId, { ...data, ...values } as WorkerNodeData)
+        }),
+      }),
+    // Recreate when nodeId changes (new node selected)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodeId],
+  )
+
+  return (
+    <FormProvider form={form as never}>
+      <div className="flex flex-col gap-3 p-4">
+        <Input  name="label"          label="Label" />
+        <Input  name="agentFile"      label="Agent file (.agent.json)" placeholder="agents/01-business-analyst.agent.json" />
+        <Select name="model"          label="Model" options={MODEL_OPTIONS} />
+        <Input  name="laneId"         label="Lane ID" placeholder="e.g. backend" />
+        <Input  name="retries"        label="Retries"       type="number" />
+        <Input  name="budgetUSD"      label="Budget (USD)"  type="number" />
+        <Input  name="timeoutMs"      label="Timeout (ms)"  type="number" />
+        <CheckBox name="continueOnFail" label="Continue on fail" />
+      </div>
+      <div className="flex gap-2 px-4 pt-2 border-t border-neutral-700">
+        <Button size="sm" onClick={() => form.submit()}>Apply</Button>
+        <Button size="sm" variant="ghost" onClick={() => form.reset()}>Reset</Button>
+      </div>
+    </FormProvider>
+  )
+}

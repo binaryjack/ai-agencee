@@ -57,12 +57,14 @@ Copy-paste recipes for the most common tasks. No reading required.
 
 | I want to… | Command |
 |------------|---------|
-| **See the engine run** right now | `pnpm demo` |
-| **See failures, retries, escalations** in one run | `pnpm demo:06` |
-| **Plan a new app** from scratch | `pnpm run:plan` |
-| **Add a feature** to an existing codebase | `pnpm demo:plan:04` then `pnpm run:plan` |
-| **Security audit** my project | `pnpm run:dag agents/security-review.agent.json --provider mock` |
-| **Generate docs** for an existing app | `pnpm run:plan` → type `spike`, stories = "generate architecture doc" |
+| **Install the engine** in my project | `npm install @ai-agencee/ai-kit-agent-executor` |
+| **Install the CLI** globally | `npm install -g @ai-agencee/ai-kit-cli` |
+| **See the engine run** with no setup | clone the repo → `pnpm demo` ([↓ Explore Without Code](#explore-without-code)) |
+| **See failures, retries, escalations** | clone the repo → `pnpm demo:06` |
+| **Run a DAG** from my own project | `ai-kit agent:dag ./my-dag.json --provider mock` |
+| **Plan a new app** from scratch | `ai-kit plan` |
+| **Add a feature** to an existing codebase | `ai-kit plan` → type `feature` when asked for story type |
+| **Security audit** my project | `ai-kit agent:dag ./security-review.dag.json --provider mock` |
 | **Create a custom agent** in 5 min | [Q4 in Quickies →](docs/quickies.md#q4) |
 | **Set up a CI quality gate** | [Q18 in Quickies →](docs/quickies.md#q18) |
 | **Enterprise adoption** checklist | [Q13 in Quickies →](docs/quickies.md#q13) |
@@ -119,57 +121,96 @@ Copy-paste recipes for the most common tasks. No reading required.
 
 ---
 
-## Quick Start
+## Install
 
-### 1. Install & Build
+Add the engine to any Node.js / TypeScript project:
 
 ```sh
-pnpm install
-pnpm build
+npm install @ai-agencee/ai-kit-agent-executor
+# or
+yarn add @ai-agencee/ai-kit-agent-executor
+# or
+pnpm add @ai-agencee/ai-kit-agent-executor
 ```
 
-### 2. Run the Zero-Key Demo
+Install the CLI globally (or as a dev dependency):
 
 ```sh
-# Run the original 3-lane demo — NO API keys required
+npm install -g @ai-agencee/ai-kit-cli
+# or as a dev dep:
+npm install -D @ai-agencee/ai-kit-cli
+```
+
+---
+
+## Usage
+
+### Programmatic — run a DAG from TypeScript
+
+```typescript
+import { DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+
+const orchestrator = new DagOrchestrator(process.cwd(), {
+  forceProvider: 'mock',   // swap for 'anthropic' | 'openai' once you have keys
+  verbose: true,
+});
+
+const result = await orchestrator.run('./my-dag.json');
+console.log(result.status); // 'complete' | 'partial' | 'failed'
+```
+
+### CLI — run a DAG directly
+
+```sh
+# Mock provider — no API key required
+ai-kit agent:dag ./my-dag.json --provider mock
+
+# With Anthropic
+ANTHROPIC_API_KEY=sk-... ai-kit agent:dag ./my-dag.json
+
+# With OpenAI
+OPENAI_API_KEY=sk-... ai-kit agent:dag ./my-dag.json --provider openai
+
+# 5-phase interactive planning session
+ai-kit plan
+
+# Visualise a DAG as a Mermaid diagram
+ai-kit dag:visualize ./my-dag.json
+```
+
+**📖 See**: [DAG Orchestration](docs/features/01-dag-orchestration.md) · [CLI Reference](docs/features/15-cli-commands.md) · [Quickies — copy-paste recipes](docs/quickies.md)
+
+---
+
+## Explore Without Code
+
+Want to see what the engine does before writing anything? Clone the repo and run the zero-key demos:
+
+```sh
+git clone https://github.com/binaryjack/ai-starter-kit.git
+cd ai-starter-kit
+pnpm install && pnpm build
+
+# Original 3-lane demo — NO API keys required
 pnpm demo
 
 # Interactive menu — pick from 6 advanced scenarios
 pnpm demo:menu
-
-# Run a specific advanced scenario directly
-pnpm demo:01   # App Boilerplate    — RETRY × 2, hard-barrier
-pnpm demo:02   # Enterprise Skeleton — HANDOFF, needs-human-review
-pnpm demo:03   # Website Build       — ESCALATE terminal 🚨
-pnpm demo:04   # Feature in Context  — soft-align, read-contract
-pnpm demo:05   # MVP Sprint          — flaky lane, mixed results
-pnpm demo:06   # Resilience Showcase — every error type at once
-
-# 5-Phase Plan Demo (seed Phase 0, start from SYNTHESIZE)
-pnpm demo:plan
 ```
 
-All demos run on the built-in `MockProvider` — **zero API keys required**.
+| Demo command | What it shows |
+|---|---|
+| `pnpm demo:01` | App Boilerplate — RETRY × 2, hard-barrier |
+| `pnpm demo:02` | Enterprise Skeleton — HANDOFF, needs-human-review |
+| `pnpm demo:03` | Website Build — ESCALATE terminal 🚨 |
+| `pnpm demo:04` | Feature in Context — soft-align, read-contract |
+| `pnpm demo:05` | MVP Sprint — flaky lane, mixed results |
+| `pnpm demo:06` | Resilience Showcase — every error type at once |
+| `pnpm demo:plan` | 5-Phase Plan Demo — seed Phase 0 → run from SYNTHESIZE |
 
-**📖 See**: [Advanced Demo Scenarios](docs/demo-scenarios.md) · [Quickies — copy-paste recipes](docs/quickies.md)
+All demos use the built-in `MockProvider` — **zero API keys, zero cost**.
 
-### 3. Run a Real DAG
-
-```sh
-# With Anthropic
-ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/dag.json
-
-# With OpenAI
-OPENAI_API_KEY=sk-... pnpm run:dag agents/dag.json
-
-# Force a specific provider
-pnpm run:dag agents/dag.json --provider anthropic
-
-# Mock provider (no key needed, great for CI)
-pnpm run:dag agents/dag.json --provider mock
-```
-
-**📖 See**: [DAG Orchestration](docs/features/01-dag-orchestration.md), [CLI Reference](docs/features/15-cli-commands.md)
+**📖 See**: [Advanced Demo Scenarios](docs/demo-scenarios.md)
 
 ---
 
@@ -414,15 +455,18 @@ Comprehensive feature guides are available in [`docs/features/`](docs/features/I
 
 ---
 
-## Development
+## Contributing
 
 ```sh
+# Clone and set up the monorepo
+git clone https://github.com/binaryjack/ai-starter-kit.git
+cd ai-starter-kit
 pnpm install          # install all workspace deps
 pnpm build            # compile all packages (tsc)
 pnpm test             # run all Jest suites (424 tests)
-pnpm demo             # build + run the original 3-lane mock demo
 
 # Advanced demo scenarios (no API keys)
+pnpm demo             # original 3-lane mock demo
 pnpm demo:menu        # interactive scenario picker
 pnpm demo:all         # run all 6 scenarios in sequence
 pnpm demo:01          # App Boilerplate  (RETRY × 2, hard-barrier)

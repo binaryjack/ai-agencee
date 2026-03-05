@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* React Flow overrides */
+.react-flow__attribution { display: none; }
