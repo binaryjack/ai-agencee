@@ -1,4 +1,4 @@
-import { Heading, Text, Badge, Button, Divider } from '@ai-agencee/ui/atoms'
+import { Badge, Divider, Heading, Text } from '@ai-agencee/ui/atoms'
 
 export default function HomePage() {
   return (

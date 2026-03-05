@@ -10,10 +10,11 @@
     "lint":      "next lint"
   },
   "dependencies": {
-    "@ai-agencee/ui": "workspace:*",
-    "next":          "15.3.3",
-    "react":         "^19.0.0",
-    "react-dom":     "^19.0.0"
+    "@ai-agencee/ui":                       "workspace:*",
+    "@pulsar-framework/formular.dev":       "^1.0.0",
+    "next":                                "15.3.3",
+    "react":                               "^19.0.0",
+    "react-dom":                           "^19.0.0"
   },
   "devDependencies": {
     "@types/node":    "^22.0.0",

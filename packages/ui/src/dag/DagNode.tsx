@@ -1,7 +1,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { memo } from 'react'
 import { Badge } from '../atoms/badge.js'
-import type { AnyNodeData } from './types.js'
+import type { AnyNodeData, DagNode } from './types.js'
 
 const kindBorder: Record<string, string> = {
   worker:     'border-brand-400',
@@ -19,9 +19,10 @@ const kindIcon: Record<string, string> = {
   budget:     '💰',
 }
 
-function DagNodeInner({ data, selected }: NodeProps<AnyNodeData>) {
-  const border  = kindBorder[data.nodeType] ?? 'border-neutral-300'
-  const icon    = kindIcon[data.nodeType]   ?? '●'
+function DagNodeInner({ data, selected }: NodeProps<DagNode>) {
+  const nodeData = data as AnyNodeData
+  const border  = kindBorder[nodeData.nodeType] ?? 'border-neutral-300'
+  const icon    = kindIcon[nodeData.nodeType]   ?? '●'
 
   return (
     <div
@@ -39,16 +40,16 @@ function DagNodeInner({ data, selected }: NodeProps<AnyNodeData>) {
       <div className="flex items-center gap-1.5">
         <span aria-hidden className="text-base leading-none">{icon}</span>
         <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-200 truncate max-w-[110px]">
-          {data.label}
+          {nodeData.label}
         </span>
       </div>
 
-      {data.subtitle && (
-        <span className="text-[10px] text-neutral-400 truncate">{data.subtitle}</span>
+      {nodeData.subtitle && (
+        <span className="text-[10px] text-neutral-400 truncate">{nodeData.subtitle}</span>
       )}
 
-      {data.status && data.status !== 'pending' && (
-        <Badge status={data.status} label={data.status} dot className="self-start mt-0.5" />
+      {nodeData.status && nodeData.status !== 'pending' && (
+        <Badge status={nodeData.status} label={nodeData.status} dot className="self-start mt-0.5" />
       )}
 
       <Handle type="source" position={Position.Bottom} className="!bg-neutral-400" />
