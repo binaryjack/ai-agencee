@@ -19,6 +19,9 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
+      "@/*": [
+        "./src/*"
+      ],
       "@ai-agencee/ui": [
         "../ui/src/index.ts"
       ],
