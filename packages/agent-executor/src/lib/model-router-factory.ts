@@ -9,7 +9,9 @@
 import * as path from 'path'
 import type { SamplingCallback } from './llm-provider.js'
 import { ModelRouter } from './model-router.js'
+import { GeminiProvider } from './providers/gemini.provider.js'
 import { MockProvider } from './providers/mock.provider.js'
+import { OllamaProvider } from './providers/ollama.provider.js'
 import { VSCodeSamplingProvider } from './providers/vscode-sampling.provider.js'
 
 export interface RouterFactoryOptions {
@@ -62,6 +64,22 @@ export class ModelRouterFactory {
         modelRouter.registerProvider(new MockProvider());
         log(`   🧪 Mock provider forced — LLM calls return synthetic responses (no API key needed)`);
       } else {
+        // Auto-register Ollama when OLLAMA_HOST is set
+        if (process.env['OLLAMA_HOST']) {
+          const ollama = new OllamaProvider();
+          if (await ollama.isAvailable()) {
+            modelRouter.registerProvider(ollama);
+            log(`   🦙 Ollama provider auto-registered (host: ${process.env['OLLAMA_HOST']})`);
+          }
+        }
+        // Auto-register Gemini when GEMINI_API_KEY is set
+        if (process.env['GEMINI_API_KEY']) {
+          const gemini = new GeminiProvider();
+          if (await gemini.isAvailable()) {
+            modelRouter.registerProvider(gemini);
+            log(`   ✨ Gemini provider auto-registered`);
+          }
+        }
         await modelRouter.autoRegister();
       }
 

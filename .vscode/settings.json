@@ -1,0 +1,39 @@
+{
+  // JSON Schema associations for ai-starter-kit DAG and agent files
+  "json.schemas": [
+    {
+      "fileMatch": ["**/agents/*.dag.json", "**/agents/dag.json"],
+      "url": "./schemas/dag.schema.json"
+    },
+    {
+      "fileMatch": [
+        "**/agents/*.agent.json",
+        "**/agents/*.supervisor.json"
+      ],
+      "url": "./schemas/agent.schema.json"
+    }
+  ],
+
+  // TypeScript project settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // Editor defaults
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Test explorer
+  "jest.jestCommandLine": "pnpm test --",
+  "jest.rootPath": "${workspaceFolder}",
+
+  // Search exclusions
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.agents": true,
+    "**/pnpm-lock.yaml": true
+  }
+}

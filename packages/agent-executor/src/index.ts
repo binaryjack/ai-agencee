@@ -46,6 +46,16 @@ export * from './lib/secrets.js'
 export * from './lib/dag-events.js'
 // Vector memory (G-13)
 export * from './lib/vector-memory.js'
+// SQLite persistent vector memory (G-24/G-25)
+export * from './lib/sqlite-vector-memory.js'
 // GitHub webhook trigger (G-16)
 export * from './lib/webhook-trigger.js'
+// DAG builder fluent API (G-22)
+export * from './lib/dag-builder.js'
+// Prompt distillation (G-37)
+export * from './lib/distillation.js'
+// Code execution sandbox (G-38)
+export * from './lib/code-sandbox.js'
+// LLM-as-judge eval harness (G-50)
+export * from './lib/eval-harness.js'
 

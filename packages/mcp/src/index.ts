@@ -1,20 +1,21 @@
 #!/usr/bin/env node
-import { AuditLog, DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { AuditLog, DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor'
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
-    CallToolRequest,
-    CallToolRequestSchema,
-    ListResourcesRequestSchema,
-    ListToolsRequestSchema,
-    ReadResourceRequest,
-    ReadResourceRequestSchema,
-    Tool,
-} from '@modelcontextprotocol/sdk/types.js';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { buildDashboard } from './dashboard-resource.js';
-import { createVSCodeSamplingBridge } from './vscode-lm-bridge.js';
+  CallToolRequest,
+  CallToolRequestSchema,
+  ListResourcesRequestSchema,
+  ListToolsRequestSchema,
+  ReadResourceRequest,
+  ReadResourceRequestSchema,
+  Tool,
+} from '@modelcontextprotocol/sdk/types.js'
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import { buildDashboard } from './dashboard-resource.js'
+import { startSseServer } from './sse-server.js'
+import { createVSCodeSamplingBridge } from './vscode-lm-bridge.js'
 
 const server = new Server(
   {
@@ -650,6 +651,12 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request: ReadResource
 
 // Start Server
 async function main() {
+  // Start optional SSE live-event stream
+  if (process.env['AIKIT_SSE_PORT']) {
+    const ssePort = Number(process.env['AIKIT_SSE_PORT']);
+    startSseServer(isNaN(ssePort) ? 3747 : ssePort);
+  }
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('MCP Server started on stdio');

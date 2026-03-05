@@ -1,0 +1,82 @@
+# G-41: Docker Compose — runs the MCP server + optional Ollama sidecar
+#
+# Quick-start:
+#   docker compose up
+#
+# With Ollama (local LLMs, no API keys needed):
+#   docker compose --profile ollama up
+#
+# With custom .env file:
+#   ANTHROPIC_API_KEY=sk-… docker compose up
+
+version: '3.9'
+
+services:
+  # ── AI Kit MCP Server ──────────────────────────────────────────────────────
+  mcp-server:
+    build:
+      context: .
+      dockerfile: packages/mcp/Dockerfile
+    image: ai-kit-mcp:latest
+    container_name: ai-kit-mcp
+    restart: unless-stopped
+
+    environment:
+      # LLM Providers (set at least one)
+      ANTHROPIC_API_KEY:  ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY:     ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY:     ${GEMINI_API_KEY:-}
+      OLLAMA_HOST:        ${OLLAMA_HOST:-http://ollama:11434}
+
+      # SSE live event stream (set a port to enable)
+      AIKIT_SSE_PORT:     ${AIKIT_SSE_PORT:-3747}
+
+      # DAG configuration
+      AIKIT_DAG_FILE:     ${AIKIT_DAG_FILE:-agents/dag.json}
+      AIKIT_BUDGET:       ${AIKIT_BUDGET:-0.10}
+
+      NODE_ENV: production
+
+    ports:
+      # SSE event stream — exposed only when AIKIT_SSE_PORT is set
+      - "${AIKIT_SSE_PORT:-3747}:3747"
+
+    volumes:
+      # Mount the project you want to analyse (read-only)
+      - ${PROJECT_DIR:-.}:/workspace:ro
+      # Persist SQLite memory and example library across restarts
+      - ai-kit-memory:/app/.agents
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3747/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ── Ollama sidecar (optional — free local models) ─────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ai-kit-ollama
+    profiles: [ollama]
+    restart: unless-stopped
+
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama-models:/root/.ollama
+
+    # Pull a small model on first startup
+    # Override with: OLLAMA_MODELS="codellama:7b llama3.2:3b"
+    command: >
+      sh -c "ollama serve &
+             sleep 3 &&
+             echo '${OLLAMA_MODELS:-qwen2.5-coder:7b}' | tr ' ' '\n' | xargs -I{} ollama pull {} ;
+             wait"
+
+volumes:
+  ai-kit-memory:
+    driver: local
+  ollama-models:
+    driver: local

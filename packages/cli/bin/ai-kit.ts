@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
-import { runDag } from '../src/commands/agents.js';
-import { runCheck } from '../src/commands/check.js';
-import { runInit } from '../src/commands/init.js';
-import { runMcp } from '../src/commands/mcp.js';
-import { runPlan } from '../src/commands/plan.js';
-import { runSync } from '../src/commands/sync.js';
+import { Command } from 'commander'
+import { runDag } from '../src/commands/agents.js'
+import { runBenchmark } from '../src/commands/benchmark.js'
+import { runCheck } from '../src/commands/check.js'
+import { runInit } from '../src/commands/init.js'
+import { runMcp } from '../src/commands/mcp.js'
+import { runPlan } from '../src/commands/plan.js'
+import { runSync } from '../src/commands/sync.js'
 
 const program = new Command();
 
@@ -76,6 +77,27 @@ program
       verbose:           options.verbose,
       provider:          options.provider,
       modelRouterConfig: options.modelRouterConfig,
+    }),
+  );
+
+// Benchmark command
+program
+  .command('agent:benchmark')
+  .description('Benchmark registered LLM providers — latency, throughput, cost per request')
+  .option('--providers <names>', 'Comma-separated provider names to test (default: all registered)')
+  .option('--suite <name>', 'Prompt suite: minimal | code-review (default: minimal)')
+  .option('--runs <n>', 'Repetitions per prompt', '1')
+  .option('--router-file <path>', 'Path to model-router.json (default: agents/model-router.json)')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--output <file>', 'Write JSON report to this file')
+  .action((options) =>
+    runBenchmark({
+      providers: options.providers,
+      suite: options.suite,
+      runs: options.runs ? parseInt(options.runs, 10) : 1,
+      routerFile: options.routerFile,
+      project: options.project,
+      output: options.output,
     }),
   );
 

@@ -4,7 +4,9 @@
  */
 
 export { AnthropicProvider } from './anthropic.provider.js'
+export { GeminiProvider } from './gemini.provider.js'
 export { MockProvider } from './mock.provider.js'
+export { OllamaProvider } from './ollama.provider.js'
 export { OpenAIProvider } from './openai.provider.js'
 export { VSCodeSamplingProvider } from './vscode-sampling.provider.js'
 export type { SamplingCallback } from './vscode-sampling.provider.js'
