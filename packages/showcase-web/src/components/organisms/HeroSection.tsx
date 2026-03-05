@@ -29,7 +29,7 @@ export function HeroSection() {
             424 tests passing
           </span>
           <span className="rounded-full border border-neutral-700 bg-neutral-800 px-3 py-0.5 text-xs font-medium text-neutral-400">
-            Apache 2.0
+            MIT
           </span>
         </div>
 

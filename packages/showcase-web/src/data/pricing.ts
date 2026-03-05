@@ -159,7 +159,7 @@ export const PRICING_FAQ: PricingFaqItem[] = [
   },
   {
     question: 'Can I self-host?',
-    answer:   'Yes — the CLI, DAG engine, and MCP server are fully open source (Apache 2.0). The SaaS tiers add managed keys, persistent dashboards, and enterprise compliance features.',
+    answer:   'Yes — the CLI, DAG engine, and MCP server are fully open source (MIT). The SaaS tiers add managed keys, persistent dashboards, and enterprise compliance features.',
   },
   {
     question: 'What is the estimated margin for token resale?',

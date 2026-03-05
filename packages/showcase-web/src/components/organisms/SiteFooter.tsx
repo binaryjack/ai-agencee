@@ -49,7 +49,7 @@ export function SiteFooter() {
                 Production-Ready
               </span>
               <span className="rounded-full bg-brand-700/30 px-2 py-0.5 text-[10px] font-medium text-brand-300">
-                Apache 2.0
+                MIT
               </span>
             </div>
           </div>
@@ -77,7 +77,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 border-t border-neutral-700/60 pt-6 text-center text-xs text-neutral-600">
-          © {new Date().getFullYear()} ai-agencee. Released under the Apache 2.0 license.
+          © {new Date().getFullYear()} ai-agencee. Released under the MIT license.
         </div>
       </div>
     </footer>
