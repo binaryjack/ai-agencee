@@ -1,8 +1,8 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
-import { PricingTierCard } from '@/components/molecules/PricingTierCard'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { FaqList } from '@/components/molecules/FaqList'
-import { PRICING_TIERS, PRICING_FAQ } from '@/data/pricing'
+import { PricingTierCard } from '@/components/molecules/PricingTierCard'
+import { PRICING_FAQ, PRICING_TIERS } from '@/data/pricing'
 
 export function PricingSection() {
   return (

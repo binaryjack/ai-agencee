@@ -1,5 +1,5 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { AgentCard } from '@/components/molecules/AgentCard'
 import { AGENT_TYPES } from '@/data/agents'
 

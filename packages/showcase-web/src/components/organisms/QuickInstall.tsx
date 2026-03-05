@@ -1,5 +1,5 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { CommandBlock } from '@/components/molecules/CommandBlock'
 
 const QUICK_STARTS = [

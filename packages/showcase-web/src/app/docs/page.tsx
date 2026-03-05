@@ -1,6 +1,6 @@
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { DocsTopicsGrid } from '@/components/organisms/DocsTopicsGrid'
 import { CtaBanner } from '@/components/organisms/CtaBanner'
+import { DocsTopicsGrid } from '@/components/organisms/DocsTopicsGrid'
 
 export const metadata = {
   title:       'Documentation — ai-agencee',

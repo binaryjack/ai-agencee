@@ -1,9 +1,9 @@
-import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
+import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { FeatureCard } from '@/components/molecules/FeatureCard'
-import { FEATURES } from '@/data/features'
 import type { Feature } from '@/data/features'
+import { FEATURES } from '@/data/features'
 
 const CATEGORY_LABELS: Record<Feature['category'], string> = {
   orchestration: 'Orchestration & Execution',

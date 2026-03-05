@@ -1,5 +1,5 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 
 const CTA_SECONDARY_LINKS = [
   { label: 'Read the docs',      href: '/docs'     },

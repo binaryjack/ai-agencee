@@ -1,7 +1,7 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
-import { COMPARISON_ROWS } from '@/data/comparisons'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 import type { ComparisonStatus } from '@/data/comparisons'
+import { COMPARISON_ROWS } from '@/data/comparisons'
 
 function StatusCell({ status }: { status: ComparisonStatus }) {
   if (status === 'yes')     return <span className="text-success-500 text-base" title="Yes">✓</span>

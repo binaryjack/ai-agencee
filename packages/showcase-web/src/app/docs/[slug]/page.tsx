@@ -1,9 +1,9 @@
-import { notFound } from 'next/navigation'
-import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
+import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { DocCard } from '@/components/molecules/DocCard'
 import { DOC_TOPICS } from '@/data/docs'
+import { notFound } from 'next/navigation'
 
 interface Props {
   params: Promise<{ slug: string }>

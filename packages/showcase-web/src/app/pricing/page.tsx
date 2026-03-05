@@ -1,6 +1,6 @@
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { PricingSection } from '@/components/organisms/PricingSection'
 import { CtaBanner } from '@/components/organisms/CtaBanner'
+import { PricingSection } from '@/components/organisms/PricingSection'
 
 export const metadata = {
   title:       'Pricing — ai-agencee',

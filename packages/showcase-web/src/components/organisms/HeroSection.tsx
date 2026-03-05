@@ -1,5 +1,4 @@
 import { GradientText } from '@/components/atoms/GradientText'
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { CommandBlock } from '@/components/molecules/CommandBlock'
 import { STATS } from '@/data/comparisons'
 

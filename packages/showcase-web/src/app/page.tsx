@@ -1,12 +1,12 @@
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { HeroSection } from '@/components/organisms/HeroSection'
-import { FeatureHighlights } from '@/components/organisms/FeatureHighlights'
-import { WorkflowSteps } from '@/components/organisms/WorkflowSteps'
-import { ComparisonMatrix } from '@/components/organisms/ComparisonMatrix'
-import { ModelRoutingTable } from '@/components/organisms/ModelRoutingTable'
 import { AgentTypesShowcase } from '@/components/organisms/AgentTypesShowcase'
-import { QuickInstall } from '@/components/organisms/QuickInstall'
+import { ComparisonMatrix } from '@/components/organisms/ComparisonMatrix'
 import { CtaBanner } from '@/components/organisms/CtaBanner'
+import { FeatureHighlights } from '@/components/organisms/FeatureHighlights'
+import { HeroSection } from '@/components/organisms/HeroSection'
+import { ModelRoutingTable } from '@/components/organisms/ModelRoutingTable'
+import { QuickInstall } from '@/components/organisms/QuickInstall'
+import { WorkflowSteps } from '@/components/organisms/WorkflowSteps'
 
 export default function HomePage() {
   return (

@@ -1,5 +1,5 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 
 const MODEL_ROWS = [
   { task: 'file-analysis',         family: 'haiku',  anthropic: 'claude-haiku-4-5',  openai: 'gpt-4o-mini', costPer1M: '$0.80' },

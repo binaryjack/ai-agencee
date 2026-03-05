@@ -1,5 +1,5 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { PLAN_WORKFLOW_PHASES } from '@/data/agents'
 
 const PHASE_COLORS = [

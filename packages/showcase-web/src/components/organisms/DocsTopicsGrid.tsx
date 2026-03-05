@@ -1,8 +1,8 @@
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { DocCard } from '@/components/molecules/DocCard'
-import { DOC_TOPICS } from '@/data/docs'
 import type { DocTopic } from '@/data/docs'
+import { DOC_TOPICS } from '@/data/docs'
 
 const CATEGORY_LABELS: Record<DocTopic['category'], string> = {
   orchestration: 'Orchestration',

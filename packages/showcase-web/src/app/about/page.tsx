@@ -1,8 +1,8 @@
-import { SectionWrapper } from '@/components/layout/SectionWrapper'
-import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { GradientText } from '@/components/atoms/GradientText'
-import { CtaBanner } from '@/components/organisms/CtaBanner'
+import { SectionLabel } from '@/components/atoms/SectionLabel'
+import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { StatCard } from '@/components/molecules/StatCard'
+import { CtaBanner } from '@/components/organisms/CtaBanner'
 import { STATS } from '@/data/comparisons'
 
 export const metadata = {
