@@ -49,11 +49,11 @@
  */
 
 import type {
-  LLMPrompt,
-  LLMProvider,
-  LLMResponse,
-  LLMStreamChunk,
-  ToolExecutorFn,
+    LLMPrompt,
+    LLMProvider,
+    LLMResponse,
+    LLMStreamChunk,
+    ToolExecutorFn,
 } from './llm-provider.js'
 
 // ─── Public types ─────────────────────────────────────────────────────────────
