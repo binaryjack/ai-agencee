@@ -1,4 +1,4 @@
-# @tadeo/ai-starter-kit
+# @ai-agencee/ai-starter-kit
 
 > **Enterprise-grade multi-agent orchestration engine** — DAG-supervised parallel agents with streaming LLM output, intelligent model routing, resilience patterns, cost tracking, RBAC, audit logging, and a zero-API-key demo mode.
 

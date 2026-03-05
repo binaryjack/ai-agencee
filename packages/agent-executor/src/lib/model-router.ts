@@ -401,6 +401,20 @@ export class ModelRouter {
    * @param providerId  Must match a key in `this.config.providers`.
    *                    Throws at construction time if the provider is unknown.
    */
+  /**
+   * Replace every registered LLMProvider with the result of `mapFn(provider)`.
+   * Used by the injection-detection middleware to wrap all providers in place
+   * after the router has been built.
+   *
+   * @param mapFn - Transform function; must preserve `provider.name`.
+   */
+  wrapAllProviders(mapFn: (provider: LLMProvider) => LLMProvider): this {
+    for (const [name, p] of this.providers) {
+      this.providers.set(name, mapFn(p));
+    }
+    return this;
+  }
+
   withProviderOverride(providerId: string): ModelRouter {
     if (!this.config.providers[providerId]) {
       throw new Error(

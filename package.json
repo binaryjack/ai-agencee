@@ -1,5 +1,5 @@
 {
-  "name": "@tadeo/ai-starter-kit-monorepo",
+  "name": "@ai-agencee/ai-starter-kit-monorepo",
   "private": true,
   "scripts": {
     "build": "pnpm -r run build",
