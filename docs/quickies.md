@@ -67,7 +67,7 @@ wire → execute) → ready-to-build task breakdown.
 
 ```sh
 # Interactive: the BA agent interviews you (Phase 0 Q&A → through Phase 4)
-pnpm run:plan
+ai-kit plan
 
 # OR skip the Q&A with a pre-seeded discovery and watch Phases 1–4 only:
 pnpm demo:plan:01    # App Boilerplate seed  (greenfield API + SPA)
@@ -87,7 +87,7 @@ executable plan with every task assigned to an agent.
 
 **Pro tip:** Run with a real provider for richer output:
 ```sh
-ANTHROPIC_API_KEY=sk-... pnpm run:plan
+ANTHROPIC_API_KEY=sk-... ai-kit plan
 ```
 
 ---
@@ -103,13 +103,13 @@ plan that respects what's already there.
 pnpm demo:plan:04
 
 # OR start interactively — answer "no" to "is this greenfield?":
-pnpm run:plan
+ai-kit plan
 # → Phase 0 will ask about your existing stack, constraints, and the feature scope
 ```
 
 **For the DAG-only fast path** (design + implementation plan, no full planning):
 ```sh
-pnpm run:dag agents/demos/04-feature-in-context/feature.dag.json --provider mock
+ai-kit agent:dag agents/demos/04-feature-in-context/feature.dag.json --provider mock
 # Replace --provider mock with --provider anthropic + API key for real output
 ```
 
@@ -220,9 +220,9 @@ under 5 minutes.
 ### Step 4 — Run it
 
 ```sh
-pnpm run:dag agents/my-agents/pipeline-audit.dag.json --provider mock
+ai-kit agent:dag agents/my-agents/pipeline-audit.dag.json --provider mock
 # With a real LLM:
-ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/my-agents/pipeline-audit.dag.json
+ANTHROPIC_API_KEY=sk-... ai-kit agent:dag agents/my-agents/pipeline-audit.dag.json
 ```
 
 **Check types available:** `file-exists` · `llm-review` · `llm-generate` · `grep-check` · `shell-check` · `json-schema` · `plugin:<name>`
@@ -256,12 +256,12 @@ cat > /tmp/doc-gen.dag.json << 'EOF'
 }
 EOF
 
-pnpm run:dag /tmp/doc-gen.dag.json --provider mock
+ai-kit agent:dag /tmp/doc-gen.dag.json --provider mock
 ```
 
 **For the best result, use the plan system:**
 ```sh
-pnpm run:plan
+ai-kit plan
 # Phase 0 answers:
 #   type    → "spike" (exploration)
 #   stories → "Generate architecture doc, API reference, onboarding guide"
@@ -281,10 +281,10 @@ onboarding checklist — all from static code analysis + LLM synthesis.
 
 ```sh
 # Quick mock run to see the audit format:
-pnpm run:dag agents/demo-security.agent.json --provider mock
+ai-kit agent:dag agents/demo-security.agent.json --provider mock
 
 # For a real audit against your code:
-ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/security-review.agent.json --verbose
+ANTHROPIC_API_KEY=sk-... ai-kit agent:dag agents/security-review.agent.json --verbose
 ```
 
 **To create a project-specific audit DAG:**
@@ -310,7 +310,7 @@ ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/security-review.agent.json --verbos
 ```
 
 ```sh
-pnpm run:dag agents/my-security-audit.dag.json --provider anthropic
+ai-kit agent:dag agents/my-security-audit.dag.json --provider anthropic
 ```
 
 **You get:** OWASP-aligned findings, dependency CVE summary, severity-ranked
@@ -329,7 +329,7 @@ actionable performance improvements.
 
 ```sh
 # Use the plan system with a "spike" story type
-pnpm run:plan
+ai-kit plan
 
 # Answer Phase 0 questions like this:
 #   projectName       → "my-dataflow-perf"
@@ -351,7 +351,7 @@ pnpm run:plan
 ```sh
 # Run the architecture agent on your pipeline files:
 ANTHROPIC_API_KEY=sk-... \
-  pnpm run:dag agents/02-architecture.agent.json \
+  ai-kit agent:dag agents/02-architecture.agent.json \
   --verbose \
   --provider anthropic
 ```
@@ -368,7 +368,7 @@ strategies, and a ranked backlog of improvements with effort estimates.
 touch.
 
 ```sh
-pnpm run:plan
+ai-kit plan
 
 # Phase 0 answers:
 #   type              → "refactor"
@@ -399,10 +399,10 @@ unit, integration, and edge-case coverage.
 
 ```sh
 # Quick mock run (see test plan format):
-pnpm run:dag agents/05-testing.agent.json --provider mock
+ai-kit agent:dag agents/05-testing.agent.json --provider mock
 
 # Real run against your module:
-ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/05-testing.agent.json --verbose
+ANTHROPIC_API_KEY=sk-... ai-kit agent:dag agents/05-testing.agent.json --verbose
 
 # Or run both testing + e2e agents in parallel:
 cat > /tmp/test-suite.dag.json << 'EOF'
@@ -417,7 +417,7 @@ cat > /tmp/test-suite.dag.json << 'EOF'
 }
 EOF
 
-pnpm run:dag /tmp/test-suite.dag.json --provider anthropic
+ai-kit agent:dag /tmp/test-suite.dag.json --provider anthropic
 ```
 
 **You get:** Test file stubs, describe/it structure, mocking strategy,
@@ -432,7 +432,7 @@ edge-case inventory, and coverage target per file.
 — with parallel tracks for infrastructure, backend, and frontend.
 
 ```sh
-pnpm run:plan
+ai-kit plan
 
 # Phase 0 answers:
 #   type              → "migration"
@@ -463,13 +463,13 @@ data flows, and a 3-day onboarding checklist.
 
 ```sh
 # Visualise the existing agent DAG structure first:
-pnpm run:dag agents/dag.json --provider mock --verbose
+ai-kit agent:dag agents/dag.json --provider mock --verbose
 
 # Generate architecture diagram:
 node packages/cli/dist/bin/ai-kit.js dag:visualize agents/dag.json --format mermaid
 
 # Or run a dedicated onboarding plan:
-pnpm run:plan
+ai-kit plan
 
 # Phase 0 answers:
 #   type              → "spike"
@@ -527,7 +527,7 @@ cat .agents/results/dag-$(ls -t .agents/results/ | head -1)
 ```
 
 ```sh
-pnpm run:dag agents/post-mortem.dag.json --provider anthropic --verbose
+ai-kit agent:dag agents/post-mortem.dag.json --provider anthropic --verbose
 ```
 
 **You get:** Timeline reconstruction, root-cause analysis, contributing factors,
@@ -560,7 +560,7 @@ handoffs, escalations, hard barriers, and human-review gates. Share the
 pnpm audit --audit-level=high
 
 # Run the security-review DAG against your actual codebase:
-ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/security-review.agent.json --verbose
+ANTHROPIC_API_KEY=sk-... ai-kit agent:dag agents/security-review.agent.json --verbose
 
 # Generate OIDC JWT auth tokens for the SSE endpoint:
 # See docs/enterprise-readiness.md → E5 OIDC JWT Auth
@@ -577,7 +577,7 @@ ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/security-review.agent.json --verbos
 
 ```sh
 # Seed a project discovery relevant to your team:
-pnpm run:plan
+ai-kit plan
 # or use a pre-built seed:
 pnpm demo:plan:02   # Enterprise Skeleton — auth, RBAC, multi-tenancy
 ```
@@ -648,7 +648,7 @@ continues.
 
 ```sh
 # Run with interactive security gate:
-pnpm run:dag my-project.dag.json --provider anthropic --interactive
+ai-kit agent:dag my-project.dag.json --provider anthropic --interactive
 ```
 
 **Compliance properties enforced automatically:**
@@ -693,10 +693,10 @@ Each squad's DAG points to this central file:
 Every `agent:dag` run takes an optional `--principal` flag:
 ```sh
 # Squad A run — results isolated under .agents/tenants/squad-a/
-pnpm run:dag squad-a/sprint-01.dag.json --principal squad-a --provider anthropic
+ai-kit agent:dag squad-a/sprint-01.dag.json --principal squad-a --provider anthropic
 
 # Squad B run — fully isolated
-pnpm run:dag squad-b/sprint-01.dag.json --principal squad-b --provider anthropic
+ai-kit agent:dag squad-b/sprint-01.dag.json --principal squad-b --provider anthropic
 ```
 
 Tenant paths are enforced at the engine level (E3) — squads cannot read each
@@ -732,7 +732,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pnpm install && pnpm build
-      - run: pnpm run:dag agents/security-review.agent.json --provider mock
+      - run: ai-kit agent:dag agents/security-review.agent.json --provider mock
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
@@ -791,10 +791,10 @@ the downstream lane **must** see both contracts simultaneously.
 ### Use mock mode in CI, real LLM only on feature branches
 ```sh
 # CI: fast, $0, catches structural issues
-pnpm run:dag agents/dag.json --provider mock
+ai-kit agent:dag agents/dag.json --provider mock
 
 # Feature branches: real output when you need it
-ANTHROPIC_API_KEY=sk-... pnpm run:dag agents/dag.json
+ANTHROPIC_API_KEY=sk-... ai-kit agent:dag agents/dag.json
 ```
 
 ### Result JSON is machine-readable for downstream tooling
@@ -891,7 +891,7 @@ jobs:
         with: { version: '10' }
       - run: pnpm install && pnpm build
       - name: Run DAG quality gate (mock)
-        run: pnpm run:dag agents/dag.json --provider mock
+        run: ai-kit agent:dag agents/dag.json --provider mock
         # Exits non-zero if any lane ESCALATES → PR blocked
 ```
 
@@ -919,7 +919,7 @@ tests/, openapi.yaml …) into hard PR blockers.
 
 ```sh
 # Capture current behaviour as baseline:
-pnpm run:dag agents/05-testing.agent.json --provider anthropic
+ai-kit agent:dag agents/05-testing.agent.json --provider anthropic
 cp .agents/results/dag-<id>.json .agents/baseline-$(date +%Y%m%d).json
 
 # After refactor, diff findings against baseline:
@@ -960,7 +960,7 @@ a hard sync point before cutover, and automated rollback guidance.
 ### Step 1 — Use the plan system with `migration` story type
 
 ```sh
-pnpm run:plan
+ai-kit plan
 
 # Phase 0 answers:
 #   type              → "migration"
@@ -1041,7 +1041,7 @@ three preparation lanes have committed their contracts.
 
 ```sh
 # Run with human gate active — DBA approves cutover interactively:
-pnpm run:dag agents/data-migration.dag.json --provider anthropic --interactive
+ai-kit agent:dag agents/data-migration.dag.json --provider anthropic --interactive
 ```
 
 **You get:** Schema diff, type-mapping catalogue, validation suite with row-count
@@ -1051,7 +1051,7 @@ human gate that blocks cutover until a DBA approves.
 **Pro tip:** Run the full DAG in mock first to verify the barrier and gate logic
 before spending LLM budget:
 ```sh
-pnpm run:dag agents/data-migration.dag.json --provider mock
+ai-kit agent:dag agents/data-migration.dag.json --provider mock
 ```
 
 ---
@@ -1065,15 +1065,15 @@ pnpm demo:menu                     # pick from 6 advanced scenarios
 pnpm demo:06                       # all error types in parallel (best first run)
 
 # Plan system
-pnpm run:plan                      # full interactive 5-phase plan
+ai-kit plan                      # full interactive 5-phase plan
 pnpm demo:plan                     # seed Phase 0, start from SYNTHESIZE
 pnpm demo:plan:01 … demo:plan:05   # specific project-type seeds
 
 # DAG execution
-pnpm run:dag <dag.json>                         # run any DAG (mock default)
-pnpm run:dag <dag.json> --provider anthropic    # real LLM
-pnpm run:dag <dag.json> --verbose               # show all findings live
-pnpm run:dag <dag.json> --interactive           # pause at needs-human-review gates
+ai-kit agent:dag <dag.json>                         # run any DAG (mock default)
+ai-kit agent:dag <dag.json> --provider anthropic    # real LLM
+ai-kit agent:dag <dag.json> --verbose               # show all findings live
+ai-kit agent:dag <dag.json> --interactive           # pause at needs-human-review gates
 
 # Visualise
 node packages/cli/dist/bin/ai-kit.js dag:visualize <dag.json>             # Mermaid
@@ -1084,8 +1084,8 @@ ls .agents/results/                # browse run outputs
 cat .agents/results/<run-id>.json  # full result JSON
 
 # Enterprise
-pnpm run:dag <dag.json> --principal <squad-id>  # isolate results per squad/tenant
-pnpm run:dag <dag.json> --interactive           # pause at needs-human-review gates
+ai-kit agent:dag <dag.json> --principal <squad-id>  # isolate results per squad/tenant
+ai-kit agent:dag <dag.json> --interactive           # pause at needs-human-review gates
 pnpm audit --audit-level=high                  # dependency CVE scan
 cat .agents/results/dag-<id>.json \
   | jq '[.lanes[]|select(.status=="escalated")]' # list escalated lanes in CI
