@@ -1,7 +1,6 @@
-import { useCallback }            from 'react'
-import { useReactFlow }           from '@xyflow/react'
-import { DagCanvas }              from '@ai-agencee/ui/dag'
-import type { DagNode, DagEdge, AnyNodeData } from '@ai-agencee/ui/dag'
+import type { AnyNodeData, DagEdge, DagNode } from '@ai-agencee/ui/dag'
+import { DagCanvas } from '@ai-agencee/ui/dag'
+import { useCallback } from 'react'
 
 interface CanvasAreaProps {
   nodes:         DagNode[]

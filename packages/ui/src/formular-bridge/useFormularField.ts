@@ -1,5 +1,5 @@
-import { useSyncExternalStore, useRef } from 'react'
-import type { IFormularLike, ErrorLike } from './FormProvider.js'
+import { useRef, useSyncExternalStore } from 'react'
+import type { ErrorLike, IFormularLike } from './FormProvider.js'
 
 export interface FieldSnapshot<T = unknown> {
   value:     T

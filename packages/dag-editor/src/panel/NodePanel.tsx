@@ -1,7 +1,7 @@
-import { Heading, Badge, Divider } from '@ai-agencee/ui/atoms'
-import { WorkerNodePanel }         from './WorkerNodePanel.js'
-import { SupervisorNodePanel }     from './SupervisorNodePanel.js'
-import type { DagNode, AnyNodeData } from '@ai-agencee/ui/dag'
+import { Badge, Heading } from '@ai-agencee/ui/atoms'
+import type { AnyNodeData, DagNode } from '@ai-agencee/ui/dag'
+import { SupervisorNodePanel } from './SupervisorNodePanel.js'
+import { WorkerNodePanel } from './WorkerNodePanel.js'
 
 interface NodePanelProps {
   node:     DagNode

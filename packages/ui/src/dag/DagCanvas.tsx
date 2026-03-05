@@ -1,24 +1,23 @@
-import { useCallback, useMemo } from 'react'
 import {
-  ReactFlow,
-  MiniMap,
-  Controls,
-  Background,
-  BackgroundVariant,
-  applyNodeChanges,
-  applyEdgeChanges,
-  addEdge,
-  MarkerType,
-  type NodeChange,
-  type EdgeChange,
-  type Connection,
+    applyEdgeChanges,
+    applyNodeChanges,
+    Background,
+    BackgroundVariant,
+    Controls,
+    MarkerType,
+    MiniMap,
+    ReactFlow,
+    type Connection,
+    type EdgeChange,
+    type NodeChange
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
+import { useCallback } from 'react'
 
-import { DagNodeComponent } from './DagNode.js'
 import { DagEdgeComponent } from './DagEdge.js'
+import { DagNodeComponent } from './DagNode.js'
+import type { AnyNodeData, DagCanvasProps, DagEdge, DagNode } from './types.js'
 import { useDagLayout } from './useDagLayout.js'
-import type { DagCanvasProps, DagNode, DagEdge, AnyNodeData } from './types.js'
 
 const nodeTypes = {
   worker:     DagNodeComponent,

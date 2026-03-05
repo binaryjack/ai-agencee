@@ -1,17 +1,9 @@
-export { DagCanvas }        from './DagCanvas.js'
-export { DagNodeComponent } from './DagNode.js'
+export { DagCanvas } from './DagCanvas.js'
 export { DagEdgeComponent } from './DagEdge.js'
-export { useDagLayout }     from './useDagLayout.js'
+export { DagNodeComponent } from './DagNode.js'
 export type {
-  DagCanvasProps,
-  DagNode,
-  DagEdge,
-  DagNodeKind,
-  AnyNodeData,
-  BaseNodeData,
-  WorkerNodeData,
-  SupervisorNodeData,
-  LaneNodeData,
-  TriggerNodeData,
-  BudgetNodeData,
+    AnyNodeData,
+    BaseNodeData, BudgetNodeData, DagCanvasProps, DagEdge, DagNode, DagNodeKind, LaneNodeData, SupervisorNodeData, TriggerNodeData, WorkerNodeData
 } from './types.js'
+export { useDagLayout } from './useDagLayout.js'
+

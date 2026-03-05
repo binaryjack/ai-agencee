@@ -1,8 +1,8 @@
-import { useMemo }                  from 'react'
-import { createForm, f, DirectSubmissionStrategy } from '@pulsar-framework/formular.dev'
-import { FormProvider, Input, Select, CheckBox } from '@ai-agencee/ui/formular-bridge'
-import { Button }                   from '@ai-agencee/ui/atoms'
-import type { SupervisorNodeData }  from '@ai-agencee/ui/dag'
+import { Button } from '@ai-agencee/ui/atoms'
+import type { SupervisorNodeData } from '@ai-agencee/ui/dag'
+import { FormProvider, Input, Select } from '@ai-agencee/ui/formular-bridge'
+import { createForm, DirectSubmissionStrategy, f } from '@pulsar-framework/formular.dev'
+import { useMemo } from 'react'
 
 const FAIL_BEHAVIOR_OPTIONS = [
   { value: 'halt', label: 'Halt (stop DAG)' },

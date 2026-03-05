@@ -1,5 +1,5 @@
-import type { StatusKey } from '../tokens/index.js'
 import { Badge } from '../atoms/badge.js'
+import type { StatusKey } from '../tokens/index.js'
 
 interface StatBoxProps {
   label:      string

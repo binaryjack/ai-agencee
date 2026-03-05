@@ -3,4 +3,6 @@
 @tailwind utilities;
 
 /* React Flow overrides */
-.react-flow__attribution { display: none; }
+.react-flow__attribution {
+    display: none;
+}

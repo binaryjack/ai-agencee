@@ -1,4 +1,4 @@
-import type { statusColor, StatusKey } from '../tokens/index.js'
+import type { StatusKey } from '../tokens/index.js'
 
 interface BadgeProps {
   status?:    StatusKey

@@ -1,6 +1,5 @@
-import { useCallback }  from 'react'
 import type { DagNode, DagNodeKind } from '@ai-agencee/ui/dag'
-import { Button }       from '@ai-agencee/ui/atoms'
+import { useCallback } from 'react'
 
 interface PaletteItem {
   kind:     DagNodeKind

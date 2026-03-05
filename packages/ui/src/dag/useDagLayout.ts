@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
 import dagre from 'dagre'
-import type { DagNode, DagEdge } from './types.js'
+import { useMemo } from 'react'
+import type { DagEdge, DagNode } from './types.js'
 
 const NODE_WIDTH  = 160
 const NODE_HEIGHT = 72

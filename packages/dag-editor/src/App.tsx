@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react'
-import { ReactFlowProvider }     from '@xyflow/react'
-import type { DagNode, DagEdge, AnyNodeData } from '@ai-agencee/ui/dag'
-import { CanvasArea }   from './canvas/CanvasArea.js'
-import { Palette }      from './palette/Palette.js'
-import { Toolbar }      from './toolbar/Toolbar.js'
-import { NodePanel }    from './panel/NodePanel.js'
-import { useDagFile }   from './hooks/useDagFile.js'
+import type { AnyNodeData, DagNode } from '@ai-agencee/ui/dag'
+import { ReactFlowProvider } from '@xyflow/react'
+import { useCallback, useState } from 'react'
+import { CanvasArea } from './canvas/CanvasArea.js'
+import { useDagFile } from './hooks/useDagFile.js'
+import { Palette } from './palette/Palette.js'
+import { NodePanel } from './panel/NodePanel.js'
+import { Toolbar } from './toolbar/Toolbar.js'
 
 export function App() {
   const { nodes, edges, setNodes, setEdges, loadFile, exportFile } = useDagFile()

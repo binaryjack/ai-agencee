@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import type { DagEdge, DagNode } from '@ai-agencee/ui/dag'
 import { addEdge, type Connection } from '@xyflow/react'
-import type { DagNode, DagEdge }    from '@ai-agencee/ui/dag'
-import { jsonToDagFlow, dagFlowToJson } from '../canvas/dagSerializer.js'
+import { useCallback, useState } from 'react'
+import { dagFlowToJson, jsonToDagFlow } from '../canvas/dagSerializer.js'
 
 const INITIAL_NODES: DagNode[] = []
 const INITIAL_EDGES: DagEdge[] = []

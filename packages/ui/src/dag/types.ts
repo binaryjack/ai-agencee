@@ -1,6 +1,6 @@
 /** Shared types for the DAG canvas — used by both dag-editor and showcase-web. */
 
-import type { Node, Edge } from '@xyflow/react'
+import type { Edge, Node } from '@xyflow/react'
 import type { StatusKey } from '../tokens/index.js'
 
 // ─── Node data ────────────────────────────────────────────────────────────────

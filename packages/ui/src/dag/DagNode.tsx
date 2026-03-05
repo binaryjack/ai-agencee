@@ -1,7 +1,7 @@
-import { memo } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import type { AnyNodeData } from './types.js'
+import { memo } from 'react'
 import { Badge } from '../atoms/badge.js'
+import type { AnyNodeData } from './types.js'
 
 const kindBorder: Record<string, string> = {
   worker:     'border-brand-400',
