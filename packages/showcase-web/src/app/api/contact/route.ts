@@ -49,6 +49,13 @@ export async function POST(req: Request) {
   }
 
   if (!process.env.RESEND_API_KEY) {
+    // In development, log the submission and return success so the form flow
+    // can be tested end-to-end without a real Resend account.
+    if (process.env.NODE_ENV === 'development') {
+      console.info('[contact] ⚠️  RESEND_API_KEY not set — logging submission instead of sending mail')
+      console.info('[contact] submission:', { name, email, topic, message, subscribeUpdates })
+      return NextResponse.json({ success: true })
+    }
     console.error('[contact] RESEND_API_KEY is not set')
     return NextResponse.json({ error: 'Mail service not configured.' }, { status: 503 })
   }
