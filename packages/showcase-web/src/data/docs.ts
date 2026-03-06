@@ -209,7 +209,7 @@ ai-kit agent:dag ./my-dag.json --budget 2.50
       {
         id:      'tools',
         label:   'Available MCP Tools',
-        content: `| Tool | Description |\n|------|-------------|\n| \`@init\` | Load TADEO/ULTRA_HIGH coding standards |\n| \`@check\` | Validate project structure |\n| \`@rules\` | Access coding standards & guidelines |\n| \`@patterns\` | Design patterns library |\n| \`@bootstrap\` | Get setup configuration |`,
+        content: `| Tool | Description |\n|------|-------------|\n| \`@init\` | Load project coding standards and quality rules |\n| \`@check\` | Validate project structure |\n| \`@rules\` | Access coding standards & guidelines |\n| \`@patterns\` | Design patterns library |\n| \`@bootstrap\` | Get setup configuration |`,
       },
     ],
     relatedSlugs: ['cli', 'dag-orchestration'],
@@ -236,8 +236,8 @@ OIDC_JWKS_URI=https://auth.example.com/.well-known/jwks.json
 OIDC_ISSUER=https://auth.example.com
 OIDC_AUDIENCE=ai-agencee
 
-# Or use symmetric HS256 (dev/test only)
-JWT_SECRET=my-secret
+# Or use symmetric HS256 (dev/test only — use a long random string)
+JWT_SECRET=<your-long-random-secret>
 \`\`\``,
       },
       {

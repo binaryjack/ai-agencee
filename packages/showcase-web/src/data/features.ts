@@ -36,7 +36,7 @@ export const FEATURES: Feature[] = [
     highlights:  [
       'Per-task model tier assignment',
       'Budget enforcement — falls back to cheaper models',
-      'Supports Anthropic, OpenAI, VS Code Sampling, Ollama, Bedrock',
+      'Supports Anthropic, OpenAI, VS Code Sampling, Ollama, Gemini, Bedrock',
       'Real-time cost tracking per run',
       'Zero-key Mock provider for CI/testing',
     ],
@@ -147,7 +147,7 @@ export const FEATURES: Feature[] = [
       'ai-kit plan — 5-phase interactive discovery → sprint plan',
       'ai-kit visualize — Mermaid/DOT DAG diagrams',
       'ai-kit data:export / data:delete — GDPR CLI',
-      'ai-kit init --strict — scaffold with ULTRA_HIGH standards',
+      'ai-kit init --strict — scaffold with strict quality standards',
     ],
     docsPath: '/docs/cli',
   },

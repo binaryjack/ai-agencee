@@ -2,6 +2,7 @@ const NAV_LINKS = [
   { href: '/',          label: 'Home'     },
   { href: '/features',  label: 'Features' },
   { href: '/pricing',   label: 'Pricing'  },
+  { href: '/services',  label: 'Services' },
   { href: '/docs',      label: 'Docs'     },
   { href: '/about',     label: 'About'    },
   { href: '/contact',   label: 'Contact'  },

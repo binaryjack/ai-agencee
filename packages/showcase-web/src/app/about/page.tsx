@@ -11,11 +11,11 @@ export const metadata = {
 }
 
 const TIMELINE = [
-  { period: 'Phase 1 — Month 1',  title: 'Open-source launch',  description: 'Free CLI + mock provider on npm. 424 tests, 13 enterprise features shipped.' },
-  { period: 'Phase 2 — Month 3',  title: 'SaaS beta',           description: 'Starter tier ($29) with BYOK support. Stripe billing, usage dashboard.' },
-  { period: 'Phase 3 — Month 6',  title: 'Professional tier',   description: 'Managed keys, advanced cost analytics, custom agents, 99 % SLA.' },
-  { period: 'Phase 4 — Month 9',  title: 'Plugin marketplace',  description: 'Paid agent packs: security-auditor, compliance-checker, Jira sync.' },
-  { period: 'Phase 5 — Month 12', title: 'Managed cloud',       description: 'Enterprise single-tenant, Ollama/Bedrock/Gemini, dedicated SRE support.' },
+  { phase: '1', title: 'Open-source foundation',  description: 'Free CLI + mock provider on npm. Full test coverage, 13 enterprise features, and zero-key evaluation mode.' },
+  { phase: '2', title: 'SaaS tiers',               description: 'Starter and Professional plans with BYOK Anthropic/OpenAI support, usage dashboards, and managed billing.' },
+  { phase: '3', title: 'Advanced analytics',        description: 'Cost optimisation dashboard, advanced token attribution, and custom agent templates.' },
+  { phase: '4', title: 'Plugin marketplace',        description: 'Curated agent packs for common enterprise workflows — security, compliance, project management, and more.' },
+  { phase: '5', title: 'Managed cloud',             description: 'Dedicated single-tenant infrastructure with custom provider support and dedicated engineering support.' },
 ]
 
 const TEAM_VALUES = [
@@ -98,10 +98,9 @@ export default function AboutPage() {
                 <span className="absolute left-4 top-8 h-full w-px bg-neutral-700" aria-hidden />
               )}
               <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-brand-600 bg-brand-900/30 text-xs font-bold text-brand-300">
-                {i + 1}
+                {step.phase}
               </div>
               <div className="pb-8 flex flex-col gap-0.5">
-                <span className="text-[11px] font-medium text-neutral-500">{step.period}</span>
                 <span className="text-sm font-bold text-neutral-100">{step.title}</span>
                 <span className="text-xs text-neutral-400">{step.description}</span>
               </div>

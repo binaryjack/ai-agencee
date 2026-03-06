@@ -28,14 +28,12 @@ export function PricingSection() {
 
       {/* Cost transparency note */}
       <div className="rounded-node border border-brand-700/40 bg-brand-900/20 px-6 py-5">
-        <h3 className="mb-2 text-sm font-semibold text-brand-300">Token economics</h3>
+        <h3 className="mb-2 text-sm font-semibold text-brand-300">How token billing works</h3>
         <p className="text-xs leading-relaxed text-neutral-400">
-          On the <strong className="text-neutral-200">Starter</strong> tier we estimate ~$9/month
-          in provider costs at 1 M tokens — giving us ~69 % margin at $29.
-          On <strong className="text-neutral-200">Professional</strong> the token resale is
-          break-even; margin comes from seat + support.
-          <strong className="text-neutral-200"> Enterprise</strong> bulk provider discounts yield
-          ~50 %+ margin at the $2 K+/month price point.{' '}
+          Tokens are counted across all LLM calls within a billing month and reset on your billing
+          anniversary. The built-in model router automatically selects the cheapest model tier that
+          satisfies each task — keeping your token spend as low as possible without sacrificing
+          output quality.{' '}
           <a
             href="https://github.com/binaryjack/ai-starter-kit"
             className="text-brand-400 hover:underline"

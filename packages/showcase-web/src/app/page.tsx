@@ -1,10 +1,12 @@
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { AgentTypesShowcase } from '@/components/organisms/AgentTypesShowcase'
 import { ComparisonMatrix } from '@/components/organisms/ComparisonMatrix'
+import { ContributeSection } from '@/components/organisms/ContributeSection'
 import { CtaBanner } from '@/components/organisms/CtaBanner'
 import { FeatureHighlights } from '@/components/organisms/FeatureHighlights'
 import { HeroSection } from '@/components/organisms/HeroSection'
 import { ModelRoutingTable } from '@/components/organisms/ModelRoutingTable'
+import { NpmPackagesSection } from '@/components/organisms/NpmPackagesSection'
 import { QuickInstall } from '@/components/organisms/QuickInstall'
 import { WorkflowSteps } from '@/components/organisms/WorkflowSteps'
 
@@ -42,6 +44,16 @@ export default function HomePage() {
       {/* Quick install */}
       <SectionWrapper id="install" className="bg-neutral-800/20 border-y border-neutral-700/40">
         <QuickInstall />
+      </SectionWrapper>
+
+      {/* npm packages */}
+      <SectionWrapper id="packages">
+        <NpmPackagesSection />
+      </SectionWrapper>
+
+      {/* Community & contributors */}
+      <SectionWrapper id="contribute" className="bg-neutral-800/20 border-y border-neutral-700/40">
+        <ContributeSection />
       </SectionWrapper>
 
       {/* CTA banner */}

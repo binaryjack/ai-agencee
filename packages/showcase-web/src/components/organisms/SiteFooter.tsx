@@ -4,6 +4,7 @@ const FOOTER_COLUMNS = [
     links: [
       { label: 'Features',    href: '/features'  },
       { label: 'Pricing',     href: '/pricing'   },
+      { label: 'Services',    href: '/services'  },
       { label: 'Demo',        href: '/dag'        },
       { label: 'Changelog',   href: '#'           },
     ],

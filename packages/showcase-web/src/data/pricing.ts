@@ -55,6 +55,7 @@ export const PRICING_TIERS: PricingTier[] = [
     slug:               'starter',
     monthlyUsd:         29,
     yearlyUsd:          29 * 11,
+    badge:              'Cloud — Coming Soon',
     description:        'For indie developers and freelancers who want to run real LLM workflows on their own API keys.',
     tokenLimitPerMonth: '1 M tokens / month',
     concurrentRuns:     5,
@@ -73,8 +74,8 @@ export const PRICING_TIERS: PricingTier[] = [
       'Private DAGs',
       'Compliance exports',
     ],
-    ctaLabel:    'Start for $29 / mo',
-    ctaHref:     '#',
+    ctaLabel:    'Join the waitlist',
+    ctaHref:     '/contact',
     highlighted: false,
   },
   {
@@ -83,7 +84,7 @@ export const PRICING_TIERS: PricingTier[] = [
     slug:               'professional',
     monthlyUsd:         99,
     yearlyUsd:          99 * 11,
-    badge:              'Most Popular',
+    badge:              'Most Popular — Coming Soon',
     description:        'For product squads who need managed keys, compliance logs, and custom agents.',
     tokenLimitPerMonth: '10 M tokens / month',
     concurrentRuns:     25,
@@ -106,8 +107,8 @@ export const PRICING_TIERS: PricingTier[] = [
       'Dedicated infrastructure',
       'Ollama / Bedrock / Gemini providers',
     ],
-    ctaLabel:    'Start for $99 / mo',
-    ctaHref:     '#',
+    ctaLabel:    'Join the waitlist',
+    ctaHref:     '/contact',
     highlighted: true,
   },
   {
@@ -160,9 +161,5 @@ export const PRICING_FAQ: PricingFaqItem[] = [
   {
     question: 'Can I self-host?',
     answer:   'Yes — the CLI, DAG engine, and MCP server are fully open source (MIT). The SaaS tiers add managed keys, persistent dashboards, and enterprise compliance features.',
-  },
-  {
-    question: 'What is the estimated margin for token resale?',
-    answer:   'Starter tier: ~69% margin on token allocation. Professional: break-even on tokens (revenue from seat + support); Enterprise: ~50 %+ margin after bulk provider discounts.',
   },
 ]
