@@ -77,10 +77,13 @@ export interface FormBridge {
   validate(name: string):              Promise<void>
   submit():                            Promise<unknown>
   reset():                             void
-  isValid:     boolean
-  isDirty:     boolean
-  isBusy:      boolean
-  submitCount: number
+  isValid:            boolean
+  isDirty:            boolean
+  isBusy:             boolean
+  submitCount:        number
+  /** Incremented every time submit() is called (even when blocked by validation).
+   *  Field components watch this to show errors on all fields after a submit attempt. */
+  submitAttemptCount: number
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -105,11 +108,16 @@ const FormContext = createContext<FormBridge | null>(null)
 export function FormProvider({
   form,
   schema,
+  onSubmit,
   onBridgeReady,
   children,
 }: Readonly<{
   form:           IFormularLike
   schema?:        SchemaLike
+  /** Called with validated form values when the form passes validation.
+   *  When provided alongside `schema`, formular.dev\'s own submit() is bypassed entirely
+   *  so the saga / handler completely owns the async flow. */
+  onSubmit?:      (values: Record<string, unknown>) => Promise<void>
   /** Called once with the bridge instance so callers can hold a ref for reset() etc. */
   onBridgeReady?: (bridge: FormBridge) => void
   children:       ReactNode
@@ -126,19 +134,22 @@ export function FormProvider({
   })
 
   const [errors,      setErrors]      = useState<Record<string, ErrorLike[]>>({})
-  const [isDirty,     setIsDirty]     = useState(false)
-  const [isValid,     setIsValid]     = useState(true)
-  const [isBusy,      setIsBusy]      = useState(false)
-  const [submitCount, setSubmitCount] = useState(0)
+  const [isDirty,            setIsDirty]            = useState(false)
+  const [isValid,            setIsValid]            = useState(true)
+  const [isBusy,             setIsBusy]             = useState(false)
+  const [submitCount,        setSubmitCount]        = useState(0)
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0)
 
   const formRef = useRef(form)
   formRef.current = form
 
-  // Keep latest values + schema accessible inside callbacks without stale closures
-  const valuesRef = useRef(values)
+  // Keep latest values + schema + onSubmit accessible inside callbacks without stale closures
+  const valuesRef   = useRef(values)
   valuesRef.current = values
-  const schemaRef  = useRef(schema)
+  const schemaRef   = useRef(schema)
   schemaRef.current = schema
+  const onSubmitRef = useRef(onSubmit)
+  onSubmitRef.current = onSubmit
 
   // Intercept form.reset() so React state is cleared in sync with formular state
   useEffect(() => {
@@ -210,6 +221,9 @@ export function FormProvider({
   }, [])
 
   const submit = useCallback(async () => {
+    // Always increment attempt count so field components can reveal all errors
+    setSubmitAttemptCount((c: number) => c + 1)
+
     // If we have a schema, validate all fields first — formular.dev won't.
     if (schemaRef.current) {
       const allErrors = validateAll()
@@ -221,11 +235,19 @@ export function FormProvider({
 
     setIsBusy(true)
     setSubmitCount((c: number) => c + 1)
+
     try {
-      // formular.dev's submit() iterates fields looking for validationOptions.
-      // When the form was created via createForm({ schema }), those are always empty,
-      // so it logs an info message for every field.  We've already validated above
-      // via the schema, so these logs are noise — suppress them for this call only.
+      // ── Fast path: schema + onSubmit handler ─────────────────────────────
+      // When both are provided we own the full async flow — no formular.dev
+      // submit() involved, so no console.info spam, no internal-state guards.
+      if (schemaRef.current && onSubmitRef.current) {
+        await onSubmitRef.current({ ...valuesRef.current })
+        return null
+      }
+
+      // ── Fallback: delegate to formular.dev ────────────────────────────────
+      // Used when no onSubmit is provided (e.g. dag-editor panels that rely
+      // on formular.dev\'s own submission orchestration).
       const originalInfo = schemaRef.current ? console.info : null
       if (originalInfo) console.info = () => {}
       try {
@@ -248,10 +270,11 @@ export function FormProvider({
     validate,
     submit,
     reset: () => formRef.current.reset(),
-    get isValid()      { return isValid },
-    get isDirty()      { return isDirty },
-    get isBusy()       { return isBusy },
-    get submitCount()  { return submitCount },
+    get isValid()             { return isValid },
+    get isDirty()             { return isDirty },
+    get isBusy()              { return isBusy },
+    get submitCount()         { return submitCount },
+    get submitAttemptCount()  { return submitAttemptCount },
   }
 
   // Notify caller once the bridge is ready (stable ref identity matters here)

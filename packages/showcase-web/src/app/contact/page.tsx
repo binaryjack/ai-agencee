@@ -7,7 +7,7 @@ import { Button, Divider, Heading, Text } from '@ai-agencee/ui/atoms'
 import type { FormBridge, IFormularLike } from '@ai-agencee/ui/formular-bridge'
 import { CheckBox, FormProvider, Input, Select, TextArea } from '@ai-agencee/ui/formular-bridge'
 import { Icon } from '@ai-agencee/ui/icons'
-import { createForm, DirectSubmissionStrategy, f } from '@pulsar-framework/formular.dev'
+import { createForm, f } from '@pulsar-framework/formular.dev'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -110,11 +110,6 @@ export default function ContactPage() {
       defaultValues: {
         name: '', email: '', topic: 'general', message: '', subscribeUpdates: false,
       },
-      // The DirectSubmissionStrategy receives validated data from FormProvider.
-      // We hand it straight to the saga; formular.dev is only the orchestration shell.
-      submissionStrategy: new DirectSubmissionStrategy(
-        async (data: Record<string, unknown>) => { await run(data) }
-      ) as never,
     }).then((f) => {
       if (!cancelled) setForm(f as unknown as IFormularLike)
     })
@@ -177,6 +172,7 @@ export default function ContactPage() {
             <FormProvider
               form={form}
               schema={contactSchema}
+              onSubmit={run}
               onBridgeReady={(b) => { bridgeRef.current = b }}
             >
               {/* Spinner overlay while sending */}

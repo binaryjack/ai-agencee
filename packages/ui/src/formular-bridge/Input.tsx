@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useForm } from './FormProvider.js'
 import { useFormularField } from './useFormularField.js'
 import { ValidationResult } from './ValidationResult.js'
@@ -26,6 +26,12 @@ export function Input({
 
   const [isFocused, setIsFocused] = useState(false)
   const [isTouched, setIsTouched] = useState(false)
+
+  // When a submit is attempted, treat all fields as touched so subsequent
+  // changes re-validate and errors stay visible.
+  useEffect(() => {
+    if (form.submitAttemptCount > 0) setIsTouched(true)
+  }, [form.submitAttemptCount])
 
   const hasError = field.errors.length > 0
 
