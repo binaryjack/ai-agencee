@@ -10,6 +10,7 @@
     "./molecules":       "./src/molecules/index.ts",
     "./dag":             "./src/dag/index.ts",
     "./tokens":          "./src/tokens/index.ts",
+    "./icons":           "./src/icons/index.tsx",
     "./tailwind.preset": "./tailwind.preset.cjs"
   },
   "scripts": {

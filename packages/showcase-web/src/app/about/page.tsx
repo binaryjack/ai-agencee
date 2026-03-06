@@ -4,6 +4,7 @@ import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { StatCard } from '@/components/molecules/StatCard'
 import { CtaBanner } from '@/components/organisms/CtaBanner'
 import { STATS } from '@/data/comparisons'
+import { Icon, type IconName } from '@ai-agencee/ui/icons'
 
 export const metadata = {
   title:       'About — ai-agencee',
@@ -18,11 +19,11 @@ const TIMELINE = [
   { phase: '5', title: 'Managed cloud',             description: 'Dedicated single-tenant infrastructure with custom provider support and dedicated engineering support.' },
 ]
 
-const TEAM_VALUES = [
-  { icon: '⬡', title: 'Zero-key first',       body: 'Every capability must be evaluable without spending a cent. The mock provider is not an afterthought — it is a first-class citizen.' },
-  { icon: '🔍', title: 'Deterministic quality', body: 'Supervisor checkpoints are not advisory. They enforce acceptance criteria, inject corrections, and halt pipelines when quality drops below threshold.' },
-  { icon: '🔐', title: 'Enterprise from day 1', body: 'RBAC, audit logs, PII scrubbing, and multi-tenant isolation were designed into the engine — not retrofitted. Compliance should not be a separate product.' },
-  { icon: '🧱', title: 'Composable over monolithic', body: 'Agents, checks, supervisors, and providers are small, focused, and independently replaceable. No lock-in; no magic framework.' },
+const TEAM_VALUES: Array<{ icon: IconName; title: string; body: string }> = [
+  { icon: 'branching', title: 'Zero-key first',       body: 'Every capability must be evaluable without spending a cent. The mock provider is not an afterthought — it is a first-class citizen.' },
+  { icon: 'search', title: 'Deterministic quality', body: 'Supervisor checkpoints are not advisory. They enforce acceptance criteria, inject corrections, and halt pipelines when quality drops below threshold.' },
+  { icon: 'auth', title: 'Enterprise from day 1', body: 'RBAC, audit logs, PII scrubbing, and multi-tenant isolation were designed into the engine — not retrofitted. Compliance should not be a separate product.' },
+  { icon: 'modular', title: 'Composable over monolithic', body: 'Agents, checks, supervisors, and providers are small, focused, and independently replaceable. No lock-in; no magic framework.' },
 ]
 
 export default function AboutPage() {
@@ -77,7 +78,7 @@ export default function AboutPage() {
           {TEAM_VALUES.map((v) => (
             <div key={v.title} className="flex flex-col gap-2 rounded-node border border-neutral-700 bg-neutral-800 p-5">
               <div className="flex items-center gap-3">
-                <span className="text-xl" aria-hidden>{v.icon}</span>
+                <Icon name={v.icon} theme="dark" size={20} />
                 <h3 className="text-sm font-bold text-neutral-100">{v.title}</h3>
               </div>
               <p className="text-xs leading-relaxed text-neutral-400">{v.body}</p>

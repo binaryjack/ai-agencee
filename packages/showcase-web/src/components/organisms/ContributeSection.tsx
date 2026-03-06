@@ -1,31 +1,40 @@
 import { GradientText } from '@/components/atoms/GradientText'
 import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { ContributionCard } from '@/components/molecules/ContributionCard'
+import type { IconName } from '@ai-agencee/ui/icons'
 
-const CONTRIBUTION_WAYS = [
+interface ContributionWay {
+  icon:        IconName
+  title:       string
+  description: string
+  href:        string
+  cta:         string
+}
+
+const CONTRIBUTION_WAYS: ContributionWay[] = [
   {
-    icon:        '⭐',
+    icon:        'target',
     title:       'Star the repo',
     description: 'The single easiest way to help. Every star improves discoverability and signals project health.',
     href:        'https://github.com/binaryjack/ai-starter-kit',
     cta:         'Star on GitHub ↗',
   },
   {
-    icon:        '🐛',
+    icon:        'bug',
     title:       'File bugs & issues',
     description: 'Ran into unexpected behaviour? A clear reproduction report with steps is invaluable.',
     href:        'https://github.com/binaryjack/ai-starter-kit/issues',
     cta:         'Open an issue ↗',
   },
   {
-    icon:        '💡',
+    icon:        'idea',
     title:       'Suggest features',
     description: 'Ideas for new agents, providers, or capabilities? Start a GitHub Discussion.',
     href:        'https://github.com/binaryjack/ai-starter-kit/discussions',
     cta:         'Start a discussion ↗',
   },
   {
-    icon:        '🔀',
+    icon:        'branching',
     title:       'Contribute code',
     description: 'Good-first-issue tickets are tagged and scoped. Fork, implement, and open a PR.',
     href:        'https://github.com/binaryjack/ai-starter-kit/issues?q=label%3A%22good+first+issue%22',

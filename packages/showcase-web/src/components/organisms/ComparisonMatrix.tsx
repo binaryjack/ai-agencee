@@ -2,11 +2,12 @@ import { GradientText } from '@/components/atoms/GradientText'
 import { SectionLabel } from '@/components/atoms/SectionLabel'
 import type { ComparisonStatus } from '@/data/comparisons'
 import { COMPARISON_ROWS } from '@/data/comparisons'
+import { Icon } from '@ai-agencee/ui/icons'
 
 function StatusCell({ status }: { status: ComparisonStatus }) {
-  if (status === 'yes')     return <span className="text-success-500 text-base" title="Yes">✓</span>
-  if (status === 'no')      return <span className="text-danger-500  text-base" title="No">✗</span>
-  return <span className="text-warning-500 text-base" title="Partial">⚠</span>
+  if (status === 'yes')     return <Icon name="check" theme="dark" size={16} className="text-success-500" title="Yes" />
+  if (status === 'no')      return <Icon name="close" theme="dark" size={16} className="text-danger-500" title="No" />
+  return <Icon name="warning" theme="dark" size={16} className="text-warning-500" title="Partial" />
 }
 
 export function ComparisonMatrix() {

@@ -1,6 +1,7 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { useForm } from './FormProvider.js'
 import { useFormularField } from './useFormularField.js'
+import { ValidationResult } from './ValidationResult.js'
 
 interface SelectOption {
   value: string
@@ -21,10 +22,12 @@ export function Select({
   options,
   disabled  = false,
   className = '',
-}: SelectProps) {
+}: Readonly<SelectProps>) {
   const form  = useForm()
   const field = useFormularField<string>(form, name)
   const id    = useId()
+
+  const [isFocused, setIsFocused] = useState(false)
 
   const hasError = field.errors.length > 0
 
@@ -43,12 +46,17 @@ export function Select({
         name={name}
         value={(field.value as string | undefined) ?? ''}
         disabled={disabled}
+        onFocus={() => setIsFocused(true)}
         onChange={(e) => {
           form.updateField(name, e.target.value)
           void form.validate(name)
         }}
-        aria-invalid={hasError}
-        aria-describedby={hasError ? `${id}-error` : undefined}
+        onBlur={() => {
+          setIsFocused(false)
+          void form.validate(name)
+        }}
+        aria-invalid={hasError ? true : undefined}
+        aria-describedby={hasError ? `${id}-validation` : undefined}
         className={[
           'rounded-node border px-3 py-1.5 text-sm bg-white dark:bg-neutral-800',
           'text-neutral-900 dark:text-neutral-100',
@@ -71,19 +79,7 @@ export function Select({
           </option>
         ))}
       </select>
-      {hasError && (
-        <ul id={`${id}-error`}>
-          {field.errors.map((err, i) => (
-            <li
-              key={i}
-              role="alert"
-              className="text-xs text-danger-700 dark:text-danger-500"
-            >
-              {err.message}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ValidationResult id={`${id}-validation`} isFocused={isFocused} errors={field.errors} />
     </div>
   )
 }

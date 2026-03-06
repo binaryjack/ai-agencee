@@ -36,7 +36,11 @@ export function SiteFooter() {
           {/* Brand column */}
           <div className="flex flex-col gap-3">
             <a href="/" className="flex items-center gap-2">
-              <span className="text-lg font-bold" aria-hidden>⬡</span>
+              <img 
+                src="/ai-agencee-logo-dark.svg" 
+                alt="ai-agencee logo" 
+                className="h-7 w-auto"
+              />
               <span className="text-sm font-bold text-neutral-100">
                 ai-<span className="text-brand-400">agencee</span>
               </span>

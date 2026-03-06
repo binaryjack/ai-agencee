@@ -3,6 +3,7 @@ import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { FaqList } from '@/components/molecules/FaqList'
 import { PricingTierCard } from '@/components/molecules/PricingTierCard'
 import { PRICING_FAQ, PRICING_TIERS } from '@/data/pricing'
+import { Icon } from '@ai-agencee/ui/icons'
 
 export function PricingSection() {
   return (
@@ -21,7 +22,7 @@ export function PricingSection() {
 
       {/* Cloud launch notice */}
       <div className="flex items-start gap-3 rounded-node border border-warning-600/50 bg-warning-900/20 px-5 py-4 text-sm">
-        <span className="mt-0.5 shrink-0 text-base" aria-hidden>⚠️</span>
+        <Icon name="warning" theme="dark" size={18} className="mt-0.5 shrink-0 text-warning-500" />
         <p className="leading-relaxed text-warning-300">
           <strong className="text-warning-200">Cloud product not yet live.</strong>{' '}
           Starter, Professional, and Enterprise tiers are planned and will launch later this

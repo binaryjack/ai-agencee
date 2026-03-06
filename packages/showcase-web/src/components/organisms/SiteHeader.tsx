@@ -14,7 +14,11 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2">
-          <span className="text-lg font-bold" aria-hidden>⬡</span>
+          <img 
+            src="/ai-agencee-logo-dark.svg" 
+            alt="ai-agencee logo" 
+            className="h-7 w-auto"
+          />
           <span className="text-sm font-bold text-neutral-100">
             ai-<span className="text-brand-400">agencee</span>
           </span>

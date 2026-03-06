@@ -1,6 +1,7 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { useForm } from './FormProvider.js'
 import { useFormularField } from './useFormularField.js'
+import { ValidationResult } from './ValidationResult.js'
 
 interface TextAreaProps {
   name:        string
@@ -18,10 +19,13 @@ export function TextArea({
   placeholder,
   disabled  = false,
   className = '',
-}: TextAreaProps) {
+}: Readonly<TextAreaProps>) {
   const form  = useForm()
   const field = useFormularField<string>(form, name)
   const id    = useId()
+
+  const [isFocused, setIsFocused] = useState(false)
+  const [isTouched, setIsTouched] = useState(false)
 
   const hasError = field.errors.length > 0
 
@@ -42,10 +46,18 @@ export function TextArea({
         value={(field.value as string | undefined) ?? ''}
         placeholder={placeholder}
         disabled={disabled}
-        onChange={(e) => form.updateField(name, e.target.value)}
-        onBlur={() => void form.validate(name)}
-        aria-invalid={hasError}
-        aria-describedby={hasError ? `${id}-error` : undefined}
+        onChange={(e) => {
+          form.updateField(name, e.target.value)
+          if (isTouched) void form.validate(name)
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false)
+          setIsTouched(true)
+          void form.validate(name)
+        }}
+        aria-invalid={hasError ? true : undefined}
+        aria-describedby={hasError ? `${id}-validation` : undefined}
         className={[
           'rounded-node border px-3 py-1.5 text-sm bg-white dark:bg-neutral-800',
           'text-neutral-900 dark:text-neutral-100 resize-y',
@@ -59,19 +71,7 @@ export function TextArea({
           .filter(Boolean)
           .join(' ')}
       />
-      {hasError && (
-        <ul id={`${id}-error`}>
-          {field.errors.map((err, i) => (
-            <li
-              key={i}
-              role="alert"
-              className="text-xs text-danger-700 dark:text-danger-500"
-            >
-              {err.message}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ValidationResult id={`${id}-validation`} isFocused={isFocused} errors={field.errors} />
     </div>
   )
 }

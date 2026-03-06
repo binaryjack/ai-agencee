@@ -1,9 +1,11 @@
+import type { IconName } from '@ai-agencee/ui/icons'
+
 export interface Feature {
   id:          string
   slug:        string
   title:       string
   description: string
-  icon:        string
+  icon:        IconName
   category:    'orchestration' | 'enterprise' | 'dx' | 'observability'
   highlights:  string[]
   docsPath?:   string
@@ -15,7 +17,7 @@ export const FEATURES: Feature[] = [
     slug:        'dag-orchestration',
     title:       'DAG Orchestration',
     description: 'Declarative JSON-based directed acyclic graphs with parallel lanes, hard barriers, and supervisor checkpoints — zero boilerplate.',
-    icon:        '⬡',
+    icon:        'branching',
     category:    'orchestration',
     highlights:  [
       'Parallel lane execution (Backend + Frontend simultaneously)',
@@ -31,7 +33,7 @@ export const FEATURES: Feature[] = [
     slug:        'model-routing',
     title:       'Intelligent Model Routing',
     description: 'Automatically selects the optimal model tier (Haiku → Sonnet → Opus) based on task complexity and remaining budget.',
-    icon:        '🔀',
+    icon:        'branching',
     category:    'orchestration',
     highlights:  [
       'Per-task model tier assignment',
@@ -47,7 +49,7 @@ export const FEATURES: Feature[] = [
     slug:        'resilience-patterns',
     title:       'Resilience Patterns',
     description: 'Exponential-backoff retry, per-provider circuit breakers, and graceful fallbacks keep workflows running through transient failures.',
-    icon:        '🛡️',
+    icon:        'security',
     category:    'orchestration',
     highlights:  [
       'Exponential backoff with jitter',
@@ -63,7 +65,7 @@ export const FEATURES: Feature[] = [
     slug:        'streaming-output',
     title:       'Real-Time Streaming',
     description: 'Token-by-token LLM output streamed live to stdout — every provider, including the built-in Mock provider.',
-    icon:        '⚡',
+    icon:        'performance',
     category:    'orchestration',
     highlights:  [
       'Token streaming via SSE for Anthropic & OpenAI',
@@ -78,7 +80,7 @@ export const FEATURES: Feature[] = [
     slug:        'rbac-auth',
     title:       'RBAC & OIDC Auth',
     description: 'Role-based access control with RS256/ES256 JWT validation. Every run is principal-tagged and GDPR-ready.',
-    icon:        '🔐',
+    icon:        'auth',
     category:    'enterprise',
     highlights:  [
       'OIDC JWT Bearer token validation',
@@ -94,7 +96,7 @@ export const FEATURES: Feature[] = [
     slug:        'audit-logging',
     title:       'Immutable Audit Logging',
     description: 'Hash-chained tamper-proof audit logs for every agent action — compliance-ready out of the box.',
-    icon:        '📋',
+    icon:        'document',
     category:    'enterprise',
     highlights:  [
       'SHA-256 hash chain across log entries',
@@ -110,7 +112,7 @@ export const FEATURES: Feature[] = [
     slug:        'multi-tenant',
     title:       'Multi-Tenant Isolation',
     description: 'Hard filesystem and runtime isolation per tenant — each run lives in its own scoped directory tree.',
-    icon:        '🏢',
+    icon:        'enterprise',
     category:    'enterprise',
     highlights:  [
       'Path-isolated run roots per tenant ID',
@@ -125,7 +127,7 @@ export const FEATURES: Feature[] = [
     slug:        'pii-scrubbing',
     title:       'PII Scrubbing',
     description: 'Automatic regex-based detection and redaction of emails, phone numbers, SSNs, and API keys before they reach LLM providers.',
-    icon:        '🔏',
+    icon:        'encryption',
     category:    'enterprise',
     highlights:  [
       'Regex library covers email, phone, SSN, credit card, API key patterns',
@@ -140,7 +142,7 @@ export const FEATURES: Feature[] = [
     slug:        'cli',
     title:       'Powerful CLI',
     description: 'Full-featured command-line tool — init, sync, check, run DAGs, plan entire projects, visualise graphs.',
-    icon:        '⌨️',
+    icon:        'tools',
     category:    'dx',
     highlights:  [
       'ai-kit agent:dag — run any DAG from a JSON file',
@@ -156,7 +158,7 @@ export const FEATURES: Feature[] = [
     slug:        'mcp',
     title:       'MCP Integration',
     description: 'Native Model Context Protocol bridge — connect ai-agencee directly to Claude Desktop or VS Code Copilot.',
-    icon:        '🔌',
+    icon:        'plugin',
     category:    'dx',
     highlights:  [
       'Claude Desktop via claude_desktop_config.json',
@@ -172,7 +174,7 @@ export const FEATURES: Feature[] = [
     slug:        'builder-api',
     title:       'TypeScript Builder API',
     description: 'Fluent, fully type-safe DSL for constructing DAGs in code — no JSON required.',
-    icon:        '🧱',
+    icon:        'modular',
     category:    'dx',
     highlights:  [
       'Chainable .lane(), .barrier(), .supervisor() methods',
@@ -187,7 +189,7 @@ export const FEATURES: Feature[] = [
     slug:        'event-bus',
     title:       'Typed Event Bus',
     description: 'Subscribe to real-time DAG lifecycle events — token streams, cost updates, lane status — with full TypeScript typing.',
-    icon:        '📡',
+    icon:        'api',
     category:    'observability',
     highlights:  [
       'Typed event payloads (no string listeners)',

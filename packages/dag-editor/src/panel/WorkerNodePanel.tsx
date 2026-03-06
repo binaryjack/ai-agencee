@@ -30,12 +30,13 @@ interface WorkerNodePanelProps {
   onUpdate:  (id: string, data: WorkerNodeData) => void
 }
 
-export function WorkerNodePanel({ nodeId, data, onUpdate }: WorkerNodePanelProps) {
+export function WorkerNodePanel({ nodeId, data, onUpdate }: Readonly<WorkerNodePanelProps>) {
   // ── createForm is async — initialise via useEffect ──────────────────────
   const [form, setForm] = useState<IFormularLike | null>(null)
 
   useEffect(() => {
     let cancelled = false
+
     createForm({
       schema:        workerSchema,
       defaultValues: data as Record<string, unknown>,
@@ -45,6 +46,7 @@ export function WorkerNodePanel({ nodeId, data, onUpdate }: WorkerNodePanelProps
     }).then((f) => {
       if (!cancelled) setForm(f as unknown as IFormularLike)
     })
+
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeId])
@@ -54,7 +56,7 @@ export function WorkerNodePanel({ nodeId, data, onUpdate }: WorkerNodePanelProps
   }
 
   return (
-    <FormProvider form={form}>
+    <FormProvider form={form} schema={workerSchema}>
       <div className="flex flex-col gap-3 p-4">
         <Input  name="label"          label="Label" />
         <Input  name="agentFile"      label="Agent file (.agent.json)" placeholder="agents/01-business-analyst.agent.json" />

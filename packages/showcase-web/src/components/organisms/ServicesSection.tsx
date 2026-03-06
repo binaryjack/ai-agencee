@@ -1,10 +1,10 @@
 import { GradientText } from '@/components/atoms/GradientText'
 import { SectionLabel } from '@/components/atoms/SectionLabel'
-import { ServiceCard } from '@/components/molecules/ServiceCard'
+import { ServiceCard, type ServiceItem } from '@/components/molecules/ServiceCard'
 
-const SERVICES = [
+const SERVICES: ServiceItem[] = [
   {
-    icon:         '🏢',
+    icon:         'enterprise',
     title:        'Enterprise Onboarding',
     description:  'We configure ai-agencee from scratch in your environment — providers, RBAC, audit logging, CI/CD integration, and your first production DAG — in a focused 2-day on-site or remote engagement.',
     deliverables: [
@@ -15,7 +15,7 @@ const SERVICES = [
     ],
   },
   {
-    icon:         '🎓',
+    icon:         'idea',
     title:        'Team Coaching',
     description:  'A structured coaching programme for engineering teams learning DAG-based orchestration, agent design patterns, supervisor quality models, and resilience patterns.',
     deliverables: [
@@ -26,7 +26,7 @@ const SERVICES = [
     ],
   },
   {
-    icon:         '🔧',
+    icon:         'tools',
     title:        'Custom Agent Development',
     description:  'We design and build production-grade agents tailored to your domain — security auditors, compliance checkers, data pipeline orchestrators, or any bespoke workflow you need.',
     deliverables: [
@@ -37,7 +37,7 @@ const SERVICES = [
     ],
   },
   {
-    icon:         '🗺️',
+    icon:         'map',
     title:        'Architecture Review',
     description:  'A senior engagement assessing your current AI workflow architecture and producing a concrete, phased migration plan to DAG-supervised multi-agent orchestration.',
     deliverables: [

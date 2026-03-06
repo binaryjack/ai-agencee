@@ -3,6 +3,7 @@ import { SectionLabel } from '@/components/atoms/SectionLabel'
 import { SectionWrapper } from '@/components/layout/SectionWrapper'
 import { DocCard } from '@/components/molecules/DocCard'
 import { DOC_TOPICS } from '@/data/docs'
+import { Icon } from '@ai-agencee/ui/icons'
 import { notFound } from 'next/navigation'
 
 interface Props {
@@ -124,7 +125,7 @@ export default async function DocTopicPage({ params }: Props) {
       {/* Header */}
       <header className="mb-10 flex flex-col gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-3xl" aria-hidden>{topic.icon}</span>
+          <Icon name={topic.icon} theme="dark" size={32} />
           <SectionLabel>{topic.category}</SectionLabel>
         </div>
         <h1 className="text-3xl font-extrabold text-neutral-100 sm:text-4xl">

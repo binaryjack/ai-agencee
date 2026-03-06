@@ -1,6 +1,7 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { useForm } from './FormProvider.js'
 import { useFormularField } from './useFormularField.js'
+import { ValidationResult } from './ValidationResult.js'
 
 interface CheckBoxProps {
   name:      string
@@ -14,10 +15,12 @@ export function CheckBox({
   label,
   disabled  = false,
   className = '',
-}: CheckBoxProps) {
+}: Readonly<CheckBoxProps>) {
   const form  = useForm()
   const field = useFormularField<boolean>(form, name)
   const id    = useId()
+
+  const [isFocused, setIsFocused] = useState(false)
 
   const hasError = field.errors.length > 0
 
@@ -42,8 +45,13 @@ export function CheckBox({
           onChange={(e) => {
             form.updateField(name, e.target.checked)
           }}
-          aria-invalid={hasError}
-          aria-describedby={hasError ? `${id}-error` : undefined}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false)
+            void form.validate(name)
+          }}
+          aria-invalid={hasError ? true : undefined}
+          aria-describedby={hasError ? `${id}-validation` : undefined}
           className={[
             'h-4 w-4 rounded border accent-brand-500',
             'focus:ring-2 focus:ring-brand-500 focus:ring-offset-1',
@@ -54,19 +62,7 @@ export function CheckBox({
         />
         {label}
       </label>
-      {hasError && (
-        <ul id={`${id}-error`}>
-          {field.errors.map((err, i) => (
-            <li
-              key={i}
-              role="alert"
-              className="text-xs text-danger-700 dark:text-danger-500 ml-6"
-            >
-              {err.message}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ValidationResult id={`${id}-validation`} isFocused={isFocused} errors={field.errors} />
     </div>
   )
 }

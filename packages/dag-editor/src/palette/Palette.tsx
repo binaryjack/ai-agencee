@@ -1,19 +1,20 @@
 import type { DagNode, DagNodeKind } from '@ai-agencee/ui/dag'
+import { Icon, type IconName } from '@ai-agencee/ui/icons'
 import { useCallback } from 'react'
 
 interface PaletteItem {
   kind:     DagNodeKind
-  icon:     string
+  icon:     IconName
   label:    string
   subtitle: string
 }
 
 const PALETTE_ITEMS: PaletteItem[] = [
-  { kind: 'worker',     icon: '🤖', label: 'Worker',     subtitle: 'Runs an agent' },
-  { kind: 'supervisor', icon: '👁',  label: 'Supervisor', subtitle: 'Checkpoint + validate' },
-  { kind: 'lane',       icon: '↔',  label: 'Lane',       subtitle: 'Parallel container' },
-  { kind: 'trigger',    icon: '⚡',  label: 'Trigger',    subtitle: 'Start condition' },
-  { kind: 'budget',     icon: '💰',  label: 'Budget',     subtitle: 'Cost guard' },
+  { kind: 'worker',     icon: 'worker',     label: 'Worker',     subtitle: 'Runs an agent' },
+  { kind: 'supervisor', icon: 'supervisor', label: 'Supervisor', subtitle: 'Checkpoint + validate' },
+  { kind: 'lane',       icon: 'branching',  label: 'Lane',       subtitle: 'Parallel container' },
+  { kind: 'trigger',    icon: 'trigger',    label: 'Trigger',    subtitle: 'Start condition' },
+  { kind: 'budget',     icon: 'budget',     label: 'Budget',     subtitle: 'Cost guard' },
 ]
 
 interface PaletteProps {
@@ -54,7 +55,7 @@ export function Palette({ onAddNode, existingNodes }: PaletteProps) {
           onClick={() => handleAdd(item)}
           className="flex items-center gap-2 rounded-node px-2 py-2 text-left hover:bg-neutral-700 transition-colors group"
         >
-          <span className="text-xl leading-none" aria-hidden>{item.icon}</span>
+          <Icon name={item.icon} theme="dark" size={20} className="flex-shrink-0" />
           <div>
             <div className="text-sm font-medium text-neutral-200 group-hover:text-white">
               {item.label}

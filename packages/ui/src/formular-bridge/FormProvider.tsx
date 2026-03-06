@@ -17,6 +17,24 @@ export interface ErrorLike {
   code?:   string
 }
 
+/**
+ * Duck-typed interface matching formular.dev's field schema objects returned by
+ * f.string(), f.number(), f.boolean(), etc.  ObjectSchema.shape values all satisfy this.
+ */
+export interface FieldSchemaLike {
+  safeParse(value: unknown): { success: boolean; error?: { message?: string; code?: string } }
+}
+
+/**
+ * Duck-typed interface matching formular.dev's f.object() schema.
+ * Pass the same schema object used in createForm({ schema }) here so FormProvider
+ * can run field-level validation (formular.dev skips validation when using the
+ * schema API — see schemaToDescriptors which always sets validationOptions: {}).
+ */
+export interface SchemaLike {
+  shape: Record<string, FieldSchemaLike>
+}
+
 /** Minimal surface of a formular.dev IFormular object */
 export interface IFormularLike {
   getErrors():                           Record<string, ErrorLike[]>
@@ -45,6 +63,7 @@ export interface FormBridge {
   updateField(name: string, value: unknown): void
   validate(name: string):              Promise<void>
   submit():                            Promise<unknown>
+  reset():                             void
   isValid:     boolean
   isDirty:     boolean
   isBusy:      boolean
@@ -59,10 +78,15 @@ const FormContext = createContext<FormBridge | null>(null)
 
 export function FormProvider({
   form,
+  schema,
+  onBridgeReady,
   children,
 }: Readonly<{
-  form:     IFormularLike
-  children: ReactNode
+  form:           IFormularLike
+  schema?:        SchemaLike
+  /** Called once with the bridge instance so callers can hold a ref for reset() etc. */
+  onBridgeReady?: (bridge: FormBridge) => void
+  children:       ReactNode
 }>) {
   // Seed initial values from formular.dev's internal field list when available
   const [values, setValues] = useState<Record<string, unknown>>(() => {
@@ -83,6 +107,12 @@ export function FormProvider({
 
   const formRef = useRef(form)
   formRef.current = form
+
+  // Keep latest values + schema accessible inside callbacks without stale closures
+  const valuesRef = useRef(values)
+  valuesRef.current = values
+  const schemaRef  = useRef(schema)
+  schemaRef.current = schema
 
   // Intercept form.reset() so React state is cleared in sync with formular state
   useEffect(() => {
@@ -117,22 +147,72 @@ export function FormProvider({
     formRef.current.updateField(name, value)
   }, [])
 
-  const validate = useCallback(async (_name: string) => {
-    try { await formRef.current.validateForm() } catch { /* ignore */ }
-    syncErrors()
+  const validate = useCallback(async (name: string) => {
+    const sc = schemaRef.current
+    if (sc) {
+      // formular.dev's validateForm() skips all fields when created via createForm({ schema })
+      // because schemaToDescriptors hard-codes validationOptions: {}.
+      // We validate directly against each field's schema instead.
+      const fieldSchema = sc.shape[name]
+      if (!fieldSchema) return
+      const result = fieldSchema.safeParse(valuesRef.current[name])
+      const fieldErrors: ErrorLike[] = (!result.success && result.error)
+        ? [{ message: result.error.message ?? result.error.code ?? 'Invalid value', code: result.error.code }]
+        : []
+      setErrors(prev => {
+        const next = { ...prev, [name]: fieldErrors }
+        setIsValid(Object.values(next).every(arr => (arr as ErrorLike[]).length === 0))
+        return next
+      })
+    } else {
+      try { await formRef.current.validateForm() } catch { /* ignore */ }
+      syncErrors()
+    }
   }, [syncErrors])
 
+  const validateAll = useCallback((): Record<string, ErrorLike[]> => {
+    const sc = schemaRef.current
+    const result: Record<string, ErrorLike[]> = {}
+    if (!sc) return result
+    for (const [fieldName, fieldSchema] of Object.entries(sc.shape)) {
+      const r = fieldSchema.safeParse(valuesRef.current[fieldName])
+      result[fieldName] = (!r.success && r.error)
+        ? [{ message: r.error.message ?? r.error.code ?? 'Invalid value', code: r.error.code }]
+        : []
+    }
+    return result
+  }, [])
+
   const submit = useCallback(async () => {
+    // If we have a schema, validate all fields first — formular.dev won't.
+    if (schemaRef.current) {
+      const allErrors = validateAll()
+      setErrors(allErrors)
+      const valid = Object.values(allErrors).every(arr => arr.length === 0)
+      setIsValid(valid)
+      if (!valid) return null
+    }
+
     setIsBusy(true)
     setSubmitCount((c: number) => c + 1)
     try {
-      const result = await formRef.current.submit()
-      syncErrors()
-      return result
+      // formular.dev's submit() iterates fields looking for validationOptions.
+      // When the form was created via createForm({ schema }), those are always empty,
+      // so it logs an info message for every field.  We've already validated above
+      // via the schema, so these logs are noise — suppress them for this call only.
+      const originalInfo = schemaRef.current ? console.info : null
+      if (originalInfo) console.info = () => {}
+      try {
+        const result = await formRef.current.submit()
+        if (!schemaRef.current) syncErrors()
+        return result
+      } finally {
+        if (originalInfo) console.info = originalInfo
+      }
     } finally {
       setIsBusy(false)
     }
-  }, [syncErrors])
+  }, [syncErrors, validateAll])
 
   const bridge: FormBridge = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,11 +221,17 @@ export function FormProvider({
     updateField,
     validate,
     submit,
+    reset: () => formRef.current.reset(),
     get isValid()      { return isValid },
     get isDirty()      { return isDirty },
     get isBusy()       { return isBusy },
     get submitCount()  { return submitCount },
   }
+
+  // Notify caller once the bridge is ready (stable ref identity matters here)
+  const onBridgeReadyRef = useRef(onBridgeReady)
+  onBridgeReadyRef.current = onBridgeReady
+  useEffect(() => { onBridgeReadyRef.current?.(bridge) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return <FormContext.Provider value={bridge}>{children}</FormContext.Provider>
 }

@@ -1,14 +1,15 @@
 import type { Feature } from '@/data/features'
+import { Icon } from '@ai-agencee/ui/icons'
 
 interface Props {
-  feature: Feature
+  readonly feature: Feature
 }
 
 export function FeatureCard({ feature }: Props) {
   return (
     <article className="flex flex-col gap-3 rounded-node border border-neutral-700 bg-neutral-800 p-5 hover:border-brand-500 transition-colors">
       <div className="flex items-center gap-3">
-        <span className="text-2xl" aria-hidden>{feature.icon}</span>
+        <Icon name={feature.icon} theme="dark" size={24} />
         <h3 className="text-sm font-semibold text-neutral-100">{feature.title}</h3>
       </div>
       <p className="text-xs leading-relaxed text-neutral-400">{feature.description}</p>

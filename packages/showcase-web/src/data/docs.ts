@@ -1,3 +1,5 @@
+import type { IconName } from '@ai-agencee/ui/icons'
+
 export interface DocSection {
   id:          string
   label:       string
@@ -9,7 +11,7 @@ export interface DocTopic {
   slug:        string
   title:       string
   description: string
-  icon:        string
+  icon:        IconName
   category:    'orchestration' | 'enterprise' | 'dx' | 'observability'
   sections:    DocSection[]
   relatedSlugs?: string[]
@@ -21,7 +23,7 @@ export const DOC_TOPICS: DocTopic[] = [
     slug:        'dag-orchestration',
     title:       'DAG Orchestration',
     description: 'How to define, wire, and run multi-agent workflows using JSON-declarative directed acyclic graphs.',
-    icon:        '⬡',
+    icon:        'branching',
     category:    'orchestration',
     sections: [
       {
@@ -80,7 +82,7 @@ export const DOC_TOPICS: DocTopic[] = [
     slug:        'model-routing',
     title:       'Model Routing & Cost',
     description: 'How ai-agencee selects the right model tier for each task and enforces per-run budgets.',
-    icon:        '🔀',
+    icon:        'branching',
     category:    'orchestration',
     sections: [
       {
@@ -111,7 +113,7 @@ export const DOC_TOPICS: DocTopic[] = [
     slug:        'resilience',
     title:       'Resilience Patterns',
     description: 'Retry policies, circuit breakers, and graceful fallbacks that keep your workflows running through transient failures.',
-    icon:        '🛡️',
+    icon:        'security',
     category:    'orchestration',
     sections: [
       {
@@ -137,7 +139,7 @@ export const DOC_TOPICS: DocTopic[] = [
     slug:        'cli',
     title:       'CLI Reference',
     description: 'Complete reference for ai-kit CLI commands, flags, and environment variables.',
-    icon:        '⌨️',
+    icon:        'tools',
     category:    'dx',
     sections: [
       {
@@ -181,7 +183,7 @@ ai-kit agent:dag ./my-dag.json --budget 2.50
     slug:        'mcp',
     title:       'MCP Integration',
     description: 'Connect ai-agencee to Claude Desktop or VS Code Copilot via the Model Context Protocol.',
-    icon:        '🔌',
+    icon:        'plugin',
     category:    'dx',
     sections: [
       {
@@ -219,7 +221,7 @@ ai-kit agent:dag ./my-dag.json --budget 2.50
     slug:        'rbac',
     title:       'RBAC & OIDC Auth',
     description: 'Role-based access control with RS256/ES256 JWT validation and per-principal rate limiting.',
-    icon:        '🔐',
+    icon:        'auth',
     category:    'enterprise',
     sections: [
       {
@@ -262,7 +264,7 @@ ai-kit data:list-tenants
     slug:        'audit-logging',
     title:       'Audit Logging',
     description: 'Hash-chained tamper-proof audit logs — every agent action recorded for compliance.',
-    icon:        '📋',
+    icon:        'document',
     category:    'enterprise',
     sections: [
       {
@@ -283,7 +285,7 @@ ai-kit data:list-tenants
     slug:        'builder-api',
     title:       'TypeScript Builder API',
     description: 'Fluent type-safe DSL for constructing DAGs in code instead of JSON.',
-    icon:        '🧱',
+    icon:        'modular',
     category:    'dx',
     sections: [
       {
@@ -316,7 +318,7 @@ await orchestrator.runDag(dag)
     slug:        'event-bus',
     title:       'Event Bus',
     description: 'Typed real-time event subscriptions for lane status, token streams, cost updates, and webhook triggers.',
-    icon:        '📡',
+    icon:        'api',
     category:    'observability',
     sections: [
       {

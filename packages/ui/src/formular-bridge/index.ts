@@ -1,6 +1,6 @@
 export { CheckBox } from './CheckBox.js'
 export { FormProvider, useForm } from './FormProvider.js'
-export type { ErrorLike, FieldLike, FormBridge, IFormularLike } from './FormProvider.js'
+export type { ErrorLike, FieldLike, FieldSchemaLike, FormBridge, IFormularLike, SchemaLike } from './FormProvider.js'
 export { Input } from './Input.js'
 export { Select } from './Select.js'
 export { TextArea } from './TextArea.js'
@@ -8,4 +8,5 @@ export { useFormularField } from './useFormularField.js'
 export type { FieldSnapshot } from './useFormularField.js'
 export { useFormularForm } from './useFormularForm.js'
 export type { FormSnapshot } from './useFormularForm.js'
+export { ValidationResult } from './ValidationResult.js'
 

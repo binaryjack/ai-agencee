@@ -22,11 +22,12 @@ interface SupervisorNodePanelProps {
   onUpdate: (id: string, data: SupervisorNodeData) => void
 }
 
-export function SupervisorNodePanel({ nodeId, data, onUpdate }: SupervisorNodePanelProps) {
+export function SupervisorNodePanel({ nodeId, data, onUpdate }: Readonly<SupervisorNodePanelProps>) {
   const [form, setForm] = useState<IFormularLike | null>(null)
 
   useEffect(() => {
     let cancelled = false
+
     createForm({
       schema:        supervisorSchema,
       defaultValues: data as Record<string, unknown>,
@@ -36,6 +37,7 @@ export function SupervisorNodePanel({ nodeId, data, onUpdate }: SupervisorNodePa
     }).then((f) => {
       if (!cancelled) setForm(f as unknown as IFormularLike)
     })
+
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeId])
@@ -45,7 +47,7 @@ export function SupervisorNodePanel({ nodeId, data, onUpdate }: SupervisorNodePa
   }
 
   return (
-    <FormProvider form={form}>
+    <FormProvider form={form} schema={supervisorSchema}>
       <div className="flex flex-col gap-3 p-4">
         <Input  name="label"         label="Label" />
         <Input  name="passThreshold" label="Pass threshold (0–1)" type="number" />

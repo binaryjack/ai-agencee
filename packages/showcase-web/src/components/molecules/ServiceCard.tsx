@@ -1,7 +1,8 @@
 import { CheckItem } from '@/components/atoms/CheckItem'
+import { Icon, type IconName } from '@ai-agencee/ui/icons'
 
 export interface ServiceItem {
-  icon:         string
+  icon:         IconName
   title:        string
   description:  string
   deliverables: string[]
@@ -15,7 +16,7 @@ export function ServiceCard({ service }: Props) {
   return (
     <div className="flex flex-col gap-4 rounded-node border border-neutral-700 bg-neutral-800 p-6">
       <div className="flex items-center gap-3">
-        <span className="text-2xl" aria-hidden>{service.icon}</span>
+        <Icon name={service.icon} theme="dark" size={24} />
         <h3 className="text-base font-bold text-neutral-100">{service.title}</h3>
       </div>
       <p className="text-xs leading-relaxed text-neutral-400">{service.description}</p>
