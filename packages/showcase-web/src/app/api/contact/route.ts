@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const TO_EMAIL   = process.env.CONTACT_TO_EMAIL   ?? 'hello@ai-agencee.com'
 const FROM_EMAIL = process.env.CONTACT_FROM_EMAIL ?? 'contact@ai-agencee.com'
 
@@ -54,6 +52,10 @@ export async function POST(req: Request) {
     console.error('[contact] RESEND_API_KEY is not set')
     return NextResponse.json({ error: 'Mail service not configured.' }, { status: 503 })
   }
+
+  // Instantiate lazily — after the key guard — so a missing key never crashes
+  // the module at load time and Next.js never serves an HTML error page.
+  const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
     // 1. Internal notification

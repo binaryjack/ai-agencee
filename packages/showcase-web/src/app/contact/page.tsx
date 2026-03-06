@@ -63,7 +63,10 @@ function useContactSaga(bridgeRef: React.RefObject<FormBridge | null>) {
       })
 
       // ── Step 3: get result ────────────────────────────────────────────
-      const json = await res.json() as { success?: boolean; error?: string }
+      const isJson = res.headers.get('content-type')?.includes('application/json') ?? false
+      const json   = isJson
+        ? (await res.json() as { success?: boolean; error?: string })
+        : { success: false, error: `Server error (${res.status})` }
 
       // ── Step 4: evaluate result ───────────────────────────────────────
       if (!res.ok || !json.success) {
