@@ -56,7 +56,7 @@ export const PRICING_TIERS: PricingTier[] = [
     monthlyUsd:         29,
     yearlyUsd:          29 * 11,
     badge:              'Cloud — Coming Soon',
-    description:        'For indie developers and freelancers who want to run real LLM workflows on their own API keys.',
+    description:        'For indie developers and freelancers who want to run real LLM workflows on their own API keys. Cloud launch coming soon — join the waitlist.',
     tokenLimitPerMonth: '1 M tokens / month',
     concurrentRuns:     5,
     features: [
@@ -85,7 +85,7 @@ export const PRICING_TIERS: PricingTier[] = [
     monthlyUsd:         99,
     yearlyUsd:          99 * 11,
     badge:              'Most Popular — Coming Soon',
-    description:        'For product squads who need managed keys, compliance logs, and custom agents.',
+    description:        'For product squads who need managed keys, compliance logs, and custom agents. Cloud launch coming soon — join the waitlist.',
     tokenLimitPerMonth: '10 M tokens / month',
     concurrentRuns:     25,
     features: [
@@ -117,7 +117,7 @@ export const PRICING_TIERS: PricingTier[] = [
     slug:               'enterprise',
     monthlyUsd:         null,
     yearlyUsd:          null,
-    description:        'Dedicated infrastructure, unlimited scale, and on-call engineering support for teams building AI-native products.',
+    description:        'Dedicated infrastructure, unlimited scale, and on-call engineering support for teams building AI-native products. Contact us to be a design partner.',
     tokenLimitPerMonth: 'Unlimited (custom tiers)',
     concurrentRuns:     null,
     features: [
@@ -159,7 +159,11 @@ export const PRICING_FAQ: PricingFaqItem[] = [
     answer:   'We count input + output tokens across all LLM calls within a billing month. The mock provider does not consume tokens. Tokens reset on your billing anniversary date.',
   },
   {
+    question: 'When will the cloud product launch?',
+    answer:   'We are targeting a public cloud launch later in 2026. The architecture, pricing tiers, and feature set are finalised — we are completing infrastructure and onboarding tooling. Join the waitlist via the contact form to be notified at launch.',
+  },
+  {
     question: 'Can I self-host?',
-    answer:   'Yes — the CLI, DAG engine, and MCP server are fully open source (MIT). The SaaS tiers add managed keys, persistent dashboards, and enterprise compliance features.',
+    answer:   'Yes — the CLI, DAG engine, and MCP server are fully open source (MIT) and available today. Self-hosted deployments have no token limits or SLA. The SaaS tiers will add managed keys, persistent dashboards, and enterprise compliance features once the cloud product launches.',
   },
 ]

@@ -14,8 +14,25 @@ export function PricingSection() {
           Simple, <GradientText>transparent pricing</GradientText>
         </h2>
         <p className="max-w-lg text-sm leading-relaxed text-neutral-400">
-          Start free — no credit card required. Upgrade when you need real LLM providers,
-          managed keys, or enterprise compliance.
+          The CLI and engine are free and open-source today. Cloud tiers are fully
+          designed and launching soon — join the waitlist to be notified at launch.
+        </p>
+      </div>
+
+      {/* Cloud launch notice */}
+      <div className="flex items-start gap-3 rounded-node border border-warning-600/50 bg-warning-900/20 px-5 py-4 text-sm">
+        <span className="mt-0.5 shrink-0 text-base" aria-hidden>⚠️</span>
+        <p className="leading-relaxed text-warning-300">
+          <strong className="text-warning-200">Cloud product not yet live.</strong>{' '}
+          Starter, Professional, and Enterprise tiers are planned and will launch later this
+          year. The <strong>Free tier</strong> — full CLI, DAG engine, MCP integration, and
+          Mock provider — is available right now with no account required.{' '}
+          <a
+            href="https://github.com/binaryjack/ai-starter-kit"
+            className="underline hover:text-warning-100"
+          >
+            Get started on GitHub ↗
+          </a>
         </p>
       </div>
 

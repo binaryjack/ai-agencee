@@ -4,7 +4,7 @@ import { PricingSection } from '@/components/organisms/PricingSection'
 
 export const metadata = {
   title:       'Pricing — ai-agencee',
-  description: 'Simple, transparent pricing. Free CLI + 3 SaaS tiers. No API key required to evaluate.',
+  description: 'The CLI & engine are free and open-source today. Cloud tiers (Starter, Professional, Enterprise) are fully designed and coming soon — join the waitlist.',
 }
 
 export default function PricingPage() {
