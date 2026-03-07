@@ -143,3 +143,6 @@ internal-strategy-docs/
 .env
 .env.local
 .env.*.local
+
+# Private local workspace (git-ignored clone of private repo, never tracked here)
+_private/
