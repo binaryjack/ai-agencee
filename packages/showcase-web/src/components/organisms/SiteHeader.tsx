@@ -87,10 +87,24 @@ export function SiteHeader() {
               onClick={() => setOpen((v) => !v)}
               className="flex h-9 w-9 items-center justify-center rounded-node text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-neutral-100 md:hidden"
             >
-                {open
-                ? <Icon name="close"   theme="dark" size={18} aria-hidden />
-                : <Icon name="network" theme="dark" size={18} aria-hidden />
-              }
+              {open ? (
+                <Icon name="close" theme="dark" size={18} aria-hidden />
+              ) : (
+                <svg
+                  aria-hidden="true"
+                  width={18}
+                  height={18}
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.75}
+                  strokeLinecap="round"
+                >
+                  <line x1="2" y1="4.5" x2="16" y2="4.5" />
+                  <line x1="2" y1="9"   x2="16" y2="9"   />
+                  <line x1="2" y1="13.5" x2="16" y2="13.5" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
