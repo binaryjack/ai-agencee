@@ -15,6 +15,7 @@ jobs:
   publish:
     name: Build and publish packages
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       id-token: write   # enables npm provenance attestation
       contents: read
