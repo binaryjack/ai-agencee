@@ -18,7 +18,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@ai-agencee/core": "^1.1.0",
+    "@ai-agencee/core": "workspace:^1.1.0",
     "@ai-agencee/engine": "workspace:^1.1.0",
     "@modelcontextprotocol/sdk": "^0.7.0"
   },
