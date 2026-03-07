@@ -14,7 +14,7 @@ const CATEGORY_LABELS: Record<Feature['category'], string> = {
 
 export const metadata = {
   title:       'Features — ai-agencee',
-  description: '12 enterprise-grade capabilities for production AI workflows: DAG orchestration, model routing, resilience, RBAC, audit logging, MCP, and more.',
+  description: '24 enterprise-grade capabilities for production AI workflows: DAG orchestration, model routing, resilience, RBAC, audit logging, MCP, and more.',
 }
 
 export default function FeaturesPage() {
@@ -26,7 +26,7 @@ export default function FeaturesPage() {
       <SectionWrapper width="narrow" className="pb-8 pt-20">
         <SectionLabel>Features</SectionLabel>
         <h1 className="mt-2 text-4xl font-extrabold text-neutral-100 sm:text-5xl">
-          <GradientText>12 enterprise-grade</GradientText> capabilities
+          <GradientText>24 enterprise-grade</GradientText> capabilities
         </h1>
         <p className="mt-4 text-base leading-relaxed text-neutral-400">
           Everything you need to build, deploy, and operate production AI workflows —
