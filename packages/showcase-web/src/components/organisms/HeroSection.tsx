@@ -10,7 +10,7 @@ cd ai-starter-kit && pnpm install && pnpm demo`
 
 export function HeroSection() {
   return (
-    <section className="relative w-full overflow-hidden px-6 pb-24 pt-28">
+    <section className="relative w-full overflow-hidden px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28">
       {/* Decorative radial gradient */}
       <div
         className="pointer-events-none absolute inset-0 flex items-start justify-center"

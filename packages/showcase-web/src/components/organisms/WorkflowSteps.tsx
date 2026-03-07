@@ -32,7 +32,7 @@ export function WorkflowSteps() {
             {/* Connector line */}
             {i < PLAN_WORKFLOW_PHASES.length - 1 && (
               <span
-                className="absolute left-5 top-10 h-full w-px bg-neutral-700"
+                className="absolute left-5 top-10 bottom-0 w-px bg-neutral-700"
                 aria-hidden
               />
             )}

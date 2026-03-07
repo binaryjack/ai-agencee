@@ -9,7 +9,7 @@ const CTA_SECONDARY_LINKS = [
 
 export function CtaBanner() {
   return (
-    <div className="relative overflow-hidden rounded-node border border-brand-700/40 bg-gradient-to-br from-brand-900/40 to-neutral-900 px-8 py-14 text-center">
+    <div className="relative overflow-hidden rounded-node border border-brand-700/40 bg-gradient-to-br from-brand-900/40 to-neutral-900 px-5 py-10 text-center sm:px-8 sm:py-14">
       {/* Background glow */}
       <div
         className="pointer-events-none absolute inset-0 flex items-center justify-center"

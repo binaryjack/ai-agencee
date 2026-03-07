@@ -127,7 +127,7 @@ export function SiteHeader() {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`fixed inset-y-0 right-0 z-50 flex w-72 flex-col bg-neutral-900 shadow-2xl ring-1 ring-neutral-700/60 transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-72 max-w-[85vw] flex-col bg-neutral-900 shadow-2xl ring-1 ring-neutral-700/60 transition-transform duration-300 ease-in-out md:hidden ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

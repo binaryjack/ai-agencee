@@ -18,7 +18,7 @@ const widthMap: Record<NonNullable<Props['width']>, string> = {
 /** Consistent section padding + centred max-width container. */
 export function SectionWrapper({ children, className = '', id, width = 'default' }: Props) {
   return (
-    <section id={id} className={`w-full px-6 py-20 ${className}`}>
+    <section id={id} className={`w-full px-4 py-14 sm:px-6 sm:py-20 ${className}`}>
       <div className={`mx-auto ${widthMap[width]}`}>
         {children}
       </div>
