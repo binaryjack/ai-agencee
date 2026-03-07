@@ -72,6 +72,13 @@ export interface CheckpointEvent {
   timestamp: string;
 }
 
+export interface TokenStreamEvent {
+  runId: string;
+  laneId: string;
+  token: string;
+  timestamp: string;
+}
+
 // ─── Typed Event Map ──────────────────────────────────────────────────────────
 
 export interface DagEventMap {
@@ -83,6 +90,7 @@ export interface DagEventMap {
   'budget:exceeded':   [event: BudgetExceededEvent];
   'rbac:denied':       [event: RbacDeniedEvent];
   'checkpoint:complete': [event: CheckpointEvent];
+  'token:stream':      [event: TokenStreamEvent];
 }
 
 // ─── DagEventBus ─────────────────────────────────────────────────────────────
@@ -141,6 +149,10 @@ export class DagEventBus extends EventEmitter {
     this._safeEmit('checkpoint:complete', event);
   }
 
+  emitTokenStream(event: TokenStreamEvent): void {
+    this._safeEmit('token:stream', event);
+  }
+
   // ─── Typed on() overloads ───────────────────────────────────────────────
 
   on(event: 'dag:start',           listener: (e: DagStartEvent)         => void): this;
@@ -151,6 +163,7 @@ export class DagEventBus extends EventEmitter {
   on(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): this;
   on(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): this;
   on(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): this;
+  on(event: 'token:stream',         listener: (e: TokenStreamEvent)      => void): this;
   on(event: string | symbol,       listener: (...args: unknown[]) => void): this;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on(event: string | symbol, listener: (...args: any[]) => void): this {
@@ -165,6 +178,7 @@ export class DagEventBus extends EventEmitter {
   once(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): this;
   once(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): this;
   once(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): this;
+  once(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): this;
   once(event: string | symbol,       listener: (...args: unknown[]) => void): this;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   once(event: string | symbol, listener: (...args: any[]) => void): this {

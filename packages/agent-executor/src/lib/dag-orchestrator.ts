@@ -9,9 +9,9 @@ import { getGlobalEventBus } from './dag-events.js'
 import { DagPlanner } from './dag-planner.js'
 import { DagResultBuilder } from './dag-result-builder.js'
 import {
-  DagDefinition,
-  DagResult,
-  LaneResult,
+    DagDefinition,
+    DagResult,
+    LaneResult,
 } from './dag-types.js'
 import { runLane } from './lane-executor.js'
 import { SamplingCallback } from './llm-provider.js'
@@ -94,6 +94,13 @@ export interface DagRunOptions {
    * built-in list (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.).
    */
   extraSecretKeys?: string[];
+  /**
+   * Scripted mock responses for use with `forceProvider: 'mock'`.
+   * Keys are matched against the first 50 characters of the last user message.
+   * The special key `'default'` is used as a catch-all fallback.
+   * Ignored when `forceProvider` is not `'mock'`.
+   */
+  mockResponses?: Record<string, string>;
 }
 
 // ─── DagOrchestrator ──────────────────────────────────────────────────────────
@@ -215,6 +222,7 @@ export class DagOrchestrator {
       samplingCallback: this.options.samplingCallback,
       agentsBaseDir,
       forceProvider:    this.options.forceProvider,
+      mockResponses:    this.options.mockResponses,
       log: (msg) => this.log(msg),
     });
 

@@ -27,6 +27,12 @@ export interface RouterFactoryOptions {
    * 'mock' creates a zero-cost mock provider with no API key requirement.
    */
   forceProvider?: string;
+  /**
+   * Scripted responses for the mock provider keyed on first-50-chars of the
+   * last user message. The 'default' key acts as catch-all fallback.
+   * Only used when forceProvider === 'mock'.
+   */
+  mockResponses?: Record<string, string>;
   /** Logging sink — called with diagnostic messages. */
   log: (msg: string) => void;
 }
@@ -62,7 +68,7 @@ export class ModelRouterFactory {
 
       // If forceProvider='mock', register a mock and skip API-key providers
       if (options.forceProvider === 'mock') {
-        modelRouter.registerProvider(new MockProvider());
+        modelRouter.registerProvider(new MockProvider(options.mockResponses ?? {}));
         log(`   🧪 Mock provider forced — LLM calls return synthetic responses (no API key needed)`);
       } else {
         // Auto-register Ollama when OLLAMA_HOST is set

@@ -7,19 +7,19 @@ import { ContractRegistry } from './contract-registry.js'
 import { CostTracker } from './cost-tracker.js'
 import { getGlobalEventBus } from './dag-events.js'
 import {
-  BarrierResolution,
-  CheckpointPayload,
-  CheckpointRecord,
-  ContractExports,
-  ContractSnapshot,
-  LaneDefinition,
-  LaneResult,
-  SupervisorVerdict,
+    BarrierResolution,
+    CheckpointPayload,
+    CheckpointRecord,
+    ContractExports,
+    ContractSnapshot,
+    LaneDefinition,
+    LaneResult,
+    SupervisorVerdict,
 } from './dag-types.js'
 import {
-  AutoApproveHumanReviewGate,
-  IHumanReviewGate,
-  InteractiveHumanReviewGate,
+    AutoApproveHumanReviewGate,
+    IHumanReviewGate,
+    InteractiveHumanReviewGate,
 } from './human-review-gate.js'
 import { IntraSupervisor } from './intra-supervisor.js'
 import { ModelRouter, RoutedResponse } from './model-router.js'
@@ -249,9 +249,16 @@ export class LaneExecutor {
     };
 
     // Streaming: print each token live to stdout with a lane prefix so
-    // parallel lanes are distinguishable in verbose mode.
+    // parallel lanes are distinguishable in verbose mode. Also broadcast
+    // to the global event bus so external subscribers (SSE, dashboards) receive tokens.
     const onLlmStream = (token: string): void => {
       process.stdout.write(token);
+      getGlobalEventBus().emitTokenStream({
+        runId:     this.runId,
+        laneId:    lane.id,
+        token,
+        timestamp: new Date().toISOString(),
+      });
     };
 
     // Start the generator
