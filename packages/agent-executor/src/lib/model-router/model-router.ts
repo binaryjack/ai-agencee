@@ -14,7 +14,24 @@ import type {
   RoutedResponse,
 } from './model-router.types.js'
 
-import './prototype/index.js'
+import {
+  _breakerFor,
+  autoRegister,
+  budgetCap,
+  defaultProvider,
+  estimateCost,
+  estimateNaiveCost,
+  modelIdFor,
+  profileFor,
+  registerProvider,
+  registeredProviders,
+  route,
+  routeWithTools,
+  streamRoute,
+  useMock,
+  withProviderOverride,
+  wrapAllProviders,
+} from './prototype/index.js'
 
 export interface IModelRouter {
   new(config: ModelRouterConfig): IModelRouter;
@@ -79,6 +96,25 @@ export const ModelRouter = function(
   this._retry       = (RetryPolicy as unknown as { forLLM(): IRetryPolicy }).forLLM();
   this._piiScrubber = new PiiScrubber(config.piiScrubbing ?? {});
 } as unknown as IModelRouter;
+
+Object.assign(ModelRouter.prototype, {
+  registerProvider,
+  autoRegister,
+  useMock,
+  profileFor,
+  modelIdFor,
+  estimateCost,
+  estimateNaiveCost,
+  route,
+  routeWithTools,
+  streamRoute,
+  budgetCap,
+  defaultProvider,
+  registeredProviders,
+  wrapAllProviders,
+  withProviderOverride,
+  _breakerFor,
+});
 
 (ModelRouter as unknown as Record<string, unknown>).fromFile = async function(
   configPath: string,

@@ -1,13 +1,12 @@
 import type {
-    LLMPrompt,
-    LLMProvider,
-    LLMResponse,
-    LLMStreamChunk,
-    ToolExecutorFn,
+  LLMPrompt,
+  LLMProvider,
+  LLMResponse,
+  LLMStreamChunk,
+  ToolExecutorFn,
 } from '../llm-provider.js'
 import type { PiiScrubberOptions, ScrubPattern, ScrubResult } from './pii-scrubber.types.js'
-
-import './prototype/index.js'
+import { patternNames, scrub, scrubPrompt } from './prototype/index.js'
 
 export type { PiiScrubberOptions, ScrubPattern, ScrubResult } from './pii-scrubber.types.js'
 
@@ -106,6 +105,8 @@ export const PiiScrubber = function(
 
   this._patterns = [...BUILTIN_PATTERNS, ...custom];
 } as unknown as IPiiScrubber;
+
+Object.assign(PiiScrubber.prototype, { scrub, scrubPrompt, patternNames });
 
 // ─── Provider Wrapper ─────────────────────────────────────────────────────────
 

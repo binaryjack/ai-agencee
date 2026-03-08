@@ -1,6 +1,5 @@
-import type { SecretsProvider } from '../secrets.types.js';
-
-import './prototype/index.js';
+import type { SecretsProvider } from '../secrets.types.js'
+import { get, has } from './prototype/index.js'
 
 export interface ICompositeSecretsProvider {
   new(providers: SecretsProvider[]): ICompositeSecretsProvider;
@@ -15,3 +14,5 @@ export const CompositeSecretsProvider = function(
 ) {
   this._providers = providers;
 } as unknown as ICompositeSecretsProvider;
+
+Object.assign(CompositeSecretsProvider.prototype, { get, has });

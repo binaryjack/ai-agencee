@@ -1,4 +1,4 @@
-import './prototype/index.js';
+import { get, has, set } from './prototype/index.js'
 
 export interface IStaticSecretsProvider {
   new(secrets?: Record<string, string>): IStaticSecretsProvider;
@@ -14,3 +14,5 @@ export const StaticSecretsProvider = function(
 ) {
   this._secrets = new Map(Object.entries(secrets));
 } as unknown as IStaticSecretsProvider;
+
+Object.assign(StaticSecretsProvider.prototype, { get, has, set });

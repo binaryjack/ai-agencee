@@ -13,10 +13,10 @@
  *   if (result.exitCode === 0) …
  */
 
-import { spawn } from 'child_process'
-import * as fs from 'fs/promises'
-import * as os from 'os'
-import * as path from 'path'
+import { spawn } from 'child_process';
+import * as fs from 'fs/promises';
+import * as os from 'os';
+import * as path from 'path';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -125,8 +125,8 @@ export async function runInSandbox(options: SandboxOptions): Promise<SandboxResu
     });
 
     return {
-      stdout: stdoutBuf.toString('utf-8'),
-      stderr: stderrBuf.toString('utf-8'),
+      stdout: stdoutBuf.toString('utf-8').replace(/\r\n/g, '\n'),
+      stderr: stderrBuf.toString('utf-8').replace(/\r\n/g, '\n'),
       exitCode: result.exitCode,
       truncated,
       durationMs: Date.now() - start,

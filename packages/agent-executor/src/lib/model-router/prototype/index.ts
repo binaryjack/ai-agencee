@@ -1,5 +1,4 @@
-import { ModelRouter } from '../model-router.js'
-import {
+export {
   _breakerFor,
   budgetCap,
   defaultProvider,
@@ -9,27 +8,9 @@ import {
   profileFor,
   registeredProviders,
   withProviderOverride,
-  wrapAllProviders,
+  wrapAllProviders
 } from './helpers.js'
-import { autoRegister, registerProvider, useMock } from './register.js'
-import { route, routeWithTools } from './route.js'
-import { streamRoute } from './stream-route.js'
+export { autoRegister, registerProvider, useMock } from './register.js'
+export { route, routeWithTools } from './route.js'
+export { streamRoute } from './stream-route.js'
 
-Object.assign(ModelRouter.prototype, {
-  registerProvider,
-  autoRegister,
-  useMock,
-  profileFor,
-  modelIdFor,
-  estimateCost,
-  estimateNaiveCost,
-  route,
-  routeWithTools,
-  streamRoute,
-  budgetCap,
-  defaultProvider,
-  registeredProviders,
-  wrapAllProviders,
-  withProviderOverride,
-  _breakerFor,
-});
