@@ -39,6 +39,11 @@ export interface IModelRouter {
     providerName: string,
     family:       ModelFamily,
   ): number;
+  estimateNaiveCost(
+    inputTokens:  number,
+    outputTokens: number,
+    providerName: string,
+  ): number;
   route(
     taskType:          TaskType,
     prompt:            LLMPrompt,

@@ -8,10 +8,10 @@ jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
 }));
 
-import * as fsMock from 'fs/promises';
+import * as fsMock from 'fs/promises'
 
-import { CostTracker } from '../lib/cost-tracker/cost-tracker';
-import type { RoutedResponse } from '../lib/model-router/model-router.types';
+import { CostTracker } from '../lib/cost-tracker/cost-tracker'
+import type { RoutedResponse } from '../lib/model-router/model-router.types'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 

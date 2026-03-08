@@ -33,14 +33,19 @@ export async function route(
     () => this._breakerFor(providerName).execute(() => provider.complete(mergedPrompt, modelId)),
     `${providerName}:${taskType}`,
   );
-  const cost = this.estimateCost(
+  const cost      = this.estimateCost(
     response.usage.inputTokens,
     response.usage.outputTokens,
     providerName,
     profile.family,
   );
+  const naiveCost = this.estimateNaiveCost(
+    response.usage.inputTokens,
+    response.usage.outputTokens,
+    providerName,
+  );
 
-  return { ...response, taskType, estimatedCostUSD: cost };
+  return { ...response, taskType, estimatedCostUSD: cost, naiveCostUSD: naiveCost };
 }
 
 export async function routeWithTools(
@@ -78,11 +83,16 @@ export async function routeWithTools(
     `${providerName}:tools:${taskType}`,
   );
 
-  const cost = this.estimateCost(
+  const cost      = this.estimateCost(
     response.usage.inputTokens,
     response.usage.outputTokens,
     providerName,
     profile.family,
   );
-  return { ...response, taskType, estimatedCostUSD: cost };
+  const naiveCost = this.estimateNaiveCost(
+    response.usage.inputTokens,
+    response.usage.outputTokens,
+    providerName,
+  );
+  return { ...response, taskType, estimatedCostUSD: cost, naiveCostUSD: naiveCost };
 }

@@ -50,12 +50,24 @@ export function estimateCost(
   providerName: string,
   family:       ModelFamily,
 ): number {
-  const costs = this._config.providers[providerName]?.costs;
+  const providerConfig = this._config.providers[providerName];
+  if (!providerConfig) return 0;
+  const costs = providerConfig.familyCosts?.[family] ?? providerConfig.costs;
   if (!costs) return 0;
   return (
     (inputTokens  / 1_000_000) * costs.inputPerMillion +
     (outputTokens / 1_000_000) * costs.outputPerMillion
   );
+}
+
+/** Baseline cost if the task had been routed through opus (most expensive tier). */
+export function estimateNaiveCost(
+  this:         IModelRouter,
+  inputTokens:  number,
+  outputTokens: number,
+  providerName: string,
+): number {
+  return this.estimateCost(inputTokens, outputTokens, providerName, 'opus');
 }
 
 export function budgetCap(this: IModelRouter): BudgetCap | undefined {

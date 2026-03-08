@@ -19,8 +19,10 @@ export interface TokenCosts {
 }
 
 export interface ProviderConfig {
-  models: ProviderModelMap;
-  costs?: TokenCosts;
+  models:       ProviderModelMap;
+  costs?:       TokenCosts;
+  /** Per-family pricing — used for naiveCostUSD baseline (opus) calc */
+  familyCosts?: Partial<Record<ModelFamily, TokenCosts>>;
 }
 
 export interface BudgetCap {
@@ -40,4 +42,6 @@ export interface ModelRouterConfig {
 export interface RoutedResponse extends LLMResponse {
   taskType:         TaskType;
   estimatedCostUSD: number;
+  /** Opus-tier baseline cost — subtract from estimatedCostUSD to get savings */
+  naiveCostUSD:     number;
 }

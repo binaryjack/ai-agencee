@@ -67,7 +67,8 @@ export async function* streamRoute(
   }
 
   if (onDone) {
-    const cost = this.estimateCost(inputTokens, outputTokens, providerName, profile.family);
+    const cost      = this.estimateCost(inputTokens, outputTokens, providerName, profile.family);
+    const naiveCost = this.estimateNaiveCost(inputTokens, outputTokens, providerName);
     onDone({
       content:          fullContent,
       usage:            { inputTokens, outputTokens },
@@ -75,6 +76,7 @@ export async function* streamRoute(
       provider:         providerName,
       taskType,
       estimatedCostUSD: cost,
+      naiveCostUSD:     naiveCost,
     });
   }
 }
