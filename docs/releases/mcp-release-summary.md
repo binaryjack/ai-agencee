@@ -10,9 +10,9 @@ Successfully created and released the **MCP (Model Context Protocol) Server** fo
 
 | Package | Version | Status | NPM |
 |---------|---------|--------|-----|
-| `@ai-agencee/ai-kit-core` | 1.1.0 | ✅ Published | [View](https://npmjs.com/package/@ai-agencee/ai-kit-core) |
-| `@ai-agencee/ai-kit-cli` | 1.1.0 | ✅ Published | [View](https://npmjs.com/package/@ai-agencee/ai-kit-cli) |
-| `@ai-agencee/ai-kit-mcp` | 1.2.0 | ✅ Published | [View](https://npmjs.com/package/@ai-agencee/ai-kit-mcp) |
+| `@ai-agencee/core` | 1.1.0 | ✅ Published | [View](https://npmjs.com/package/@ai-agencee/core) |
+| `@ai-agencee/cli` | 1.1.0 | ✅ Published | [View](https://npmjs.com/package/@ai-agencee/cli) |
+| `@ai-agencee/mcp` | 1.2.0 | ✅ Published | [View](https://npmjs.com/package/@ai-agencee/mcp) |
 
 ## Features Implemented
 
@@ -88,7 +88,7 @@ NO_CHAT=1               # No chat mode, direct instructions
 ai-kit mcp
 
 # Option 2: Direct NPM
-npx @ai-agencee/ai-kit-mcp
+npx @ai-agencee/mcp
 
 # Option 3: Via package.json script
 npm run mcp
@@ -103,7 +103,7 @@ Edit `~/.config/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "ai-kit": {
       "command": "npx",
-      "args": ["@ai-agencee/ai-kit-mcp"]
+      "args": ["@ai-agencee/mcp"]
     }
   }
 }
@@ -169,9 +169,9 @@ Based on the project rules, how should I structure...?
 
 ### Published Packages
 
-- ✅ @ai-agencee/ai-kit-core@1.1.0 - Verified on npm
-- ✅ @ai-agencee/ai-kit-cli@1.1.0 - Verified on npm
-- ✅ @ai-agencee/ai-kit-mcp@1.2.0 - Published successfully
+- ✅ @ai-agencee/core@1.1.0 - Verified on npm
+- ✅ @ai-agencee/cli@1.1.0 - Verified on npm
+- ✅ @ai-agencee/mcp@1.2.0 - Published successfully
 
 ## Development Notes
 
@@ -193,7 +193,7 @@ Based on the project rules, how should I structure...?
 
 ### For Users
 
-1. Install: `npm install @ai-agencee/ai-kit-mcp`
+1. Install: `npm install @ai-agencee/mcp`
 2. Configure Claude Desktop with server config
 3. Start using @init, @check, @rules in AI sessions
 4. Reference official docs: [README.md](./README.md)
@@ -218,9 +218,9 @@ Based on the project rules, how should I structure...?
 ## Project Links
 
 - **Repository**: [ai-starter-kit](https://github.com/ai-agencee/ai-starter-kit)
-- **npm @ai-agencee/ai-kit-core**: https://npmjs.com/package/@ai-agencee/ai-kit-core
-- **npm @ai-agencee/ai-kit-cli**: https://npmjs.com/package/@ai-agencee/ai-kit-cli
-- **npm @ai-agencee/ai-kit-mcp**: https://npmjs.com/package/@ai-agencee/ai-kit-mcp
+- **npm @ai-agencee/core**: https://npmjs.com/package/@ai-agencee/core
+- **npm @ai-agencee/cli**: https://npmjs.com/package/@ai-agencee/cli
+- **npm @ai-agencee/mcp**: https://npmjs.com/package/@ai-agencee/mcp
 - **MCP Protocol Spec**: https://modelcontextprotocol.io/
 
 ## Changelog

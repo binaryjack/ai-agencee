@@ -280,7 +280,7 @@ async function processCustomLogic(input: string): Promise<string> {
 
 ```typescript
 // tests/custom-agent.test.ts
-import { workflowOrchestrator, agentContext } from '@ai-agencee/ai-kit-agent-executor';
+import { workflowOrchestrator, agentContext } from '@ai-agencee/engine';
 
 describe('Custom Agent', () => {
   it('should process agent workflow', async () => {

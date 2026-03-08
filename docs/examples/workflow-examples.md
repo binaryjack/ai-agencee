@@ -188,7 +188,7 @@ Output:
 
 ```typescript
 // workflow.ts
-import { workflowOrchestrator, agentContext } from '@ai-agencee/ai-kit-agent-executor';
+import { workflowOrchestrator, agentContext } from '@ai-agencee/engine';
 import * as fs from 'fs/promises';
 
 async function main() {
@@ -349,7 +349,7 @@ $ ai-kit agent:workflow chat-app-spec.md --resume 550e8400-e29b-41d4-a716-446655
 
 ```typescript
 // batch-workflow.ts
-import { workflowOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+import { workflowOrchestrator } from '@ai-agencee/engine';
 import * as fs from 'fs/promises';
 
 async function processBatch() {
@@ -403,7 +403,7 @@ processBatch();
 
 ```typescript
 // custom-validation.ts
-import { agentContext } from '@ai-agencee/ai-kit-agent-executor';
+import { agentContext } from '@ai-agencee/engine';
 
 async function validateWorkflow(sessionId: string): Promise<void> {
   // Get all outputs
@@ -735,14 +735,14 @@ $ cat .agents/codebase-evaluation/results/supervisor-summary.json
 cd /path/to/resume-project
 
 # 2. Install the agents
-pnpm add -D @ai-agencee/ai-kit-cli @ai-agencee/ai-kit-mcp
+pnpm add -D @ai-agencee/cli @ai-agencee/mcp
 
 # 3. Run architecture analysis
 pnpm ai-kit agent:breakdown "Evaluate our monorepo"
 
 # 4. Use in Claude (MCP server)
 # Start the MCP server in one terminal:
-node node_modules/@ai-agencee/ai-kit-mcp/dist/index.js
+node node_modules/@ai-agencee/mcp/dist/index.js
 
 # 5. In Claude conversation:
 # "Use @agent-workflow to analyze my project architecture"

@@ -78,7 +78,7 @@ import type {
   AiKitPluginManifest,
   AiKitPluginRegisterFn,
   CheckHandlerRegistry,
-} from '@ai-agencee/ai-kit-agent-executor';
+} from '@ai-agencee/engine';
 import { MyCheckHandler } from './my-check.handler.js';
 
 export const manifest: AiKitPluginManifest = {

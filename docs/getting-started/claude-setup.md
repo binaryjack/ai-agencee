@@ -5,7 +5,7 @@ Get your project's ULTRA_HIGH standards working in Claude with one simple setup.
 ## 1️⃣ Install MCP Server
 
 ```bash
-npm install @ai-agencee/ai-kit-mcp
+npm install @ai-agencee/mcp
 ```
 
 Or ensure it's in your project dependencies.
@@ -25,7 +25,7 @@ Add this to the config:
   "mcpServers": {
     "ai-kit": {
       "command": "npx",
-      "args": ["@ai-agencee/ai-kit-mcp"]
+      "args": ["@ai-agencee/mcp"]
     }
   }
 }
@@ -37,7 +37,7 @@ Add this to the config:
   "mcpServers": {
     "ai-kit": {
       "command": "npx",
-      "args": ["@ai-agencee/ai-kit-mcp"]
+      "args": ["@ai-agencee/mcp"]
     },
     "filesystem": {
       "command": "npx",
@@ -105,7 +105,7 @@ Show me the recommended architecture for a data service.
 The MCP server looks for these files. Create them with:
 
 ```bash
-npx @ai-agencee/ai-kit-cli init --strict
+npx @ai-agencee/cli init --strict
 ```
 
 This generates:
@@ -121,8 +121,8 @@ If files are missing, you'll get helpful error messages.
 | Problem | Fix |
 |---------|-----|
 | Claude doesn't show ai-kit in connections | Restart Claude completely |
-| "File not found" errors | Run `npx @ai-agencee/ai-kit-cli init --strict` first |
-| "Cannot find module" | Do `npm install @ai-agencee/ai-kit-mcp` in your project |
+| "File not found" errors | Run `npx @ai-agencee/cli init --strict` first |
+| "Cannot find module" | Do `npm install @ai-agencee/mcp` in your project |
 | Server won't start | Ensure Node.js 18+: `node --version` |
 
 ## 💡 Pro Tips
@@ -167,19 +167,19 @@ export const validateInput = function(input: string): boolean {
 
 - [MCP Server Documentation](./packages/mcp/README.md)
 - [ULTRA_HIGH Standards](./template/src/.ai/rules.md)
-- [@ai-agencee/ai-kit-cli Docs](./packages/cli/README.md)
+- [@ai-agencee/cli Docs](./packages/cli/README.md)
 
 ## ⚡ One-Liner Setup
 
 ```bash
-npm install @ai-agencee/ai-kit-mcp && echo '{
+npm install @ai-agencee/mcp && echo '{
   "mcpServers": {
     "ai-kit": {
       "command": "npx",
-      "args": ["@ai-agencee/ai-kit-mcp"]
+      "args": ["@ai-agencee/mcp"]
     }
   }
-}' > ~/.config/Claude/claude_desktop_config.json && npx @ai-agencee/ai-kit-cli init --strict
+}' > ~/.config/Claude/claude_desktop_config.json && npx @ai-agencee/cli init --strict
 ```
 
 Then restart Claude and type `@init` to test!

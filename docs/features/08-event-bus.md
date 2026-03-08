@@ -75,7 +75,7 @@ graph LR
 ### 1. Subscribe to Events
 
 ```typescript
-import { getGlobalEventBus } from '@ai-agencee/ai-kit-agent-executor';
+import { getGlobalEventBus } from '@ai-agencee/engine';
 
 const bus = getGlobalEventBus();
 
@@ -111,7 +111,7 @@ const result = await orchestrator.execute(dagDefinition);
 
 ```typescript
 import { WebSocketServer } from 'ws';
-import { getGlobalEventBus } from '@ai-agencee/ai-kit-agent-executor';
+import { getGlobalEventBus } from '@ai-agencee/engine';
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -176,7 +176,7 @@ interface SubscribeOptions {
 ### Example 1: Live Progress Display
 
 ```typescript
-import { getGlobalEventBus } from '@ai-agencee/ai-kit-agent-executor';
+import { getGlobalEventBus } from '@ai-agencee/engine';
 
 const bus = getGlobalEventBus();
 const laneStatus = new Map();

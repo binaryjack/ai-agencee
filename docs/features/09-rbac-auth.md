@@ -227,7 +227,7 @@ const result = await orchestrator.execute(dagDefinition, {
 Authenticate users with identity provider:
 
 ```typescript
-import { OidcAuthProvider } from '@ai-agencee/ai-kit-executor';
+import { OidcAuthProvider } from '@ai-agencee/engine';
 
 const oidc = new OidcAuthProvider({
   discoveryUrl: 'https://your-idp.example.com/.well-known/openid-configuration',
@@ -244,7 +244,7 @@ const principal = await oidc.authenticate(bearerToken);
 For CI/CD pipelines:
 
 ```typescript
-import { ServicePrincipalAuth } from '@ai-agencee/ai-kit-executor';
+import { ServicePrincipalAuth } from '@ai-agencee/engine';
 
 const spAuth = new ServicePrincipalAuth({
   keyVaultUrl: 'https://vault.azure.net',

@@ -46,7 +46,7 @@ const dag = new DagBuilder('my-dag')
 ### 1. Create Basic DAG
 
 ```typescript
-import { DagBuilder } from '@ai-agencee/ai-kit-agent-executor';
+import { DagBuilder } from '@ai-agencee/engine';
 
 const dag = new DagBuilder('code-review-workflow')
   .budget(5.00)
@@ -271,7 +271,7 @@ class SupervisorBuilder {
 ### Example 1: Simple Code Review
 
 ```typescript
-import { DagBuilder } from '@ai-agencee/ai-kit-agent-executor';
+import { DagBuilder } from '@ai-agencee/engine';
 
 const reviewDag = new DagBuilder('simple-review')
   .description('Basic code review workflow')
@@ -352,7 +352,7 @@ const dag = new DagBuilder('multi-service-review')
 ### Example 3: Complex Workflow with Composition
 
 ```typescript
-import { DagBuilder } from '@ai-agencee/ai-kit-agent-executor';
+import { DagBuilder } from '@ai-agencee/engine';
 
 // Composition: Feature implementation workflow
 function featureImplementationDag(featureName: string, budget: number) {

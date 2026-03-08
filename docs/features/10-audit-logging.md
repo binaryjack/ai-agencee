@@ -337,7 +337,7 @@ cat .agents/audit/<runId>.ndjson | \
 ### Generate SOC 2 Report
 
 ```typescript
-import { AuditReporter } from '@ai-agencee/ai-kit-executor';
+import { AuditReporter } from '@ai-agencee/engine';
 
 const reporter = new AuditReporter('.agents/audit/');
 
@@ -379,7 +379,7 @@ const report = await reporter.generateHipaaReport({
 ### Verify Audit Chain
 
 ```typescript
-import { AuditVerifier } from '@ai-agencee/ai-kit-executor';
+import { AuditVerifier } from '@ai-agencee/engine';
 
 const verifier = new AuditVerifier();
 

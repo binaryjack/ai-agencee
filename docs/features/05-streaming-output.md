@@ -99,7 +99,7 @@ ai-kit agent:dag agents/streaming-workflow.dag.json
 ### 3. Programmatic Streaming
 
 ```typescript
-import { DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+import { DagOrchestrator } from '@ai-agencee/engine';
 
 const orchestrator = new DagOrchestrator(projectRoot);
 
@@ -174,7 +174,7 @@ interface StreamingOptions {
 
 ```typescript
 // In CLI
-import { DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+import { DagOrchestrator } from '@ai-agencee/engine';
 
 const orchestrator = new DagOrchestrator(projectRoot);
 let tokenCount = 0;
@@ -225,7 +225,7 @@ export interface UserService { [50]
 ```typescript
 // Backend server with WebSocket support
 import WebSocket from 'ws';
-import { DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+import { DagOrchestrator } from '@ai-agencee/engine';
 
 const wss = new WebSocket.Server({ port: 8080 });
 

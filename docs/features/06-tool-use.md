@@ -576,7 +576,7 @@ type ToolName =
 Register domain-specific tools:
 
 ```typescript
-import { TOOL_REGISTRY } from '@ai-agencee/ai-kit-agent-executor';
+import { TOOL_REGISTRY } from '@ai-agencee/engine';
 
 TOOL_REGISTRY.register({
   name: 'query_database',

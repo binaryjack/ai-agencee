@@ -267,7 +267,7 @@ Override routing on specific checks:
 Automatically downgrade models when budget is tight:
 
 ```typescript
-import { ModelRouter } from '@ai-agencee/ai-kit-agent-executor';
+import { ModelRouter } from '@ai-agencee/engine';
 
 const router = new ModelRouter(projectRoot);
 
@@ -453,7 +453,7 @@ Log warnings at thresholds:
 Accurate token counting for different models:
 
 ```typescript
-import { TokenCounter } from '@ai-agencee/ai-kit-agent-executor';
+import { TokenCounter } from '@ai-agencee/engine';
 
 const counter = new TokenCounter('claude-3-sonnet');
 const encoded = counter.encode("Hello, world!");
@@ -491,7 +491,7 @@ orchestrator.on('cost:update', (event) => {
 Compare costs between provider choices:
 
 ```typescript
-import { DagOrchestrator } from '@ai-agencee/ai-kit-agent-executor';
+import { DagOrchestrator } from '@ai-agencee/engine';
 
 const orchestrator = new DagOrchestrator(projectRoot);
 
