@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
+import * as fs from 'fs'
+import * as os from 'os'
+import * as path from 'path'
 
 jest.mock('@ai-agencee/ai-kit-core', () => ({
   copyTemplateFiles: jest.fn(),
@@ -8,7 +8,7 @@ jest.mock('@ai-agencee/ai-kit-core', () => ({
   TEMPLATE_DIR: '/fake/template',
 }));
 
-import { copyTemplateFiles, fileExists } from '@ai-agencee/core';
+import { copyTemplateFiles, fileExists } from '@ai-agencee/core'
 
 const mockCopy = copyTemplateFiles as jest.MockedFunction<typeof copyTemplateFiles>;
 const mockExists = fileExists as jest.MockedFunction<typeof fileExists>;

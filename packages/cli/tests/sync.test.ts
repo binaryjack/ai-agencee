@@ -1,14 +1,14 @@
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
+import * as fs from 'fs'
+import * as os from 'os'
+import * as path from 'path'
 
 jest.mock('@ai-agencee/ai-kit-core', () => ({
   syncTemplateFiles: jest.fn(),
   TEMPLATE_DIR: '/fake/template',
 }));
 
-import type { SyncResult } from '@ai-agencee/core';
-import { syncTemplateFiles } from '@ai-agencee/core';
+import type { SyncResult } from '@ai-agencee/core'
+import { syncTemplateFiles } from '@ai-agencee/core'
 
 const mockSync = syncTemplateFiles as jest.MockedFunction<typeof syncTemplateFiles>;
 
