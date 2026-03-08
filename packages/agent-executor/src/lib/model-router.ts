@@ -42,6 +42,8 @@ export interface TokenCosts {
 export interface ProviderConfig {
   models: ProviderModelMap;
   costs?: TokenCosts;
+  /** Per-family pricing — used for naiveCostUSD baseline (opus) calc */
+  familyCosts?: Partial<Record<ModelFamily, TokenCosts>>;
 }
 
 export interface BudgetCap {
@@ -70,6 +72,8 @@ export interface ModelRouterConfig {
 export interface RoutedResponse extends LLMResponse {
   taskType: TaskType;
   estimatedCostUSD: number;
+  /** Opus-tier baseline cost — subtract from estimatedCostUSD to get savings */
+  naiveCostUSD: number;
 }
 
 // ─── ModelRouter ──────────────────────────────────────────────────────────────
@@ -172,12 +176,23 @@ export class ModelRouter {
     providerName: string,
     family: ModelFamily,
   ): number {
-    const costs = this.config.providers[providerName]?.costs;
+    const providerConfig = this.config.providers[providerName];
+    if (!providerConfig) return 0;
+    const costs = providerConfig.familyCosts?.[family] ?? providerConfig.costs;
     if (!costs) return 0;
     return (
       (inputTokens / 1_000_000) * costs.inputPerMillion +
       (outputTokens / 1_000_000) * costs.outputPerMillion
     );
+  }
+
+  /** Baseline cost at opus tier — what routing through the most expensive model would have cost. */
+  estimateNaiveCost(
+    inputTokens: number,
+    outputTokens: number,
+    providerName: string,
+  ): number {
+    return this.estimateCost(inputTokens, outputTokens, providerName, 'opus');
   }
 
   // ─── Route ─────────────────────────────────────────────────────────────────
@@ -230,6 +245,11 @@ export class ModelRouter {
       ...response,
       taskType,
       estimatedCostUSD: cost,
+      naiveCostUSD: this.estimateNaiveCost(
+        response.usage.inputTokens,
+        response.usage.outputTokens,
+        providerName,
+      ),
     };
   }
 
@@ -284,7 +304,9 @@ export class ModelRouter {
       providerName,
       profile.family,
     );
-    return { ...response, taskType, estimatedCostUSD: cost };
+    return { ...response, taskType, estimatedCostUSD: cost,
+      naiveCostUSD: this.estimateNaiveCost(
+        response.usage.inputTokens, response.usage.outputTokens, providerName) };
   }
 
   /**
@@ -376,6 +398,7 @@ export class ModelRouter {
         provider: providerName,
         taskType,
         estimatedCostUSD: cost,
+        naiveCostUSD: this.estimateNaiveCost(inputTokens, outputTokens, providerName),
       });
     }
   }

@@ -1,6 +1,6 @@
-import type { RoutedResponse } from '../../model-router.js';
-import type { ICostTracker } from '../cost-tracker.js';
-import type { LaneCostSummary, RunCostSummary } from '../cost-tracker.types.js';
+import type { RoutedResponse } from '../../model-router.js'
+import type { ICostTracker } from '../cost-tracker.js'
+import type { LaneCostSummary, RunCostSummary } from '../cost-tracker.types.js'
 
 export function record(
   this: ICostTracker,
@@ -18,6 +18,7 @@ export function record(
     inputTokens:      response.usage.inputTokens,
     outputTokens:     response.usage.outputTokens,
     estimatedCostUSD: response.estimatedCostUSD,
+    naiveCostUSD:     response.naiveCostUSD,
   });
 
   if (
@@ -74,13 +75,18 @@ export function summary(this: ICostTracker): RunCostSummary {
     byTaskType[call.taskType]!.costUSD += call.estimatedCostUSD;
   }
 
-  const totalC = this.totalCost();
+  const totalC     = this.totalCost();
+  const totalNaive = this._calls.reduce((s, c) => s + c.naiveCostUSD, 0);
+  const savings    = totalNaive - totalC;
 
   return {
     runId:             this._runId,
     startedAt:         this._startedAt,
     completedAt:       new Date().toISOString(),
     totalCostUSD:      totalC,
+    totalNaiveCostUSD: totalNaive,
+    totalSavingsUSD:   savings,
+    savingsRatePct:    totalNaive > 0 ? (savings / totalNaive) * 100 : 0,
     totalInputTokens:  this._calls.reduce((s, c) => s + c.inputTokens, 0),
     totalOutputTokens: this._calls.reduce((s, c) => s + c.outputTokens, 0),
     byLane,
@@ -95,8 +101,10 @@ export function formatReport(this: ICostTracker): string {
   const s = this.summary();
   const lines: string[] = [
     `💰 Cost Report — Run ${this._runId}`,
-    `   Total: $${s.totalCostUSD.toFixed(5)} USD  ` +
+    `   Actual: $${s.totalCostUSD.toFixed(5)} USD  ` +
       `(${s.totalInputTokens.toLocaleString()} in / ${s.totalOutputTokens.toLocaleString()} out tokens)`,
+    `   Naive:  $${s.totalNaiveCostUSD.toFixed(5)} USD  (opus-tier baseline)`,
+    `   Saved:  $${s.totalSavingsUSD.toFixed(5)} USD  (${s.savingsRatePct.toFixed(1)}% via smart routing)`,
     '',
     '   By lane:',
     ...Object.values(s.byLane).map(
