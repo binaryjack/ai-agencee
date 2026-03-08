@@ -58,8 +58,8 @@
  *   // provider.complete(prompt, modelId) → calls python generate tool
  */
 
-import { type ChildProcess, spawn } from 'child_process';
-import type { LLMPrompt, LLMProvider, LLMResponse } from './llm-provider.js';
+import { type ChildProcess, spawn } from 'child_process'
+import type { LLMPrompt, LLMProvider, LLMResponse } from './llm-provider.js'
 
 // ─── MCP JSON-RPC types ───────────────────────────────────────────────────────
 
