@@ -146,3 +146,6 @@ internal-strategy-docs/
 
 # Private local workspace (git-ignored clone of private repo, never tracked here)
 _private/
+
+# Agent executor runtime data (generated checkpoints, runs, results - not source)
+.agents/
