@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn } from 'child_process'
 
 export const runMcp = async (): Promise<void> => {
   console.log('Starting AI Kit MCP Server...');

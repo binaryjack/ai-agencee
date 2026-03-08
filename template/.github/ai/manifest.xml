@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
   <core>
-    <user>TADEO</user>
+    <user>OWNER</user>
     <standard>ULTRA_HIGH</standard>
     <communication>BRUTAL</communication>
     <verbosity>0</verbosity>
