@@ -32,7 +32,7 @@ describe('runCheck', () => {
     ];
     mockCheck.mockResolvedValue(results);
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit'); });
-    const { runCheck } = await import('../src/commands/check.js');
+    const { runCheck } = await import('../src/commands/check/index.js');
     await runCheck();
     expect(exitSpy).not.toHaveBeenCalled();
     exitSpy.mockRestore();
@@ -45,7 +45,7 @@ describe('runCheck', () => {
     mockCheck.mockResolvedValue(results);
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit:1'); });
     const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const { runCheck } = await import('../src/commands/check.js');
+    const { runCheck } = await import('../src/commands/check/index.js');
     await expect(runCheck()).rejects.toThrow('exit:1');
     expect(exitSpy).toHaveBeenCalledWith(1);
     exitSpy.mockRestore();

@@ -120,6 +120,30 @@ const BUILTIN_PATTERNS: ScrubPattern[] = [
     pattern: /\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b/g,
     replacement: '[REDACTED:CREDIT_CARD]',
   },
+  {
+    name: 'EMAIL',
+    // RFC-5321 compliant email addresses
+    pattern: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g,
+    replacement: '[REDACTED:EMAIL]',
+  },
+  {
+    name: 'PHONE_NUMBER',
+    // International and North American phone formats: +41 79 123 45 67, (555) 123-4567, +1-800-555-0100
+    pattern: /(?:\+?\d{1,3}[\s.\-]?)?(?:\(?\d{2,4}\)?[\s.\-]?){2,}\d{3,4}/g,
+    replacement: '[REDACTED:PHONE_NUMBER]',
+  },
+  {
+    name: 'IBAN',
+    // International Bank Account Number: CH56 0483 5012 3456 7800 9, GB29NWBK60161331926819
+    pattern: /\b[A-Z]{2}\d{2}[A-Z0-9 ]{11,30}\b/g,
+    replacement: '[REDACTED:IBAN]',
+  },
+  {
+    name: 'IPV4_PRIVATE',
+    // Private/internal IPv4 ranges that should not leave the process
+    pattern: /\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b/g,
+    replacement: '[REDACTED:INTERNAL_IP]',
+  },
 ];
 
 // ─── PiiScrubber ──────────────────────────────────────────────────────────────

@@ -31,7 +31,7 @@ describe('runInit', () => {
   });
 
   it('calls copyTemplateFiles with correct arguments', async () => {
-    const { runInit } = await import('../src/commands/init.js');
+    const { runInit } = await import('../src/commands/init/index.js');
     await runInit();
     expect(mockCopy).toHaveBeenCalledWith('/fake/template', tmpDir, expect.any(Function));
   });
@@ -43,7 +43,7 @@ describe('runInit', () => {
       capturedConfirm = confirm;
       return [];
     });
-    const { runInit } = await import('../src/commands/init.js');
+    const { runInit } = await import('../src/commands/init/index.js');
     await runInit();
     expect(capturedConfirm).toBeDefined();
     const result = await capturedConfirm!(path.join(tmpDir, 'new-file.md'));

@@ -1,18 +1,19 @@
-import * as fs from 'fs/promises';
-import { CircuitBreaker } from './circuit-breaker.js';
+import * as fs from 'fs/promises'
+import { CircuitBreaker } from './circuit-breaker.js'
 import {
-    AnthropicProvider,
-    LLMPrompt,
-    LLMProvider,
-    LLMResponse,
-    LLMStreamChunk,
-    MockProvider,
-    ModelFamily,
-    OpenAIProvider,
-    TaskType,
-    ToolExecutorFn,
-} from './llm-provider.js';
-import { RetryPolicy } from './retry-policy.js';
+  AnthropicProvider,
+  LLMPrompt,
+  LLMProvider,
+  LLMResponse,
+  LLMStreamChunk,
+  MockProvider,
+  ModelFamily,
+  OpenAIProvider,
+  TaskType,
+  ToolExecutorFn,
+} from './llm-provider.js'
+import { PiiScrubber, type PiiScrubberOptions } from './pii-scrubber.js'
+import { RetryPolicy } from './retry-policy.js'
 
 // ─── Config Types ─────────────────────────────────────────────────────────────
 
@@ -60,6 +61,8 @@ export interface ModelRouterConfig {
   providers: Record<string, ProviderConfig>;
   /** Optional spend caps that trigger budget exceeded events */
   budgetCap?: BudgetCap;
+  /** E1 — PII scrubbing applied to all outbound prompts */
+  piiScrubbing?: PiiScrubberOptions;
 }
 
 // ─── Routed Response ─────────────────────────────────────────────────────────
@@ -89,9 +92,11 @@ export class ModelRouter {
   private readonly providers = new Map<string, LLMProvider>();
   private readonly breakers  = new Map<string, CircuitBreaker>();
   private readonly retry     = RetryPolicy.forLLM();
+  private readonly piiScrubber: PiiScrubber;
 
   constructor(config: ModelRouterConfig) {
     this.config = config;
+    this.piiScrubber = new PiiScrubber(config.piiScrubbing ?? {});
   }
 
   private _breakerFor(providerName: string): CircuitBreaker {
@@ -203,11 +208,12 @@ export class ModelRouter {
     const profile = this.profileFor(taskType);
     const modelId = this.modelIdFor(taskType, providerName);
 
-    const mergedPrompt: LLMPrompt = {
+    const basePrompt: LLMPrompt = {
       ...prompt,
       maxTokens: prompt.maxTokens ?? profile.maxTokens,
       temperature: prompt.temperature ?? profile.temperature,
     };
+    const { prompt: mergedPrompt } = this.piiScrubber.scrubPrompt(basePrompt);
 
     const response = await this.retry.execute(
       () => this._breakerFor(providerName).execute(() => provider.complete(mergedPrompt, modelId)),
@@ -256,11 +262,12 @@ export class ModelRouter {
 
     const profile = this.profileFor(taskType);
     const modelId = this.modelIdFor(taskType, providerName);
-    const merged: LLMPrompt = {
+    const rawMerged: LLMPrompt = {
       ...prompt,
       maxTokens:   prompt.maxTokens   ?? profile.maxTokens,
       temperature: prompt.temperature ?? profile.temperature,
     };
+    const { prompt: merged } = this.piiScrubber.scrubPrompt(rawMerged);
 
     const response = await this.retry.execute(
       () => this._breakerFor(providerName).execute(() =>
@@ -312,11 +319,12 @@ export class ModelRouter {
 
     const profile  = this.profileFor(taskType);
     const modelId  = this.modelIdFor(taskType, providerName);
-    const merged: LLMPrompt = {
+    const rawMerged: LLMPrompt = {
       ...prompt,
       maxTokens:   prompt.maxTokens   ?? profile.maxTokens,
       temperature: prompt.temperature ?? profile.temperature,
     };
+    const { prompt: merged } = this.piiScrubber.scrubPrompt(rawMerged);
 
     let inputTokens  = 0;
     let outputTokens = 0;

@@ -13,9 +13,9 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { buildDashboard } from './dashboard-resource.js'
-import { startSseServer } from './sse-server.js'
-import { createVSCodeSamplingBridge } from './vscode-lm-bridge.js'
+import { buildDashboard } from './dashboard/index.js'
+import { startSseServer } from './sse/index.js'
+import { createVSCodeSamplingBridge } from './vscode-lm/index.js'
 
 const server = new Server(
   {

@@ -62,5 +62,9 @@
     "perRun":  0.50,
     "perLane": 0.10,
     "currency": "USD"
+  },
+  "piiScrubbing": {
+    "enabled": true,
+    "customPatterns": []
   }
 }

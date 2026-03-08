@@ -33,7 +33,7 @@ describe('runSync', () => {
     ];
     mockSync.mockResolvedValue(results);
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    const { runSync } = await import('../src/commands/sync.js');
+    const { runSync } = await import('../src/commands/sync/index.js');
     await runSync();
     expect(mockSync).toHaveBeenCalledWith('/fake/template', tmpDir);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('synced:'));
@@ -46,7 +46,7 @@ describe('runSync', () => {
     ];
     mockSync.mockResolvedValue(results);
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const { runSync } = await import('../src/commands/sync.js');
+    const { runSync } = await import('../src/commands/sync/index.js');
     await runSync();
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('diverged:'));
     warnSpy.mockRestore();

@@ -1,7 +1,7 @@
 ﻿import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
-import { runVisualize } from '../src/commands/visualize'
+import { runVisualize } from '../src/commands/visualize/index.js'
 
 // â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 

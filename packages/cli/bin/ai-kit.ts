@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
-import { runDag } from '../src/commands/agents.js'
-import { runBenchmark } from '../src/commands/benchmark.js'
-import { runCheck } from '../src/commands/check.js'
-import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data.js'
-import { runInit } from '../src/commands/init.js'
-import { runMcp } from '../src/commands/mcp.js'
-import { runPlan } from '../src/commands/plan.js'
-import { runSync } from '../src/commands/sync.js'
-import { runVisualize } from '../src/commands/visualize.js'
+import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
+import { runBenchmark } from '../src/commands/benchmark/index.js'
+import { runCheck } from '../src/commands/check/index.js'
+import { runDag } from '../src/commands/dag/index.js'
+import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
+import { runInit } from '../src/commands/init/index.js'
+import { runMcp } from '../src/commands/mcp/index.js'
+import { runPlan } from '../src/commands/plan/index.js'
+import { runSync } from '../src/commands/sync/index.js'
+import { runVisualize } from '../src/commands/visualize/index.js'
 
 const program = new Command();
 
@@ -48,6 +49,7 @@ program
   .option('-i, --interactive', 'Pause at needs-human-review checkpoints and prompt for operator decision')
   .option('--budget <usd>', 'Abort the run when estimated LLM spend exceeds this USD amount')
   .option('--provider <name>', 'Override the LLM provider for all lanes (e.g. anthropic, openai, mock)')
+  .option('--json', 'Output machine-readable JSON (suppresses human-friendly progress text)')
   .action((dagFile, options) =>
     runDag(dagFile ?? 'agents/dag.json', {
       project: options.project,
@@ -56,7 +58,27 @@ program
       interactive: options.interactive,
       budget: options.budget,
       provider: options.provider,
+      json: options.json,
     }),
+  );
+
+// Agent registry commands (G-49)
+program
+  .command('agent:list')
+  .description('List available agents in the project')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--json', 'Output machine-readable JSON')
+  .action((options) =>
+    runAgentList({ project: options.project, json: options.json }),
+  );
+
+program
+  .command('agent:install <name>')
+  .description('Install an agent from the ai-agencee-ressources registry')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--registry <url>', 'Registry URL (default: https://raw.githubusercontent.com/binaryjack/ai-agencee-ressources/main)')
+  .action((name, options) =>
+    runAgentInstall(name, { project: options.project, registry: options.registry }),
   );
 
 // Plan commands
