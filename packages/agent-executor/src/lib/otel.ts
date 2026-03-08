@@ -1,5 +1,5 @@
 /**
- * otel.ts — Opt-in OpenTelemetry instrumentation hooks for ai-starter-kit.
+ * otel.ts — Opt-in OpenTelemetry instrumentation hooks for ai-agencee.
  *
  * Zero hard dependency: if `@opentelemetry/api` is not installed the module
  * silently provides no-op spans so the rest of the codebase stays clean.

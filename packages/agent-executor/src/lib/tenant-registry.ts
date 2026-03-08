@@ -29,7 +29,7 @@
  * Compliance Note:
  *   This module is the authoritative implementation for the "Right to Erasure"
  *   (GDPR Art. 17) and "Data Portability" (GDPR Art. 20) obligations in the
- *   ai-starter-kit.  All run data must be written through a TenantRunRegistry
+ *   ai-agencee.  All run data must be written through a TenantRunRegistry
  *   instance to ensure it is discoverable and erasable.
  */
 

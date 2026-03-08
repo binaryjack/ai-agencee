@@ -1,0 +1,77 @@
+name: Enterprise Inquiry
+description: Ask about enterprise licensing, SLA, compliance, or a proof of concept.
+title: "[Enterprise]: "
+labels: ["enterprise", "sales"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your interest in AI Agencee for your organisation.
+        
+        **For urgent enterprise inquiries**, email directly (see SECURITY.md for the contact address) and reference this issue number.
+        
+        We will respond within 2 business days.
+
+  - type: dropdown
+    id: org_size
+    attributes:
+      label: Organisation size (engineering team)
+      options:
+        - "1–10 engineers"
+        - "11–50 engineers"
+        - "51–200 engineers"
+        - "200+ engineers"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: inquiry_type
+    attributes:
+      label: What are you evaluating?
+      multiple: true
+      options:
+        - "Managed cloud platform (Starter / Professional / Enterprise tier)"
+        - "On-premise / self-hosted deployment"
+        - "Custom enterprise licensing"
+        - "Compliance / SOC2 / GDPR documentation"
+        - "SLA and uptime guarantees"
+        - "White-labelling"
+        - "Proof of concept / pilot"
+        - "Integration support"
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: Briefly describe what you would use AI Agencee for.
+      placeholder: "We want to automate code review across 15 microservices with a compliance audit trail for SOC2…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Key requirements
+      description: Compliance requirements, data residency, model provider constraints, etc.
+      placeholder: |
+        - GDPR-compliant data processing (EU data residency required)
+        - Existing infrastructure is on AWS (eu-central-1)
+        - Must integrate with Jira
+        - Budget approval needed before pilot
+
+  - type: input
+    id: timeline
+    attributes:
+      label: Desired timeline
+      placeholder: "Q2 2026 pilot, Q3 production"
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: I consent to being contacted at the email associated with my GitHub account regarding this inquiry.
+          required: true

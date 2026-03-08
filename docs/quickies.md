@@ -37,8 +37,8 @@ Jump to the one you need:
 
 ```sh
 # 1. Clone and install
-git clone https://github.com/binaryjack/ai-starter-kit.git
-cd ai-starter-kit
+git clone https://github.com/binaryjack/ai-agencee.git
+cd ai-agencee
 pnpm install
 
 # 2. Build all packages

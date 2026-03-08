@@ -147,7 +147,7 @@ export class PythonMcpBridge {
       args:          opts.args          ?? [],
       env:           opts.env           ?? {},
       callTimeoutMs: opts.callTimeoutMs ?? 30_000,
-      clientInfo:    opts.clientInfo    ?? { name: 'ai-starter-kit', version: '1.0.0' },
+      clientInfo:    opts.clientInfo    ?? { name: 'ai-agencee', version: '1.0.0' },
       scriptPath:    opts.scriptPath,
     };
   }

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully created and released the **MCP (Model Context Protocol) Server** for the `@ai-agencee/ai-starter-kit` ecosystem. This server enables fresh AI sessions to automatically load project rules and standards via Model Context Protocol integration.
+Successfully created and released the **MCP (Model Context Protocol) Server** for the `@ai-agencee` ecosystem. This server enables fresh AI sessions to automatically load project rules and standards via Model Context Protocol integration.
 
 ## Published Packages
 
@@ -217,7 +217,7 @@ Based on the project rules, how should I structure...?
 
 ## Project Links
 
-- **Repository**: [ai-starter-kit](https://github.com/ai-agencee/ai-starter-kit)
+- **Repository**: [ai-agencee](https://github.com/binaryjack/ai-agencee)
 - **npm @ai-agencee/core**: https://npmjs.com/package/@ai-agencee/core
 - **npm @ai-agencee/cli**: https://npmjs.com/package/@ai-agencee/cli
 - **npm @ai-agencee/mcp**: https://npmjs.com/package/@ai-agencee/mcp

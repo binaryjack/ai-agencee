@@ -1,0 +1,86 @@
+name: Feature Request
+description: Suggest a new capability, improvement, or enhancement.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Great ideas drive this project. Please describe your request clearly — the more context you give, the faster we can evaluate it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the product does this affect?
+      options:
+        - "DAG orchestration engine"
+        - "Model routing / cost tracking"
+        - "CLI commands"
+        - "MCP integration (VS Code / Claude Desktop)"
+        - "DAG Editor (visual editor)"
+        - "Enterprise / RBAC / audit"
+        - "New LLM provider"
+        - "Showcase website"
+        - "Developer experience / docs"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority_signal
+    attributes:
+      label: How important is this to you?
+      options:
+        - "Nice to have"
+        - "Would significantly improve my workflow"
+        - "Blocking my adoption / use case"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What problem does this solve? What can't you do today?
+      placeholder: "Currently, when I run a DAG with 20+ lanes I have no way to…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Describe your idea. Include rough API / config sketches if you have them.
+      placeholder: |
+        Add a `--watch` flag to `ai-kit agent:dag` that re-executes only modified lanes when a source file changes.
+        
+        Rough API:
+        ```bash
+        ai-kit agent:dag ./dag.json --watch --changed-files ./src/services/*.ts
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Did you find any workarounds? Are there other tools that do this?
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Anything else — links, screenshots, related issues.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues and this has not been requested before.
+          required: true
+        - label: I have checked the [roadmap](https://github.com/binaryjack/ai-agencee/tree/main/_private) and this is not already planned.
+          required: false

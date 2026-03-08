@@ -1,0 +1,139 @@
+name: Bug Report
+description: Something is broken or behaving unexpectedly.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this bug. Please fill in as much detail as possible.
+        **Security issues**: use [GitHub Security Advisories](https://github.com/binaryjack/ai-agencee/security/advisories/new) — never this form.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Affected package
+      description: Which package or component is affected?
+      options:
+        - "@ai-agencee/engine (agent-executor)"
+        - "@ai-agencee/cli"
+        - "@ai-agencee/mcp"
+        - "@ai-agencee/core"
+        - "dag-editor (visual editor)"
+        - "showcase-web (website)"
+        - "Documentation"
+        - "Other / unsure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "Critical — data loss / security issue"
+        - "High — feature completely broken"
+        - "Medium — feature partially broken / workaround exists"
+        - "Low — cosmetic / minor inconvenience"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: When I run `ai-kit agent:dag ./agents/dag.json`, the orchestrator throws…
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the issue.
+      placeholder: |
+        1. Create a DAG with…
+        2. Run `ai-kit agent:dag ./my.dag.json --provider mock`
+        3. See error in output
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What actually happened? Include the full error message / stack trace.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: dag_snippet
+    attributes:
+      label: Minimal DAG / agent JSON (if applicable)
+      description: Paste a minimal reproducing DAG. Remove any sensitive keys or PII.
+      render: json
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `ai-kit --version` or the npm package version.
+      placeholder: "1.4.1"
+    validations:
+      required: true
+
+  - type: input
+    id: node_version
+    attributes:
+      label: Node.js version
+      description: Output of `node --version`
+      placeholder: "v20.11.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - "macOS"
+        - "Linux"
+        - "Windows"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: LLM provider (if relevant)
+      options:
+        - "mock (no API key)"
+        - "anthropic"
+        - "openai"
+        - "vscode"
+        - "bedrock"
+        - "Not applicable"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
+        - label: I have read the [documentation](https://github.com/binaryjack/ai-agencee/tree/main/docs).
+          required: true
+        - label: I have removed any API keys, secrets, or PII from my reproduction case.
+          required: true
