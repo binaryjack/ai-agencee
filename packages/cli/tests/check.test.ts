@@ -1,13 +1,13 @@
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
-jest.mock('@ai-agencee/ai-kit-core', () => ({
+jest.mock('@ai-agencee/core', () => ({
   checkProject: jest.fn(),
 }));
 
-import type { CheckResult } from '@ai-agencee/core'
-import { checkProject } from '@ai-agencee/core'
+import type { CheckResult } from '@ai-agencee/core';
+import { checkProject } from '@ai-agencee/core';
 
 const mockCheck = checkProject as jest.MockedFunction<typeof checkProject>;
 
