@@ -11,34 +11,27 @@ on:
 
 jobs:
   update-env:
-    name: Push secrets → server .env → restart container
-    runs-on: ubuntu-latest
+    name: Write secrets → .env → restart container
+    runs-on: self-hosted
     environment: production
 
     steps:
-      - name: Write RESEND vars to server .env and restart
-        uses: appleboy/ssh-action@v1
-        with:
-          host:     ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key:      ${{ secrets.SERVER_SSH_KEY }}
-          # Each line is intentionally idempotent:
-          # sed removes any existing entry, then appends the new value.
-          # This means re-running the workflow is always safe.
-          script: |
-            set -euo pipefail
-            ENV_FILE=/home/tadeo/ai-agencee/.env
+      - name: Write RESEND vars to .env and restart
+        # Each sed removes any existing entry before appending — idempotent.
+        run: |
+          set -euo pipefail
+          ENV_FILE=/home/tadeo/ai-agencee/.env
 
-            # ── Resend ────────────────────────────────────────────────────────
-            sed -i '/^RESEND_API_KEY=/d'      "$ENV_FILE"
-            sed -i '/^CONTACT_TO_EMAIL=/d'    "$ENV_FILE"
-            sed -i '/^CONTACT_FROM_EMAIL=/d'  "$ENV_FILE"
+          # ── Resend ──────────────────────────────────────────────────────────
+          sed -i '/^RESEND_API_KEY=/d'      "$ENV_FILE"
+          sed -i '/^CONTACT_TO_EMAIL=/d'    "$ENV_FILE"
+          sed -i '/^CONTACT_FROM_EMAIL=/d'  "$ENV_FILE"
 
-            echo "RESEND_API_KEY=${{ secrets.RESEND_KEY }}"             >> "$ENV_FILE"
-            echo "CONTACT_TO_EMAIL=hello@ai-agencee.com"                >> "$ENV_FILE"
-            echo "CONTACT_FROM_EMAIL=contact@ai-agencee.com"            >> "$ENV_FILE"
+          echo "RESEND_API_KEY=${{ secrets.RESEND_KEY }}"  >> "$ENV_FILE"
+          echo "CONTACT_TO_EMAIL=hello@ai-agencee.com"     >> "$ENV_FILE"
+          echo "CONTACT_FROM_EMAIL=contact@ai-agencee.com" >> "$ENV_FILE"
 
-            # ── Restart service to pick up new env ────────────────────────────
-            cd /home/tadeo/ai-agencee
-            docker compose up -d --no-deps ${{ inputs.service || 'showcase-web' }}
-            echo "✅ Done — ${{ inputs.service || 'showcase-web' }} restarted with updated env."
+          # ── Restart service to pick up new env ────────────────────────────
+          cd /home/tadeo/ai-agencee
+          docker compose up -d --no-deps ${{ inputs.service || 'showcase-web' }}
+          echo "✅ Done — ${{ inputs.service || 'showcase-web' }} restarted with updated env."
