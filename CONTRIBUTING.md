@@ -82,7 +82,7 @@ pnpm build
 pnpm test
 ```
 
-All 424 tests should pass. If any fail on your machine, open an issue before proceeding.
+All 519 tests should pass. If any fail on your machine, open an issue before proceeding.
 
 ### Running the demo (no API keys needed)
 

@@ -2,7 +2,7 @@
 
 > **Enterprise-grade multi-agent orchestration engine** — DAG-supervised parallel agents with streaming LLM output, intelligent model routing, resilience patterns, cost tracking, RBAC, audit logging, and a zero-API-key demo mode.
 
-**Status**: ✅ Production-Ready | **Tests**: 424 passing | **Enterprise Features**: 13 completed (E1–E13)
+**Status**: ✅ Production-Ready | **Tests**: 519 passing | **Enterprise Features**: 13 completed (E1–E13)
 
 ---
 
@@ -582,7 +582,7 @@ git clone https://github.com/binaryjack/ai-agencee.git
 cd ai-agencee
 pnpm install          # install all workspace deps
 pnpm build            # compile all packages (tsc)
-pnpm test             # run all Jest suites (424 tests)
+pnpm test             # run all Jest suites (519 tests across 36 files)
 
 # Advanced demo scenarios (no API keys)
 pnpm demo             # original 3-lane mock demo

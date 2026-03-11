@@ -4,7 +4,7 @@ Status as of latest commit. All **E1–E13** items are shipped and actively enfo
 
 ---
 
-## Completed (E1–E10, E13)
+## Completed (E1–E13)
 
 | ID | Feature | File(s) | Status |
 |----|---------|---------|--------|
@@ -16,12 +16,13 @@ Status as of latest commit. All **E1–E13** items are shipped and actively enfo
 | E6 | Rate limiting | `agent-executor/src/lib/rate-limiter.ts` → **wired into** `agent-executor/src/lib/dag-orchestrator.ts` | ✅ `assertWithinLimits()` + `acquireRun()` before each DAG execution |
 | E7 | DAG visualizer | `cli/src/commands/visualize.ts` | ✅ Mermaid + DOT output from DAG JSON |
 | E8 | Prompt injection detection | `agent-executor/src/lib/prompt-injection-detector.ts` → **wired via** `ModelRouter.wrapAllProviders()` | ✅ 10 signature families; `warn`/`block` mode; `DagRunOptions.injectionDetection` |
+| E9 | Python MCP bridge | `agent-executor/src/lib/python-mcp-bridge.ts` | ✅ JSON-RPC 2.0 over stdio; `initialize` handshake; `tools/list` + `tools/call`; `PythonMcpProvider` LLM adapter |
 | E10 | AWS Bedrock provider | `agent-executor/src/lib/providers/bedrock.provider.ts` → **SigV4** via Node `crypto` module | ✅ Converse API; auto-registered when AWS credentials are set; model mapping config in `model-router.json` |
 | E11 | Jira/Linear sync | `agent-executor/src/lib/issue-sync.ts` | ✅ `IssueSync` subscribes to `DagEventBus`; creates issues on `dag:end` failure/partial via Jira REST or Linear GraphQL |
 | E12 | Slack/Teams notifications | `agent-executor/src/lib/notification-sink.ts` | ✅ `NotificationSink` fires on `dag:end`; Slack incoming webhook + Teams incoming webhook; zero external SDK |
 | E13 | Run advisor (auto-tune) | `agent-executor/src/lib/run-advisor.ts` → **integrated into** `dag-orchestrator.js` post-execution | ✅ 6 recommendation types: HIGH_RETRY_RATE, SLOW_LANE, FLAKY_LANE, DOWNGRADE_MODEL, BUDGET_SUGGESTION, DAG_UNSTABLE |
 
-**Test coverage**: 424 tests passing across all packages.
+**Test coverage**: 519 tests passing across all packages (36 test files).
 
 ---
 
@@ -115,11 +116,22 @@ Status as of latest commit. All **E1–E13** items are shipped and actively enfo
 
 ---
 
-## Backlog (E9)
+## E9 Runtime Enforcement Detail
 
-| ID | Feature | Priority | Notes |
-|----|---------|------------|-------|
-| E9 | Python MCP bridge | P2 | `subprocess` bridge so Python tools register as MCP servers |
+`python-mcp-bridge.ts` — Python MCP server integration:
+- Fully implemented JSON-RPC 2.0 over stdio bridge (324 lines)
+- Spawns Python MCP server as child process via `spawn(pythonPath, [serverPath], { stdio: 'pipe' })`
+- Bidirectional message passing: `initialize` handshake → `tools/list` → `tools/call` protocol
+- `PythonMcpProvider` wraps bridge as standard `LLMProvider` for model router integration
+- Error handling: kills child process on timeout/error, validates JSON-RPC 2.0 envelope
+- Example usage:
+  ```typescript
+  const bridge = new PythonMcpBridge({ pythonPath: 'python', serverPath: './mcp-server.py' });
+  await bridge.initialize();
+  const tools = await bridge.listTools();
+  const result = await bridge.callTool('tool-name', { arg: 'value' });
+  ```
+
 ---
 
 ## SOC2 Path (Process Work — No Code Required)
