@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # ── npm / pnpm workspace ─────────────────────────────────────────────────
+  # Scan from the root so pnpm can resolve the full workspace graph.
+  # Internal @ai-agencee/* packages are referenced with the "workspace:"
+  # protocol, which Dependabot cannot resolve — ignore them to prevent
+  # "Unsupported protocol workspace:" failures.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    ignore:
+      - dependency-name: "@ai-agencee/*"
+
+  # ── GitHub Actions ───────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"

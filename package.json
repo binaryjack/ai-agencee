@@ -30,6 +30,11 @@
     "demo:plan:04": "node scripts/plan-demo.js 4",
     "demo:plan:05": "node scripts/plan-demo.js 5"
   },
+  "pnpm": {
+    "overrides": {
+      "hono": ">=4.12.7"
+    }
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.5",
