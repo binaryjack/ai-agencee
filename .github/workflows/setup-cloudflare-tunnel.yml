@@ -1,0 +1,39 @@
+name: Setup Cloudflare Tunnel
+
+# Run once manually after adding CLOUDFLARE_TUNNEL_TOKEN to repo secrets.
+# Safe to re-run — installs/updates cloudflared and restarts the service.
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-tunnel:
+    name: Install cloudflared + start tunnel
+    runs-on: self-hosted
+
+    steps:
+      - name: Install cloudflared (latest)
+        run: |
+          set -euo pipefail
+          curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            -o /tmp/cloudflared
+          sudo install -m 755 /tmp/cloudflared /usr/local/bin/cloudflared
+          cloudflared --version
+
+      - name: Install tunnel as a systemd service
+        run: |
+          set -euo pipefail
+          # Installs /etc/systemd/system/cloudflared.service and writes the token.
+          # If the service already exists this is a no-op update.
+          sudo cloudflared service install ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
+
+      - name: Enable and start cloudflared
+        run: |
+          sudo systemctl daemon-reload
+          sudo systemctl enable cloudflared
+          sudo systemctl restart cloudflared
+
+      - name: Verify tunnel is running
+        run: |
+          sleep 3
+          sudo systemctl is-active cloudflared
+          echo "✅ Cloudflare tunnel is up — https://test.ai-agencee.com should be reachable shortly."
