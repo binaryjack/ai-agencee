@@ -20,11 +20,11 @@ export const checkIndexStatus = async function(projectRoot: string) {
     await store.close();
     
     return {
-      indexed: stats.filesIndexed > 0,
+      indexed: stats.totalFiles > 0,
       ...stats
     };
   } catch (error) {
-    return { indexed: false, filesIndexed: 0, symbolsExtracted: 0, dependenciesTracked: 0 };
+    return { indexed: false, totalFiles: 0, totalSymbols: 0, totalDependencies: 0 };
   }
 };
 
