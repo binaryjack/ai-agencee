@@ -8,6 +8,14 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { CodebaseIndexStoreOptions } from './codebase-index-store.types';
 
+function cosineSimilarityBuffers(a: Float32Array, b: Float32Array): number {
+  const len = Math.min(a.length, b.length)
+  let dot = 0, na = 0, nb = 0
+  for (let i = 0; i < len; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i] }
+  const denom = Math.sqrt(na) * Math.sqrt(nb)
+  return denom === 0 ? 0 : dot / denom
+}
+
 export type CodebaseIndexStoreInstance = {
   _db: Database.Database | null;
   _dbPath: string;
@@ -19,10 +27,14 @@ export type CodebaseIndexStoreInstance = {
   getFileByPath(filePath: string): Promise<any>;
   getFileByHash(hash: string): Promise<any>;
   getAllFiles(): Promise<any[]>;
+  getSymbolsByFile(fileId: number): Promise<{ id: number; name: string; docstring: string | null; is_exported: number }[]>;
+  storeEmbedding(symbolId: number, vector: Float32Array): Promise<void>;
+  semanticSearch(queryVector: Float32Array, topK: number): Promise<import('../embeddings/embedding-provider.types').SemanticSearchResult[]>;
   query(sql: string, params?: any[]): Promise<any>;
   getStats(): Promise<{ totalFiles: number; totalSymbols: number; totalDependencies: number }>;
   close(): Promise<void>;
   _createTables(): Promise<void>;
+  _migrateEmbeddingColumn(): void;
 };
 
 export const CodebaseIndexStore = function(this: CodebaseIndexStoreInstance, options: CodebaseIndexStoreOptions) {
@@ -57,6 +69,8 @@ CodebaseIndexStore.prototype.initialize = async function(this: CodebaseIndexStor
   
   // Create tables
   await this._createTables();
+  // Add embedding column if this is an existing DB that pre-dates it
+  this._migrateEmbeddingColumn();
 };
 
 CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexStoreInstance): Promise<void> {
@@ -112,6 +126,59 @@ CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexS
     CREATE INDEX IF NOT EXISTS idx_deps_source ON codebase_dependencies(source_file_id);
     CREATE INDEX IF NOT EXISTS idx_deps_target ON codebase_dependencies(target_file_id);
   `);
+};
+
+CodebaseIndexStore.prototype._migrateEmbeddingColumn = function(this: CodebaseIndexStoreInstance): void {
+  // SQLite does not support IF NOT EXISTS for ALTER TABLE, so we check first.
+  const cols = this._db!.pragma('table_info(codebase_symbols)') as { name: string }[]
+  if (!cols.some(c => c.name === 'embedding')) {
+    this._db!.exec('ALTER TABLE codebase_symbols ADD COLUMN embedding BLOB')
+  }
+};
+
+CodebaseIndexStore.prototype.getSymbolsByFile = async function(
+  this: CodebaseIndexStoreInstance,
+  fileId: number
+): Promise<{ id: number; name: string; docstring: string | null; is_exported: number }[]> {
+  return this._db!
+    .prepare('SELECT id, name, docstring, is_exported FROM codebase_symbols WHERE file_id = ?')
+    .all(fileId) as { id: number; name: string; docstring: string | null; is_exported: number }[]
+};
+
+CodebaseIndexStore.prototype.storeEmbedding = async function(
+  this: CodebaseIndexStoreInstance,
+  symbolId: number,
+  vector: Float32Array
+): Promise<void> {
+  this._db!
+    .prepare('UPDATE codebase_symbols SET embedding = ? WHERE id = ?')
+    .run(Buffer.from(vector.buffer), symbolId)
+};
+
+CodebaseIndexStore.prototype.semanticSearch = async function(
+  this: CodebaseIndexStoreInstance,
+  queryVector: Float32Array,
+  topK: number
+): Promise<import('../embeddings/embedding-provider.types').SemanticSearchResult[]> {
+  type Row = {
+    id: number; name: string; kind: string; signature: string | null;
+    docstring: string | null; file_path: string; embedding: Buffer
+  }
+  const rows = this._db!.prepare(`
+    SELECT s.id, s.name, s.kind, s.signature, s.docstring, f.file_path, s.embedding
+    FROM codebase_symbols s
+    JOIN codebase_files f ON s.file_id = f.id
+    WHERE f.project_id = ? AND s.embedding IS NOT NULL
+  `).all(this._projectId) as Row[]
+
+  const scored = rows.map(row => {
+    const vec = new Float32Array(row.embedding.buffer, row.embedding.byteOffset, row.embedding.byteLength / 4)
+    const score = cosineSimilarityBuffers(queryVector, vec)
+    return { id: row.id, name: row.name, kind: row.kind, signature: row.signature,
+             docstring: row.docstring, file_path: row.file_path, score }
+  })
+
+  return scored.sort((a, b) => b.score - a.score).slice(0, topK)
 };
 
 CodebaseIndexStore.prototype.upsertFile = async function(this: CodebaseIndexStoreInstance, fileData: any): Promise<number> {

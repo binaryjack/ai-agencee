@@ -121,7 +121,7 @@ Multi-agent workflows with configurable retry budgets, circuit breakers, OIDC JW
 - **[Multi-Tenant Isolation](docs/features/11-multi-tenant.md)** — Per-tenant data isolation and run sandboxing
 - **PII Scrubbing** — Automatic detection and redaction of sensitive data
 - **Rate Limiting** — Token budget and concurrent run limits per principal
-- **[Code Assistant (E14)](docs/features/28-code-assistant.md)** — High-performance codebase indexing (449 files/1s), symbol extraction, dependency graphs, FTS5 search
+- **[Codernic (E14)](docs/features/28-code-assistant.md)** — Codebase-aware coding agent (449 files/1s), symbol extraction, dependency graphs, write code that actually compiles
 
 ### 📊 Observability
 - **[Event Bus](docs/features/08-event-bus.md)** — Typed real-time event subscriptions for lane status, tokens, costs

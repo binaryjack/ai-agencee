@@ -3,7 +3,13 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "paths": {
+      "@ai-agencee/engine": ["../agent-executor/src/index.ts"],
+      "@ai-agencee/engine/code-assistant": ["../agent-executor/src/code-assistant/index.ts"],
+      "@ai-agencee/engine/code-assistant/storage": ["../agent-executor/src/code-assistant/storage/index.ts"],
+      "@ai-agencee/engine/code-assistant/parsers": ["../agent-executor/src/code-assistant/parsers/index.ts"]
+    }
   },
   "include": ["bin", "src", "tests"],
   "exclude": ["node_modules", "dist"]
