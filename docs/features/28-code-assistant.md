@@ -1,15 +1,15 @@
-# Feature 28: Code Assistant (E14)
+# Feature 28: Codernic (E14)
 
 > **Status**: ✅ Production-ready  
 > **Category**: Enterprise Features  
 > **ID**: E14  
-> **Test Coverage**: 581 tests (575 unit + 6 integration), 100% pass rate
+> **Test Coverage**: 656 tests (648 unit + 8 integration), 100% pass rate
 
 ---
 
 ## Overview
 
-E14 Code Assistant is a high-performance code intelligence system that enables AI agents to deeply understand codebases through symbol extraction, dependency analysis, and semantic search. Built on SQLite with FTS5, it provides production-grade code indexing with zero external dependencies.
+Codernic is a codebase-aware coding agent that gives every LLM a structural understanding of your project before it writes a single line. Built on SQLite with FTS5, it provides production-grade code indexing with zero external dependencies — so agents generate code that actually compiles.
 
 **Key Stats** (real-world performance):
 - **449 files** indexed in **1.03 seconds**
@@ -26,9 +26,11 @@ E14 Code Assistant is a high-performance code intelligence system that enables A
 │  CodebaseIndexer    │  Orchestrates indexing workflow
 └──────────┬──────────┘
            │
-           ├──> ParserRegistry ──> TypeScriptParser
-           │                    └─> JavaScriptParser
-           │                        (extensible to Python, Java, Go...)
+           ├──> ParserRegistry ──> TypeScriptParser  (.ts, .js)
+           │                    ├─> PythonParser      (.py)
+           │                    └─> GoParser          (.go)
+           │
+           ├──> EmbeddingProvider (OpenAI / Ollama)  [optional]
            │
            └──> CodebaseIndexStore (SQLite)
                 ├─> codebase_files         (file metadata + hashes)
@@ -42,8 +44,10 @@ E14 Code Assistant is a high-performance code intelligence system that enables A
 ## Core Capabilities
 
 ### 1. Multi-Language Parsing
-- **TypeScript/JavaScript**: Full ES6+ support via AST parsing
-- **Extensible**: Plugin architecture for Python, Java, Go, Rust, etc.
+- **TypeScript/JavaScript**: Full ES6+ support via AST parsing — classes, methods, imports, exports, enums, types
+- **Python**: Line-based AST scanner — classes, functions, decorators, docstrings, `from ... import` and `__all__` export resolution
+- **Go**: Regex-based line scanner — functions, structs, interfaces, `type`/`var`/`const` declarations, single-file and block imports
+- **Extensible**: Plugin architecture via `ParserRegistry` — any language can be added
 - **Symbol Extraction**: Classes, interfaces, types, enums, functions, methods, variables
 - **Location Tracking**: Line-level precision for IDE integration
 
@@ -65,7 +69,15 @@ E14 Code Assistant is a high-performance code intelligence system that enables A
 - **Ranked Results**: Relevance scoring built-in
 - **SQL Joins**: Combine FTS with metadata queries
 
-### 5. Cross-Platform Support
+### 5. Semantic Search (Vector Embeddings)
+- **Provider-agnostic**: Pluggable `EmbeddingProvider` interface works with OpenAI or Ollama
+- **OpenAI**: `text-embedding-3-small` (1536 dims) or `text-embedding-3-large` (3072 dims), batched 100 texts/request
+- **Ollama**: `nomic-embed-text` (768 dims) or `mxbai-embed-large` (1024 dims), runs fully local with no API key
+- **Storage**: Embeddings stored as `BLOB` in `codebase_symbols`, added via non-destructive migration
+- **Search**: Cosine similarity computed in-process over all project embeddings — no extension required
+- **CLI**: `ai-kit code search --semantic` embeds the query and returns top-K symbol matches with score
+
+### 6. Cross-Platform Support
 - **Path Normalization**: Automatic Windows ↔ Unix conversion
 - **File System API**: Works with Node `fs` promises
 - **Database Portability**: SQLite files work everywhere
@@ -82,7 +94,6 @@ import {
   createCodebaseIndexer,
   createCodebaseIndexStore,
   createParserRegistry,
-  createTypeScriptParser
 } from '@ai-agencee/engine/code-assistant';
 
 // 1. Create index store
@@ -92,12 +103,10 @@ const indexStore = await createCodebaseIndexStore({
 });
 
 // 2. Create parser registry
+// Auto-registers TypeScript, JavaScript, Python, and Go parsers
 const parserRegistry = createParserRegistry({});
-const tsParser = createTypeScriptParser({ language: 'typescript' });
-parserRegistry.registerParser('typescript', tsParser);
-parserRegistry.registerParser('javascript', tsParser);
 
-// 3. Create indexer
+// 3. Create indexer (optionally pass an embeddingProvider for semantic search)
 const indexer = createCodebaseIndexer({
   projectRoot: process.cwd(),
   indexStore,
@@ -172,6 +181,30 @@ const results = await indexStore.query(`
 results.forEach(r => {
   console.log(`${r.kind} "${r.name}" in ${r.file_path}:${r.line_start}`);
 });
+```
+
+### Semantic Search
+
+```typescript
+import { 
+  OllamaEmbeddingProvider,
+  OpenAIEmbeddingProvider 
+} from '@ai-agencee/engine/code-assistant/embeddings';
+
+// Use OpenAI if key is present, else Ollama (fully local)
+const provider = process.env.OPENAI_API_KEY
+  ? new OpenAIEmbeddingProvider({ apiKey: process.env.OPENAI_API_KEY })
+  : new OllamaEmbeddingProvider()
+
+// Embed the query and search
+const [queryVector] = await provider.embed(['validate user permissions'])
+const results = await indexStore.semanticSearch(queryVector, 10)
+
+results.forEach(r => {
+  console.log(`[${r.score.toFixed(3)}] ${r.kind} "${r.name}" in ${r.file_path}:${r.line_start}`)
+})
+// [0.861] function "checkAccess"   src/auth/check-access.ts:34
+// [0.814] function "assertRole"    src/auth/roles.ts:18
 ```
 
 ### Finding Dependencies
@@ -265,10 +298,107 @@ Real-world indexing of `agent-executor` package (Windows 11, Node 24):
 
 | Tool | Files/Second | Symbol Accuracy | Incremental | FTS |
 |------|--------------|-----------------|-------------|-----|
-| **E14 Code Assistant** | **435** | **100%** (AST) | ✅ | ✅ |
+| **E14 Codernic** | **435** | **100%** (AST) | ✅ | ✅ |
 | Sourcegraph | ~150-200 | 95% (AST) | ✅ | ✅ |
 | OpenGrok | ~50-100 | 80% (regex) | ❌ | ✅ |
 | Ctags | ~800-1000 | 70% (regex) | ❌ | ❌ |
+
+---
+
+## CLI Commands
+
+The `ai-kit code` subcommand group exposes Codernic's most common operations without writing TypeScript. All commands auto-detect the project root via `--project` (defaults to `cwd`).
+
+### `ai-kit code index`
+
+Full or incremental codebase index.
+
+```bash
+# Full index (first run)
+ai-kit code index
+
+# Incremental (only changed files)
+ai-kit code index --incremental
+
+# Index a specific project
+ai-kit code index --project /path/to/my/app
+```
+
+### `ai-kit code stats`
+
+Display index health at a glance.
+
+```bash
+ai-kit code stats
+# Files:       449
+# Symbols:     975
+# Dependencies: 970
+# DB size:     512 KB
+
+ai-kit code stats --json
+# { "totalFiles": 449, "totalSymbols": 975, ... }
+```
+
+### `ai-kit code search <term>`
+
+Keyword FTS5 search or vector/semantic search over indexed symbols.
+
+```bash
+# FTS5 keyword search (default)
+ai-kit code search createIndexer
+# function  createIndexer       src/indexer/factory.ts:12
+# function  createIndexerStore  src/storage/factory.ts:8
+
+# Semantic / vector search (requires `ai-kit code index --embeddings`)
+ai-kit code search "validate user permissions" --semantic
+# score 0.86  function  checkAccess      src/auth/check-access.ts:34
+# score 0.81  function  assertRole       src/auth/roles.ts:18
+
+# Filter by kind
+ai-kit code search auth --kind function --limit 5
+
+# JSON output
+ai-kit code search createIndexer --json
+```
+
+Exits `1` when no results are found (scriptable quality gates).
+
+### `ai-kit code watch`
+
+Continuous incremental re-indexing.
+
+```bash
+ai-kit code watch
+# ✔ Initial index complete (449 files, 975 symbols)
+# Watching for changes… (Ctrl-C to stop)
+# [10:23:01] src/indexer/factory.ts changed → re-indexing…
+# ✔ Re-indexed in 47 ms
+```
+
+---
+
+## Cloud Dashboard
+
+When connected to AI Agencee Cloud (`ai-kit cloud link`), you can push index
+snapshots to the server with every `ai-kit code index` run:
+
+```bash
+ai-kit code index --push   # runs index, then POST /api/codernic/status
+```
+
+The **Codernic** page in the cloud dashboard (`/codernic`) displays:
+
+- **Status banner** — green dot when indexed, last-indexed timestamp
+- **Four stat tiles** — Files, Symbols, Dependencies, Duration
+- **History table** — last 30 snapshot rows with per-run trend
+
+Cloud API endpoints:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/api/codernic/status`        | Latest snapshot for the tenant |
+| `POST` | `/api/codernic/status`        | Push a new snapshot row |
+| `GET`  | `/api/codernic/stats/history` | Last 30 snapshots |
 
 ---
 
@@ -276,7 +406,20 @@ Real-world indexing of `agent-executor` package (Windows 11, Node 24):
 
 ### Watch Mode for Development
 
+```bash
+# Automatic re-index on file changes (uses Node.js fs.watch, no extra deps)
+ai-kit code watch
+
+# Filter to a specific project root
+ai-kit code watch --project /path/to/my/app
+```
+
+The watch command runs a full index on startup, then debounces file-system events
+(400 ms) and runs an incremental re-index whenever a tracked file changes.
+`node_modules`, `dist`, `build`, `.git`, `coverage`, and `.agents` are always ignored.
+
 ```typescript
+// Equivalent programmatic API (used by the CLI internally)
 import chokidar from 'chokidar';
 
 const watcher = chokidar.watch('src/**/*.ts', {
@@ -410,7 +553,7 @@ code-assistant/
 # All tests
 pnpm test
 
-# Code Assistant tests only
+# Codernic tests only
 pnpm jest code-assistant
 
 # Integration tests
@@ -440,7 +583,13 @@ pnpm jest --coverage code-assistant
 
 ### Planned Enhancements
 
-- [ ] Python parser (AST-based)
+- [x] Python parser (AST-based)  *(scaffolded, in progress)*
+- [x] Class methods as individual symbols (`kind: 'method'`, `ClassName.methodName`)
+- [x] `ai-kit code stats` — index statistics CLI
+- [x] `ai-kit code search <term>` — FTS5 symbol search CLI
+- [x] `ai-kit code watch` — file-system watch + incremental re-index CLI
+- [x] Cloud-API routes for snapshot reporting (`/api/codernic/status`, `/api/codernic/stats/history`)
+- [x] Codernic dashboard page (React, `ai-agencee-cloud`)
 - [ ] Java parser (JavaParser library)
 - [ ] Go parser (go/parser package)
 - [ ] Embedding generation for semantic search
@@ -475,7 +624,7 @@ pnpm jest --coverage code-assistant
 A: E14 is local-first, queryable via SQL, and designed for LLM agents. Copilot's indexing is proprietary and optimized for autocomplete, not structured queries.
 
 **Q: Can I use E14 without the DAG engine?**  
-A: Yes! E14 is a standalone module (`@ai-agencee/engine/code-assistant`). Use it in any Node.js project.
+A: Yes! Codernic is a standalone module (`@ai-agencee/engine/code-assistant`). Use it in any Node.js project.
 
 **Q: Does E14 send code to external services?**  
 A: No. All parsing and indexing happens locally. SQLite database stays on your filesystem.

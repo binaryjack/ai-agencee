@@ -2,8 +2,8 @@
  * Unit tests for TypeScriptParser
  */
 
-import { createTypeScriptParser } from './create-typescript-parser'
-import type { TypeScriptParserInstance } from './typescript-parser'
+import { createTypeScriptParser } from './create-typescript-parser';
+import type { TypeScriptParserInstance } from './typescript-parser';
 
 describe('TypeScriptParser', () => {
   let parser: TypeScriptParserInstance;
@@ -64,14 +64,105 @@ describe('TypeScriptParser', () => {
       const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
       const symbols = await parser.extractSymbols(ast);
 
-      expect(symbols).toHaveLength(1);
-      expect(symbols[0]).toMatchObject({
+      // class + 2 individual method symbols
+      expect(symbols).toHaveLength(3);
+
+      const classSymbol = symbols.find((s: any) => s.kind === 'class')!;
+      expect(classSymbol).toMatchObject({
         name: 'TestClass',
         kind: 'class',
         isExported: true
       });
-      expect(symbols[0].methods).toContain('method1');
-      expect(symbols[0].methods).toContain('method2');
+      // methods summary array is still present on the class symbol
+      expect(classSymbol.methods).toContain('method1');
+      expect(classSymbol.methods).toContain('method2');
+
+      const methodNames = symbols.filter((s: any) => s.kind === 'method').map((s: any) => s.name);
+      expect(methodNames).toContain('TestClass.method1');
+      expect(methodNames).toContain('TestClass.method2');
+    });
+
+    it('should emit method symbols with kind "method"', async () => {
+      const sourceCode = `
+        class Service {
+          getData() { return []; }
+          setData(value: string): void {}
+        }
+      `;
+
+      const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
+      const symbols = await parser.extractSymbols(ast);
+
+      const methods = symbols.filter((s: any) => s.kind === 'method');
+      expect(methods).toHaveLength(2);
+      expect(methods[0]).toMatchObject({ name: 'Service.getData', kind: 'method', isExported: false });
+      expect(methods[1]).toMatchObject({ name: 'Service.setData', kind: 'method', isExported: false });
+    });
+
+    it('should emit method symbols for static methods', async () => {
+      const sourceCode = `
+        class Factory {
+          static create() { return new Factory(); }
+          instance() {}
+        }
+      `;
+
+      const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
+      const symbols = await parser.extractSymbols(ast);
+
+      const methodNames = symbols.filter((s: any) => s.kind === 'method').map((s: any) => s.name);
+      expect(methodNames).toContain('Factory.create');
+      expect(methodNames).toContain('Factory.instance');
+    });
+
+    it('should extract method signatures', async () => {
+      const sourceCode = `
+        class Calculator {
+          add(a: number, b: number): number { return a + b; }
+        }
+      `;
+
+      const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
+      const symbols = await parser.extractSymbols(ast);
+
+      const method = symbols.find((s: any) => s.name === 'Calculator.add')!;
+      expect(method).toBeDefined();
+      expect(method.signature).toContain('add');
+    });
+
+    it('should extract method JSDoc', async () => {
+      const sourceCode = `
+        class Formatter {
+          /**
+           * Formats the input string
+           */
+          format(input: string): string { return input; }
+        }
+      `;
+
+      const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
+      const symbols = await parser.extractSymbols(ast);
+
+      const method = symbols.find((s: any) => s.name === 'Formatter.format')!;
+      expect(method).toBeDefined();
+      expect(method.docstring).toBeDefined();
+      expect(method.docstring).toContain('Formats the input string');
+    });
+
+    it('should not emit constructor as a method symbol', async () => {
+      const sourceCode = `
+        class Widget {
+          constructor(private id: string) {}
+          render() {}
+        }
+      `;
+
+      const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
+      const symbols = await parser.extractSymbols(ast);
+
+      const methodNames = symbols.filter((s: any) => s.kind === 'method').map((s: any) => s.name);
+      expect(methodNames).not.toContain('Widget.constructor');
+      expect(methodNames).toContain('Widget.render');
     });
 
     it('should extract interface declarations', async () => {

@@ -3,6 +3,7 @@
  */
 
 import type { FileParseResult } from '../parsers/parser-protocol.types'
+import type { EmbeddingProvider } from '../embeddings/embedding-provider.types'
 
 export type { FileParseResult } from '../parsers/parser-protocol.types'
 
@@ -10,7 +11,7 @@ export type CodebaseIndexerOptions = {
   projectRoot: string;
   indexStore: any; // CodebaseIndexStore
   parserRegistry: any; // ParserRegistry
-  embeddingProvider?: any; // EmbeddingProvider
+  embeddingProvider?: EmbeddingProvider;
   modelRouter?: any; // ModelRouter
   auditLog?: any; // AuditLog
 };

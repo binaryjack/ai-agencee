@@ -28,7 +28,7 @@ RECOMMENDED SOLUTIONS:
    - Select "Desktop development with C++"
    - Run: pnpm rebuild better-sqlite3
 
-For now, the code-assistant feature requires one of these solutions.
+For now, the Codernic feature requires one of these solutions.
 `);
   process.exit(1);
 } else if (major >= 20) {

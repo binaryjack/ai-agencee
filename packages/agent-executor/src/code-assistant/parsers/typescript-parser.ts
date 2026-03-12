@@ -86,12 +86,15 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
     
     // Classes
     if (ts.isClassDeclaration(node) && node.name) {
-      const methods = node.members
-        .filter((member): member is ts.MethodDeclaration => ts.isMethodDeclaration(member) && member.name !== undefined)
-        .map(method => method.name!.getText(ast));
-      
+      const className = node.name.text;
+      const methodMembers = node.members.filter(
+        (member): member is ts.MethodDeclaration =>
+          ts.isMethodDeclaration(member) && member.name !== undefined
+      );
+      const methods = methodMembers.map(method => method.name!.getText(ast));
+
       symbols.push({
-        name: node.name.text,
+        name: className,
         kind: 'class',
         lineStart: this._getLineNumber(ast, node.pos),
         lineEnd: this._getLineNumber(ast, node.end),
@@ -99,6 +102,20 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
         isExported: this._isExported(node),
         methods
       });
+
+      // Emit each method as an individual symbol so the store can index and search them
+      for (const member of methodMembers) {
+        const methodName = member.name!.getText(ast);
+        symbols.push({
+          name: `${className}.${methodName}`,
+          kind: 'method',
+          lineStart: this._getLineNumber(ast, member.pos),
+          lineEnd: this._getLineNumber(ast, member.end),
+          signature: this._extractSignature(member, ast) || undefined,
+          docstring: this._extractJSDoc(member) || undefined,
+          isExported: false
+        });
+      }
     }
     
     // Interfaces
@@ -234,8 +251,8 @@ TypeScriptParser.prototype._extractSignature = function(this: TypeScriptParserIn
   const text = node.getText(sourceFile);
   const lines = text.split('\n');
   
-  // For functions, get first line (signature)
-  if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+  // For functions and methods, extract up to the opening brace
+  if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node) || ts.isFunctionExpression(node) || ts.isMethodDeclaration(node)) {
     // Find opening brace
     const braceIndex = text.indexOf('{');
     if (braceIndex > 0) {
