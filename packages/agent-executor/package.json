@@ -9,6 +9,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./code-assistant": {
+      "types": "./dist/code-assistant/index.d.ts",
+      "default": "./dist/code-assistant/index.js"
+    },
+    "./code-assistant/storage": {
+      "types": "./dist/code-assistant/storage/index.d.ts",
+      "default": "./dist/code-assistant/storage/index.js"
+    },
+    "./code-assistant/parsers": {
+      "types": "./dist/code-assistant/parsers/index.d.ts",
+      "default": "./dist/code-assistant/parsers/index.js"
     }
   },
   "scripts": {
@@ -26,9 +38,12 @@
     "access": "public"
   },
   "dependencies": {
-    "@ai-agencee/core": "workspace:^1.1.0"
+    "@ai-agencee/core": "workspace:^1.1.0",
+    "better-sqlite3": "^12.6.2",
+    "glob": "^10.3.10"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.3.5",
     "jest": "^30.2.0",

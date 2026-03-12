@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
+import { runCodeIndex } from '../src/commands/code/index.js'
 import { runDag } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runInit } from '../src/commands/init/index.js'
@@ -38,6 +39,20 @@ program
   .command('mcp')
   .description('Start MCP server for AI assistant integration')
   .action(runMcp);
+
+// Code commands (E14 - Coding Assistant)
+program
+  .command('code:index')
+  .description('Index codebase for intelligent search and assistance')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--incremental', 'Only index changed files (default)', true)
+  .option('--force', 'Force full re-index')
+  .option('--languages <langs>', 'Comma-separated languages to index', 'typescript,javascript')
+  .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
+  .option('--verbose', 'Show detailed progress')
+  .action(async (options) => {
+    await runCodeIndex(options);
+  });
 
 // Agent commands
 program
