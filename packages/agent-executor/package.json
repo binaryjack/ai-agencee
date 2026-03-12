@@ -21,6 +21,10 @@
     "./code-assistant/parsers": {
       "types": "./dist/code-assistant/parsers/index.d.ts",
       "default": "./dist/code-assistant/parsers/index.js"
+    },
+    "./code-assistant/embeddings": {
+      "types": "./dist/code-assistant/embeddings/index.d.ts",
+      "default": "./dist/code-assistant/embeddings/index.js"
     }
   },
   "scripts": {

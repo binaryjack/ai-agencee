@@ -107,9 +107,10 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
     }
   }
   
-  // Phase 4: Store symbols
+  // Phase 4: Store symbols and collect fileId map for Phase 6
   let totalSymbols = 0;
-  
+  const fileIdMap = new Map<string, number>(); // filePath → fileId
+
   for (const result of parseResults) {
     const fileId = await this._indexStore.upsertFile({
       filePath: result.filePath,
@@ -117,9 +118,10 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
       language: result.language,
       sizeBytes: result.sizeBytes
     });
-    
+
     await this._indexStore.upsertSymbols(fileId, result.symbols);
     totalSymbols += result.symbols.length;
+    fileIdMap.set(result.filePath, fileId);
   }
   
   // Phase 5: Build dependency graph
@@ -137,14 +139,33 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   
   // Phase 6: Generate embeddings (if provider available and under budget)
   let embeddingsGenerated = 0;
-  
+
   if (this._embeddingProvider && totalCost < budgetCap) {
-    // Extract embedding targets (function names, docstrings)
-    const embeddingTargets = this._extractEmbeddingTargets(parseResults);
-    
-    // TODO: Implement embedding generation
-    // This would use the embedding provider to generate vectors
-    // and store them in the database
+    for (const result of parseResults) {
+      const fileId = fileIdMap.get(result.filePath);
+      if (fileId == null) continue;
+
+      // Get DB symbol rows (includes IDs) for this file
+      const dbSymbols = await this._indexStore.getSymbolsByFile(fileId);
+
+      // Filter to exported symbols with a docstring
+      const targets = dbSymbols
+        .filter((s: { is_exported: number; docstring: string | null }) => s.is_exported && s.docstring)
+        .map((s: { id: number; name: string; docstring: string | null }) => ({
+          symbolId: s.id,
+          text: `${s.name}: ${s.docstring}`,
+        }));
+
+      if (targets.length === 0) continue;
+
+      const texts = targets.map((t: { text: string }) => t.text);
+      const vectors = await this._embeddingProvider.embed(texts);
+
+      for (let idx = 0; idx < targets.length; idx++) {
+        await this._indexStore.storeEmbedding(targets[idx].symbolId, vectors[idx]);
+        embeddingsGenerated++;
+      }
+    }
   }
   
   // Phase 7: Audit log

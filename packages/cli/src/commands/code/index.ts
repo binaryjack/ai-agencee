@@ -2,8 +2,11 @@
  * Code commands - Parent command for code assistance features
  */
 
-import { Command } from 'commander';
-import { runCodeIndex } from './index-cmd.js';
+import { Command } from 'commander'
+import { runCodeIndex } from './index-cmd.js'
+import { runCodeSearch } from './search-cmd.js'
+import { runCodeStats } from './stats-cmd.js'
+import { runCodeWatch } from './watch-cmd.js'
 
 export const codeCommand = function() {
   const command = new Command('code');
@@ -29,8 +32,59 @@ export const codeCommand = function() {
         process.exit(1);
       }
     });
+
+  // Add stats subcommand
+  command
+    .command('stats')
+    .description('Show statistics for the codebase index')
+    .option('-p, --project <path>', 'Project root directory', process.cwd())
+    .option('--json', 'Output as JSON')
+    .action(async (options) => {
+      try {
+        await runCodeStats(options);
+      } catch (error) {
+        console.error('\n❌ Command failed');
+        process.exit(1);
+      }
+    });
+
+  // Add search subcommand
+  command
+    .command('search <term>')
+    .description('Search indexed symbols by name, signature, or docstring')
+    .option('-p, --project <path>', 'Project root directory', process.cwd())
+    .option('--kind <kind>', 'Filter by symbol kind (function, class, method, interface, type)')
+    .option('--limit <n>', 'Maximum results to return', '20')
+    .option('--json', 'Output as JSON')
+    .option('--semantic', 'Use vector/semantic search instead of FTS5 (requires Ollama or OPENAI_API_KEY)')
+    .action(async (term, options) => {
+      try {
+        await runCodeSearch(term, { ...options, limit: parseInt(options.limit, 10) });
+      } catch (error) {
+        console.error('\n❌ Command failed');
+        process.exit(1);
+      }
+    });
   
+  // Add watch subcommand
+  command
+    .command('watch')
+    .description('Watch project directory and re-index on file changes')
+    .option('-p, --project <path>', 'Project root directory', process.cwd())
+    .option('--languages <langs>', 'Comma-separated languages to watch', 'typescript,javascript')
+    .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
+    .option('--verbose', 'Show detailed progress on each re-index')
+    .action(async (options) => {
+      try {
+        await runCodeWatch(options);
+      } catch (error) {
+        console.error('\n❌ Command failed');
+        process.exit(1);
+      }
+    });
+
   return command;
 };
 
-export { runCodeIndex };
+export { runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch }
+

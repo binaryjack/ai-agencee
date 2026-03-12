@@ -57,7 +57,7 @@ describe('ParserRegistry', () => {
     });
 
     it('should return undefined for unregistered language', () => {
-      const parser = registry.getParser('python');
+      const parser = registry.getParser('rust');
       expect(parser).toBeUndefined();
     });
 
@@ -78,40 +78,39 @@ describe('ParserRegistry', () => {
     });
 
     it('should return false for unregistered parser', () => {
-      expect(registry.hasParser('python')).toBe(false);
+      expect(registry.hasParser('rust')).toBe(false);
     });
   });
 
   describe('getSupportedLanguages', () => {
-    it('should return empty array initially', () => {
+    it('should include all built-in languages on construction', () => {
       const languages = registry.getSupportedLanguages();
-      expect(languages).toEqual([]);
-    });
-
-    it('should return all registered languages', () => {
-      const tsParser = createTypeScriptParser({ language: 'typescript' });
-      const jsParser = createTypeScriptParser({ language: 'javascript' });
-      
-      registry.registerParser('typescript', tsParser);
-      registry.registerParser('javascript', jsParser);
-      
-      const languages = registry.getSupportedLanguages();
-      
-      expect(languages).toHaveLength(2);
       expect(languages).toContain('typescript');
       expect(languages).toContain('javascript');
+      expect(languages).toContain('python');
+      expect(languages).toContain('go');
     });
 
-    it('should not include duplicates', () => {
+    it('should include manually registered languages', () => {
+      const tsParser = createTypeScriptParser({ language: 'typescript' });
+      registry.registerParser('typescript', tsParser);
+
+      const languages = registry.getSupportedLanguages();
+      expect(languages).toContain('typescript');
+      expect(languages.filter(l => l === 'typescript')).toHaveLength(1);
+    });
+
+    it('should not include duplicates when re-registering', () => {
       const parser1 = createTypeScriptParser({ language: 'typescript' });
       const parser2 = createTypeScriptParser({ language: 'typescript' });
       
+      const countBefore = registry.getSupportedLanguages().filter(l => l === 'typescript').length;
       registry.registerParser('typescript', parser1);
       registry.registerParser('typescript', parser2);
+      const countAfter = registry.getSupportedLanguages().filter(l => l === 'typescript').length;
       
-      const languages = registry.getSupportedLanguages();
-      
-      expect(languages).toEqual(['typescript']);
+      expect(countBefore).toBe(1);
+      expect(countAfter).toBe(1);
     });
   });
 
@@ -133,8 +132,8 @@ describe('ParserRegistry', () => {
 
     it('should throw error for unsupported language', async () => {
       await expect(async () => {
-        await registry.parseFile('code', 'test.py', 'python');
-      }).rejects.toThrow('No parser registered for language: python');
+        await registry.parseFile('code', 'test.rb', 'ruby');
+      }).rejects.toThrow('No parser registered for language: ruby');
     });
 
     it('should parse and return symbols', async () => {
