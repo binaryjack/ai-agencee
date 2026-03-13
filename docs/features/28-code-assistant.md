@@ -9,7 +9,22 @@
 
 ## Overview
 
-Codernic is a codebase-aware coding agent that gives every LLM a structural understanding of your project before it writes a single line. Built on SQLite with FTS5, it provides production-grade code indexing with zero external dependencies — so agents generate code that actually compiles.
+Codernic is the **codebase intelligence layer** for multi-agent pipelines. It is not a coding assistant you chat with — it is a composable engine step you wire into any DAG, workflow, or CI script so that AI agents write code grounded in your real project structure.
+
+**The problem it solves:** Every LLM-based coding tool — Claude Code, Cursor, Copilot — generates code in isolation. They guess at import paths, hallucinate function signatures, and re-implement utilities that already exist. You pay for the generation and then spend engineering time fixing what the AI made up.
+
+**What Codernic does instead:** Before the LLM writes anything, it runs an FTS5 query against a local SQLite index of every function, class, interface, and import path in your project. The LLM receives real symbol signatures — not its training-data guess. Generated code compiles on the first try.
+
+**Why composability is the key differentiator:**
+
+| What a standalone coding tool gives you | What Codernic inside a DAG gives you |
+|-----------------------------------------|---------------------------------------|
+| Code generation, isolated | Code generation inside a governed, supervised step |
+| Unknown cost per session | Budget-capped, per-run cost accounting |
+| No access control | RBAC principal tagging on every file write |
+| No audit trail | SHA-256 hash-chained immutable audit log |
+| Agent 1 and Agent 2 live in separate sessions | Agent N+1 finds Agent N's output via FTS5 (<100ms re-index) |
+| Cloud-only, PII routed to external APIs | Local SQLite + Ollama = fully air-gapped |
 
 **Key Stats** (real-world performance):
 - **449 files** indexed in **1.03 seconds**
@@ -50,6 +65,63 @@ Codernic is a codebase-aware coding agent that gives every LLM a structural unde
 |--------|-------------|---------|
 | `CodeAssistantOrchestrator` | `createCodeAssistantOrchestrator()` | Write / modify files from a natural-language task |
 | `CodebaseIndexer` | `createCodebaseIndexer()` | Index, search, and watch the codebase |
+
+---
+
+## DAG Composition (the key use case)
+
+Codernic is designed to be a step inside a `DagOrchestrator` run — not a standalone tool you call directly. This is what differentiates it from every other code generation product:
+
+```typescript
+// dag.json — Backend implementation lane embeds Codernic as a step
+{
+  "id": "backend-implementation",
+  "description": "Generate the UserService with real codebase context",
+  "checks": [
+    {
+      "type": "codernic-generate",
+      "task": "implement UserService.create with Zod validation and Prisma",
+      "mode": "feature",
+      "indexPath": ".agents/code-index.db"
+    }
+  ]
+}
+```
+
+Or directly in TypeScript inside any DAG step handler:
+
+```typescript
+import { createCodeAssistantOrchestrator } from '@ai-agencee/engine/code-assistant';
+
+// Inside a DAG step — orchestrator inherits the run's modelRouter, budget, and principal
+const result = await createCodeAssistantOrchestrator({
+  projectRoot: run.projectRoot,
+  modelRouter:  run.modelRouter,   // same budget-capped router as the rest of the DAG
+  indexStore:   run.sharedIndex,   // pre-opened — no extra SQLite open cost
+}).execute({
+  task: step.task,
+  mode: step.mode ?? 'feature',
+});
+
+// StepResult returned to DAG supervisor — cost adds to lane total
+return {
+  verdict:       result.success ? 'APPROVE' : 'ESCALATE',
+  filesModified: result.filesModified,
+  newFiles:      result.newFiles,
+  costUsd:       result.totalCost,
+};
+```
+
+**What the DAG layer adds on top of standalone use:**
+
+| Concern | Standalone `ai-kit code generate` | Inside a DAG |
+|---------|-----------------------------------|--------------|
+| Token budget | Uncapped | Enforced by `ModelRouter` budget |
+| Access control | None | RBAC principal tag on every write |
+| Audit trail | None | SHA-256 hash-chained audit log entry |
+| Failure handling | Throws | ESCALATE → supervisor → human review gate |
+| Multi-step chaining | Manual | Next lane re-indexes in <100ms automatically |
+| Cost attribution | Console output | `TenantRunRegistry` per-run cost record |
 
 ---
 
