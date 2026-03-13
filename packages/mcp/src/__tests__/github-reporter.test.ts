@@ -17,7 +17,7 @@ afterAll(() => {
   process.env = ORIGINAL_ENV;
 });
 
-import { buildPrCommentBody, postPrComment } from '../github-reporter.js';
+import { buildPrCommentBody, postPrComment } from '../github/index.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

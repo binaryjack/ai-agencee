@@ -50,7 +50,7 @@ export function createOidcMiddleware(opts: OidcOptions = {}): OidcMiddleware {
         payload,
       };
 
-      (req as Record<string, unknown>)['oidcPrincipal'] = principal;
+      (req as unknown as Record<string, unknown>)['oidcPrincipal'] = principal;
       next();
     } catch (err) {
       if (err instanceof OidcError) {
