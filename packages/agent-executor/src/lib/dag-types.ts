@@ -18,6 +18,13 @@ import { AgentResult } from './agent-types.js';
 
 export type VerdictType = 'APPROVE' | 'RETRY' | 'HANDOFF' | 'ESCALATE';
 
+export const VERDICT = {
+  APPROVE:  'APPROVE',
+  RETRY:    'RETRY',
+  HANDOFF:  'HANDOFF',
+  ESCALATE: 'ESCALATE',
+} as const satisfies Record<VerdictType, VerdictType>
+
 export interface SupervisorVerdict {
   type: VerdictType;
 

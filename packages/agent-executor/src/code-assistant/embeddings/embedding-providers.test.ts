@@ -172,8 +172,8 @@ describe('OllamaEmbeddingProvider concurrent embed', () => {
   })
 
   it('preserves result ordering across chunk boundaries', async () => {
-    global.fetch = jest.fn().mockImplementation((_url: string, opts: any) => {
-      const idx = parseInt((JSON.parse(opts.body) as { prompt: string }).prompt, 10)
+    global.fetch = jest.fn().mockImplementation((_url: string, opts: unknown) => {
+      const idx = parseInt((JSON.parse((opts as { body: string }).body) as { prompt: string }).prompt, 10)
       return Promise.resolve({ ok: true, json: async () => ({ embedding: [idx / 10] }) })
     }) as any
 

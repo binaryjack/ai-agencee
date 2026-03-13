@@ -1,5 +1,6 @@
 import * as path from 'path'
 import type { DagResult } from '../dag-types.js'
+import { RUNS_DIR } from '../path-constants.js'
 import type { RunEntry } from '../run-registry/run-registry.types.js'
 
 export interface RunAdvisorOptions {
@@ -61,6 +62,6 @@ export interface IRunAdvisor {
 
 export const RunAdvisor = function (this: IRunAdvisor, projectRoot: string) {
   this._projectRoot  = projectRoot;
-  this._runsDir      = path.join(projectRoot, '.agents', 'runs');
+  this._runsDir      = path.join(projectRoot, RUNS_DIR);
   this._manifestPath = path.join(this._runsDir, 'manifest.json');
 } as unknown as new (projectRoot: string) => IRunAdvisor;

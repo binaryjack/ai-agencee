@@ -1,16 +1,17 @@
-import * as path from 'path';
-import type { ChatRenderer } from '../chat-renderer.js';
-import type { ModelRouter } from '../model-router.js';
+import * as path from 'path'
+import type { IChatRenderer } from '../chat-renderer/index.js'
+import type { IModelRouter } from '../model-router/index.js'
+import { PLAN_STATE_DIR } from '../path-constants.js'
 import type {
-    DiscoveryQuestion,
-    DiscoveryResult,
-    ModelRecommendation,
-    ProjectLayer,
-    QualityGrade,
-    StoryType
-} from '../plan-types.js';
+  DiscoveryQuestion,
+  DiscoveryResult,
+  ModelRecommendation,
+  ProjectLayer,
+  QualityGrade,
+  StoryType
+} from '../plan-types.js'
 
-export type { DiscoveryQuestion, DiscoveryResult };
+export type { DiscoveryQuestion, DiscoveryResult }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -154,9 +155,9 @@ export function buildModelRecommendation(
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface IDiscoverySession {
-  _renderer:    ChatRenderer;
+  _renderer:    IChatRenderer;
   _stateDir:    string;
-  _modelRouter: ModelRouter | undefined;
+  _modelRouter: IModelRouter | undefined;
   _questions:   DiscoveryQuestion[];
 
   run():                                                         Promise<DiscoveryResult>;
@@ -172,15 +173,15 @@ export interface IDiscoverySession {
 
 export const DiscoverySession = function DiscoverySession(
   this: IDiscoverySession,
-  renderer:    ChatRenderer,
+  renderer:    IChatRenderer,
   projectRoot: string,
-  modelRouter?: ModelRouter,
+  modelRouter?: IModelRouter,
 ) {
   this._renderer    = renderer;
-  this._stateDir    = path.join(projectRoot, '.agents', 'plan-state');
+  this._stateDir    = path.join(projectRoot, PLAN_STATE_DIR);
   this._modelRouter = modelRouter;
   this._questions   = QUESTION_BANK.map((q) => ({ ...q, answered: false }));
 } as unknown as {
-  new (renderer: ChatRenderer, projectRoot: string, modelRouter?: ModelRouter): IDiscoverySession;
+  new (renderer: IChatRenderer, projectRoot: string, modelRouter?: IModelRouter): IDiscoverySession;
   load(projectRoot: string): DiscoveryResult | null;
 };

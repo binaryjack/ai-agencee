@@ -1,6 +1,8 @@
-import { BarrierCoordinator } from '../lib/barrier-coordinator';
-import { ContractRegistry } from '../lib/contract-registry';
-import { CheckpointPayload, ContractSnapshot } from '../lib/dag-types';
+import type { IBarrierCoordinator } from '../lib/barrier-coordinator'
+import { BarrierCoordinator } from '../lib/barrier-coordinator'
+import type { IContractRegistry } from '../lib/contract-registry'
+import { ContractRegistry } from '../lib/contract-registry'
+import { CheckpointPayload, ContractSnapshot } from '../lib/dag-types'
 
 // ─── helpers ───────────────────────────────────────────────────────────────────
 
@@ -17,14 +19,14 @@ const makePayload = (
   timeoutMs,
 });
 
-const publishSnap = (registry: ContractRegistry, laneId: string): ContractSnapshot =>
+const publishSnap = (registry: IContractRegistry, laneId: string): ContractSnapshot =>
   registry.publish(laneId, { laneId, exports: {}, pending: [] });
 
 // ─── tests ────────────────────────────────────────────────────────────────────
 
 describe('BarrierCoordinator', () => {
-  let registry: ContractRegistry;
-  let coordinator: BarrierCoordinator;
+  let registry: IContractRegistry;
+  let coordinator: IBarrierCoordinator;
 
   beforeEach(() => {
     registry = new ContractRegistry();

@@ -12,6 +12,8 @@
  *   Phase 4: EXECUTE     — PlanOrchestrator runs wired plan via DagOrchestrator
  */
 
+import type { IModelRouter } from './model-router/model-router.js';
+
 // ─── Actor System ─────────────────────────────────────────────────────────────
 
 export type ActorId =
@@ -229,8 +231,7 @@ export interface PlanRunOptions {
    * Optional ModelRouter for LLM-backed phase reasoning.
    * When omitted, all phases fall back to heuristic mode.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modelRouter?: any;}
+  modelRouter?: IModelRouter;}
 
 // ─── Plan Session State ───────────────────────────────────────────────────────
 

@@ -1,21 +1,22 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { sha256 } from './audit-log-helpers.js';
-import type { AuditEntry, AuditEvent, AuditVerificationReport } from './audit-log.types.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import { AUDIT_DIR } from '../path-constants.js'
+import { sha256 } from './audit-log-helpers.js'
+import type { AuditEntry, AuditEvent, AuditVerificationReport } from './audit-log.types.js'
 import {
-    checkpoint,
-    close,
-    decision,
-    error,
-    laneEnd,
-    laneStart,
-    llmCall,
-    open,
-    runEnd,
-    runStart,
-    toolCall,
-    write,
-} from './prototype/index.js';
+  checkpoint,
+  close,
+  decision,
+  error,
+  laneEnd,
+  laneStart,
+  llmCall,
+  open,
+  runEnd,
+  runStart,
+  toolCall,
+  write,
+} from './prototype/index.js'
 
 const GENESIS_HASH = '0'.repeat(64);
 
@@ -48,7 +49,7 @@ export const AuditLog = function(
   runId: string,
   auditDir?: string,
 ) {
-  const dir       = auditDir ?? path.join(projectRoot, '.agents', 'audit');
+  const dir       = auditDir ?? path.join(projectRoot, AUDIT_DIR);
   this._filePath  = path.join(dir, `${runId}.ndjson`);
   this._runId     = runId;
   this._lastHash  = GENESIS_HASH;
@@ -76,7 +77,7 @@ Object.assign(AuditLog.prototype, {
   projectRoot: string,
   runId: string,
 ): Promise<AuditEntry[]> {
-  const filePath = path.join(projectRoot, '.agents', 'audit', `${runId}.ndjson`);
+  const filePath = path.join(projectRoot, AUDIT_DIR, `${runId}.ndjson`);
   const raw = await fs.readFile(filePath, 'utf-8').catch(() => '');
   return raw.split('\n').filter(Boolean).map((l) => JSON.parse(l) as AuditEntry);
 };
@@ -84,7 +85,7 @@ Object.assign(AuditLog.prototype, {
 (AuditLog as unknown as Record<string, unknown>).listRuns = async function(
   projectRoot: string,
 ): Promise<string[]> {
-  const dir     = path.join(projectRoot, '.agents', 'audit');
+  const dir     = path.join(projectRoot, AUDIT_DIR);
   const entries = await fs.readdir(dir).catch(() => [] as string[]);
   return entries.filter((f) => f.endsWith('.ndjson')).map((f) => f.slice(0, -6));
 };

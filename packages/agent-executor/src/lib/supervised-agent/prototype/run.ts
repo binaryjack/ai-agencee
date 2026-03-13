@@ -7,6 +7,7 @@ import type {
     ContractSnapshot,
     SupervisorVerdict,
 } from '../../dag-types.js'
+import { VERDICT } from '../../dag-types.js'
 import type { IModelRouter, RoutedResponse } from '../../model-router/index.js'
 import type { ISupervisedAgent } from '../supervised-agent.js'
 import { EscalationError } from '../supervised-agent.js'
@@ -69,11 +70,11 @@ export async function* run(
     const verdict: SupervisorVerdict = yield payload;
 
     switch (verdict.type) {
-      case 'APPROVE':
+      case VERDICT.APPROVE:
         stepIndex++;
         break;
 
-      case 'RETRY': {
+      case VERDICT.RETRY: {
         retryInstructions = verdict.instructions;
         const stepFindingCount = stepResult.findings.length;
         const stepRecoCount = stepResult.recommendations.length;
@@ -83,10 +84,10 @@ export async function* run(
         break;
       }
 
-      case 'HANDOFF':
+      case VERDICT.HANDOFF:
         return null;
 
-      case 'ESCALATE':
+      case VERDICT.ESCALATE:
         throw new EscalationError(verdict.reason ?? 'Escalated by supervisor', verdict);
     }
   }

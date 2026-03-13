@@ -117,8 +117,8 @@ describe('CodebaseIndexStore', () => {
       });
 
       const file = await store.getFileByPath('src/test.ts');
-      expect(file.file_hash).toBe('hash2');
-      expect(file.size_bytes).toBe(2048);
+      expect(file!.file_hash).toBe('hash2');
+      expect(file!.size_bytes).toBe(2048);
     });
   });
 
@@ -334,8 +334,8 @@ describe('CodebaseIndexStore', () => {
       const file = await store.getFileByPath('src/test.ts');
 
       expect(file).toBeDefined();
-      expect(file.file_path).toBe('src/test.ts');
-      expect(file.file_hash).toBe('abc123');
+      expect(file!.file_path).toBe('src/test.ts');
+      expect(file!.file_hash).toBe('abc123');
     });
 
     it('should return undefined for non-existent file', async () => {
@@ -356,7 +356,7 @@ describe('CodebaseIndexStore', () => {
       const file = await store.getFileByHash('unique-hash');
 
       expect(file).toBeDefined();
-      expect(file.file_hash).toBe('unique-hash');
+      expect(file!.file_hash).toBe('unique-hash');
     });
 
     it('should return undefined for non-existent hash', async () => {

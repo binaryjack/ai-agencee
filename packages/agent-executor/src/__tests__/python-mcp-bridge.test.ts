@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for PythonMcpBridge and PythonMcpProvider (E9)
  * child_process.spawn is mocked to simulate a Python MCP server.
  */
@@ -134,7 +134,7 @@ describe('PythonMcpBridge — start() / stop()', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'my_agent.py', pythonBin: 'python3' });
 
     await bridge.start();
@@ -152,7 +152,7 @@ describe('PythonMcpBridge — start() / stop()', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({
       scriptPath: 'agent.py',
       args:       ['--mode', 'fast'],
@@ -173,7 +173,7 @@ describe('PythonMcpBridge — start() / stop()', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
 
     await bridge.start();
@@ -187,7 +187,7 @@ describe('PythonMcpBridge — start() / stop()', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
 
     await bridge.start();
@@ -204,7 +204,7 @@ describe('PythonMcpBridge — listTools()', () => {
   it('returns tools from the Python server', async () => {
     mockSpawn.mockReturnValue(makeDefaultMock());
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -224,7 +224,7 @@ describe('PythonMcpBridge — listTools()', () => {
     });
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -242,7 +242,7 @@ describe('PythonMcpBridge — callTool()', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -266,7 +266,7 @@ describe('PythonMcpBridge — callTool()', () => {
     );
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -279,7 +279,7 @@ describe('PythonMcpBridge — callTool()', () => {
     const proc = makeMockProcess({ 'initialize': INIT_RESULT }); // tools/call never responds
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py', callTimeoutMs: 50 });
     await bridge.start();
 
@@ -292,7 +292,7 @@ describe('PythonMcpBridge — callTool()', () => {
     const proc = makeMockProcess({ 'initialize': INIT_RESULT }); // no tools/call response
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py', callTimeoutMs: 5000 });
     await bridge.start();
 
@@ -311,7 +311,7 @@ describe('PythonMcpProvider', () => {
   it('isAvailable() returns true when the generate tool is listed', async () => {
     mockSpawn.mockReturnValue(makeDefaultMock());
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge   = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -328,7 +328,7 @@ describe('PythonMcpProvider', () => {
     });
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge   = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -341,7 +341,7 @@ describe('PythonMcpProvider', () => {
   it('complete() calls the generate tool and returns text', async () => {
     mockSpawn.mockReturnValue(makeDefaultMock());
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge   = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -366,7 +366,7 @@ describe('PythonMcpProvider', () => {
     });
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge   = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -399,7 +399,7 @@ describe('PythonMcpProvider', () => {
     });
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge   = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -424,7 +424,7 @@ describe('PythonMcpProvider', () => {
   it('provider name is "python-mcp"', async () => {
     mockSpawn.mockReturnValue(makeDefaultMock());
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge   = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -443,7 +443,7 @@ describe('PythonMcpBridge — protocol robustness', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -460,7 +460,7 @@ describe('PythonMcpBridge — protocol robustness', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
     const bridge = new PythonMcpBridge({ scriptPath: 'a.py' });
     await bridge.start();
 
@@ -482,7 +482,7 @@ describe('PythonMcpBridge — protocol robustness', () => {
     const proc = makeDefaultMock();
     mockSpawn.mockReturnValue(proc);
 
-    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge.js');
+    const { PythonMcpBridge } = await import('../lib/python-mcp-bridge/index.js');
 
     // Override the write mock to deliver the initialize response in two chunks
     let firstId: number | undefined;

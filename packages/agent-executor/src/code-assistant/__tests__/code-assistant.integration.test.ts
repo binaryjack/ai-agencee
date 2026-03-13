@@ -3,8 +3,8 @@
  * Tests the complete indexing workflow end-to-end
  */
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
 import { createCodebaseIndexer } from '../indexer/create-codebase-indexer'
 import { createParserRegistry } from '../parsers/create-parser-registry'
 import { createTypeScriptParser } from '../parsers/create-typescript-parser'
@@ -28,7 +28,7 @@ describe('E14 Code Assistant Integration', () => {
     // Cleanup test project after each test
     try {
       await fs.rm(testProjectRoot, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -134,8 +134,8 @@ export interface FormatOptions {
       // Verify: Check specific file was indexed
       const indexFile = await indexStore.getFileByPath('src/index.ts');
       expect(indexFile).toBeDefined();
-      expect(indexFile.language).toBe('typescript');
-      expect(indexFile.file_hash).toBeDefined();
+      expect(indexFile!.language).toBe('typescript');
+      expect(indexFile!.file_hash).toBeDefined();
 
       await indexStore.close();
     }, 30000);
@@ -184,7 +184,7 @@ export class UserService {
         path.join(testProjectRoot, 'src', 'repository.ts'),
         `
 export class UserRepository {
-  save(user: any) {
+  save(user: unknown) {
     console.log('Saving user:', user);
   }
 }
@@ -276,12 +276,12 @@ export function main() {
       const deps = await indexStore.query(
         `SELECT * FROM codebase_dependencies WHERE project_id = ?`,
         ['test-dependency-graph']
-      ) as any[];
+      ) as unknown[];
 
       expect(deps.length).toBeGreaterThan(0);
       
       // Find the dependency from main.ts to helper.ts
-      const mainToHelper = deps.find((d: any) => 
+      const mainToHelper = (deps as { import_specifier?: string }[]).find(d => 
         d.import_specifier === './lib/helper'
       );
       
@@ -460,12 +460,12 @@ export function findUserByEmail(email: string) {
          WHERE codebase_symbols_fts MATCH ? 
          LIMIT 10`,
         ['search']
-      ) as any[];
+      ) as unknown[];
 
       // Should find the searchDatabase function
       expect(searchResults.length).toBeGreaterThan(0);
       
-      const foundSymbol = searchResults.find((s: any) => 
+      const foundSymbol = (searchResults as { symbol_name?: string; signature?: string }[]).find(s => 
         s.symbol_name?.includes('search') || s.signature?.includes('search')
       );
       

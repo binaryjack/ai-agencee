@@ -45,9 +45,9 @@
  * ```
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import type { CheckHandlerRegistry } from './checks/check-handler-registry.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { ICheckHandlerRegistry } from './checks/check-handler-registry/index.js'
 
 // ─── Plugin manifest ──────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ export interface AiKitPluginManifest {
  * Receives the live `CheckHandlerRegistry` instance and should call
  * `registry.register(handler)` for each handler it provides.
  */
-export type AiKitPluginRegisterFn = (registry: CheckHandlerRegistry) => void | Promise<void>;
+export type AiKitPluginRegisterFn = (registry: ICheckHandlerRegistry) => void | Promise<void>;
 
 /**
  * Shape of a valid plugin module's exports.
@@ -146,7 +146,7 @@ async function findInstalledPlugins(nodeModulesDir: string): Promise<string[]> {
  *                       Defaults to `./node_modules` relative to `process.cwd()`.
  */
 export async function discoverPlugins(
-  registry: CheckHandlerRegistry,
+  registry: ICheckHandlerRegistry,
   nodeModulesDir?: string,
 ): Promise<PluginDiscoveryResult> {
   const nmDir = nodeModulesDir ?? path.join(process.cwd(), 'node_modules');

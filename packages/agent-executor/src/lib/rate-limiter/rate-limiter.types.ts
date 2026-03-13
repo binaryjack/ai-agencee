@@ -34,7 +34,7 @@ export interface PersistedState {
 }
 
 // Error class — kept as class because it extends Error
-export class RateLimitExceededError extends Error {
+class RateLimitExceededError extends Error {
   constructor(
     public readonly principal: string,
     public readonly limitType: 'tokenBudgetPerDay' | 'maxConcurrentRuns' | 'maxRunsPerHour',
@@ -47,3 +47,4 @@ export class RateLimitExceededError extends Error {
     this.name = 'RateLimitExceededError';
   }
 }
+export { RateLimitExceededError };

@@ -1,43 +1,44 @@
-import type { AuditLog } from '../audit-log.js';
-import type { BarrierCoordinator } from '../barrier-coordinator.js';
-import type { ContractRegistry } from '../contract-registry.js';
-import type { CostTracker } from '../cost-tracker.js';
+import type { IAuditLog } from '../audit-log/index.js'
+import type { IBarrierCoordinator } from '../barrier-coordinator/index.js'
+import type { IContractRegistry } from '../contract-registry/index.js'
+import type { ICostTracker } from '../cost-tracker/index.js'
 import type {
-    CheckpointRecord,
-    LaneDefinition,
-    LaneResult,
-    SupervisorVerdict,
-} from '../dag-types.js';
-import type { IHumanReviewGate } from '../human-review-gate.js';
-import type { ModelRouter } from '../model-router.js';
+  CheckpointRecord,
+  LaneDefinition,
+  LaneResult,
+  SupervisorVerdict,
+} from '../dag-types.js'
+import type { IHumanReviewGate } from '../human-review-gate/index.js'
+import type { IModelRouter } from '../model-router/index.js'
+import { CHECKPOINTS_DIR } from '../path-constants.js'
 
 export interface LaneExecutorOptions {
-  registry:            ContractRegistry;
-  coordinator:         BarrierCoordinator;
+  registry:            IContractRegistry;
+  coordinator:         IBarrierCoordinator;
   projectRoot:         string;
   agentsBaseDir?:      string;
   capabilityRegistry?: Record<string, string[]>;
   checkpointBaseDir?:  string;
-  modelRouter?:        ModelRouter;
-  costTracker?:        CostTracker;
+  modelRouter?:        IModelRouter;
+  costTracker?:        ICostTracker;
   interactive?:        boolean;
   humanReviewGate?:    IHumanReviewGate;
-  auditLog?:           AuditLog;
+  auditLog?:           IAuditLog;
   runId?:              string;
 }
 
 export interface ILaneExecutor {
-  _registry:           ContractRegistry;
-  _coordinator:        BarrierCoordinator;
+  _registry:           IContractRegistry;
+  _coordinator:        IBarrierCoordinator;
   _projectRoot:        string;
   _agentsBaseDir:      string;
   _capabilityRegistry: Record<string, string[]>;
   _checkpointBaseDir:  string;
-  _modelRouter:        ModelRouter | undefined;
-  _costTracker:        CostTracker | undefined;
+  _modelRouter:        IModelRouter | undefined;
+  _costTracker:        ICostTracker | undefined;
   _interactive:        boolean;
   _humanReviewGate:    IHumanReviewGate;
-  _auditLog:           AuditLog | undefined;
+  _auditLog:           IAuditLog | undefined;
   _runId:              string;
 
   runLane(lane: LaneDefinition):                                         Promise<LaneResult>;
@@ -63,7 +64,7 @@ export const LaneExecutor = function LaneExecutor(
   options: LaneExecutorOptions,
 ) {
   const { AutoApproveHumanReviewGate, InteractiveHumanReviewGate } =
-    require('../human-review-gate.js') as typeof import('../human-review-gate.js');
+    require('../human-review-gate/index.js') as typeof import('../human-review-gate/index.js');
 
   this._registry           = options.registry;
   this._coordinator        = options.coordinator;
@@ -71,7 +72,7 @@ export const LaneExecutor = function LaneExecutor(
   this._agentsBaseDir      = options.agentsBaseDir ?? options.projectRoot;
   this._capabilityRegistry = options.capabilityRegistry ?? {};
   this._checkpointBaseDir  = options.checkpointBaseDir
-    ?? require('path').join(options.projectRoot, '.agents', 'checkpoints');
+    ?? require('path').join(options.projectRoot, CHECKPOINTS_DIR);
   this._modelRouter        = options.modelRouter;
   this._costTracker        = options.costTracker;
   this._interactive        = options.interactive ?? false;

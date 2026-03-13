@@ -141,53 +141,58 @@ function tryLoadOtel(): OtelApi | null {
 
 // ─── Real OTEL tracer implementation ─────────────────────────────────────────
 
-class RealDagTracer implements DagTracer {
-  private readonly tracer: OtelApiTracer;
-
-  constructor(api: OtelApi) {
-    this.tracer = api.trace.getTracer('ai-kit-agent-executor', '1.0.0');
-  }
-
-  startDagRun(runId: string, dagName: string): OtelSpanHandle {
-    const span = this.tracer.startSpan('dag.run', {
-      attributes: {
-        'ai.run.id':   runId,
-        'ai.dag.name': dagName,
-      },
-    });
-    return wrapSpan(span);
-  }
-
-  startLane(runId: string, laneId: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
-    const span = this.tracer.startSpan('dag.lane', {
-      attributes: {
-        'ai.run.id':  runId,
-        'ai.lane.id': laneId,
-      },
-    });
-    return wrapSpan(span);
-  }
-
-  startLlmCall(laneId: string, model: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
-    const span = this.tracer.startSpan('llm.call', {
-      attributes: {
-        'ai.lane.id': laneId,
-        'ai.llm.model': model,
-      },
-    });
-    return wrapSpan(span);
-  }
-
-  startToolCall(laneId: string, toolName: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
-    const span = this.tracer.startSpan('tool.call', {
-      attributes: {
-        'ai.lane.id':   laneId,
-        'ai.tool.name': toolName,
-      },
-    });
-    return wrapSpan(span);
-  }
+interface IRealDagTracer extends DagTracer {
+  _tracer: OtelApiTracer;
 }
+
+const RealDagTracer = function(this: IRealDagTracer, api: OtelApi): void {
+  Object.defineProperty(this, '_tracer', {
+    value: api.trace.getTracer('ai-kit-agent-executor', '1.0.0'),
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+} as unknown as new(api: OtelApi) => IRealDagTracer;
+
+RealDagTracer.prototype.startDagRun = function(this: IRealDagTracer, runId: string, dagName: string): OtelSpanHandle {
+  const span = this._tracer.startSpan('dag.run', {
+    attributes: {
+      'ai.run.id':   runId,
+      'ai.dag.name': dagName,
+    },
+  });
+  return wrapSpan(span);
+};
+
+RealDagTracer.prototype.startLane = function(this: IRealDagTracer, runId: string, laneId: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
+  const span = this._tracer.startSpan('dag.lane', {
+    attributes: {
+      'ai.run.id':  runId,
+      'ai.lane.id': laneId,
+    },
+  });
+  return wrapSpan(span);
+};
+
+RealDagTracer.prototype.startLlmCall = function(this: IRealDagTracer, laneId: string, model: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
+  const span = this._tracer.startSpan('llm.call', {
+    attributes: {
+      'ai.lane.id': laneId,
+      'ai.llm.model': model,
+    },
+  });
+  return wrapSpan(span);
+};
+
+RealDagTracer.prototype.startToolCall = function(this: IRealDagTracer, laneId: string, toolName: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
+  const span = this._tracer.startSpan('tool.call', {
+    attributes: {
+      'ai.lane.id':   laneId,
+      'ai.tool.name': toolName,
+    },
+  });
+  return wrapSpan(span);
+};
 
 // ─── Public factory ───────────────────────────────────────────────────────────
 

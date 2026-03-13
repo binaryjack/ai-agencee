@@ -1,13 +1,13 @@
 import type { TaskType } from '../../../llm-provider.js'
-import type { RoutedResponse } from '../../../model-router.js'
+import type { RoutedResponse } from '../../../model-router/index.js'
 import type { CheckContext } from '../../check-context.js'
-import type { RawCheckResult } from '../../check-handler.interface.js'
+import type { RawCheckResult } from '../../check-handler.types.js'
 
 export async function execute(this: unknown, ctx: CheckContext): Promise<RawCheckResult> {
   if (!ctx.modelRouter) {
     return {
       passed:        true,
-      extraFindings: ['⚠️ llm-generate skipped: no ModelRouter provided'],
+      extraFindings: ['?? llm-generate skipped: no ModelRouter provided'],
     };
   }
 
@@ -58,7 +58,7 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
         detail:               { key: ctx.check.outputKey, value: fullContent },
         extraFindings:        ctx.check.pass
           ? [ctx.check.pass]
-          : [`💡 Generated: ${value.slice(0, 200)}`],
+          : [`?? Generated: ${value.slice(0, 200)}`],
         extraRecommendations: ctx.check.recommendations ?? [],
         earlyReturn:          true,
       };
@@ -68,7 +68,7 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
   } catch (err) {
     return {
       passed:        false,
-      extraFindings: [`❌ LLM generate failed: ${err}`],
+      extraFindings: [`? LLM generate failed: ${err}`],
     };
   }
 }

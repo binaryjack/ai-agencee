@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for OllamaProvider
  * All network calls are mocked via jest.spyOn(global, 'fetch').
  */
@@ -34,7 +34,7 @@ describe('OllamaProvider', () => {
   it('isAvailable() returns true when /api/tags succeeds', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeFetchMock({ models: [] });
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider('http://localhost:11434');
 
     const available = await provider.isAvailable();
@@ -44,7 +44,7 @@ describe('OllamaProvider', () => {
   it('isAvailable() returns false on network error', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = jest.fn().mockRejectedValue(new Error('ECONNREFUSED'));
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider('http://localhost:11434');
 
     const available = await provider.isAvailable();
@@ -54,7 +54,7 @@ describe('OllamaProvider', () => {
   it('isAvailable() returns false on non-200 response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeFetchMock({ error: 'not found' }, 404, false);
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider();
 
     const available = await provider.isAvailable();
@@ -70,7 +70,7 @@ describe('OllamaProvider', () => {
       return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ models: [] }), text: () => Promise.resolve('{}') });
     });
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider();
     await provider.isAvailable();
 
@@ -95,7 +95,7 @@ describe('OllamaProvider', () => {
       });
     });
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider('http://localhost:11434');
 
     const result = await provider.complete(
@@ -110,7 +110,7 @@ describe('OllamaProvider', () => {
   it('complete() throws on non-200 response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeFetchMock({ error: 'model not found' }, 404, false);
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider('http://localhost:11434');
 
     await expect(
@@ -150,7 +150,7 @@ describe('OllamaProvider', () => {
       text: () => Promise.resolve(''),
     });
 
-    const { OllamaProvider } = await import('../lib/providers/ollama.provider.js');
+    const { OllamaProvider } = await import('../lib/providers/ollama-provider/index.js');
     const provider = new OllamaProvider('http://localhost:11434');
 
     const chunks: { token: string; done: boolean }[] = [];

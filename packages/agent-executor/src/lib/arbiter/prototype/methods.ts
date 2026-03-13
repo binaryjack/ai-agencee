@@ -8,7 +8,7 @@ import { BAResolutionTier } from '../../resolution-tiers/ba-resolution-tier/inde
 import type { ResolutionTier } from '../../resolution-tiers/resolution-tiers.types.js'
 import type { ArbiterDecision, IArbiter } from '../arbiter.js'
 
-// ─── Pre-defined common conflicts ─────────────────────────────────────────────
+// --- Pre-defined common conflicts ---------------------------------------------
 
 const COMMON_DECISIONS: Record<string, Omit<PendingDecision, 'id' | 'raisedAt' | 'blockedItemIds'>> = {
   'api-style': {
@@ -24,7 +24,7 @@ const COMMON_DECISIONS: Record<string, Omit<PendingDecision, 'id' | 'raisedAt' |
   },
   'auth-strategy': {
     question: 'Authentication strategy',
-    context: 'Auth affects every layer — API security, session handling, and frontend routing.',
+    context: 'Auth affects every layer � API security, session handling, and frontend routing.',
     options: [
       { label: 'JWT stateless',  description: 'JSON Web Tokens, no server state',      implications: 'Simple to scale, harder to revoke' },
       { label: 'Session-based',  description: 'Server-side sessions (Redis / DB)',      implications: 'Easy revocation, requires session store' },
@@ -40,7 +40,7 @@ const COMMON_DECISIONS: Record<string, Omit<PendingDecision, 'id' | 'raisedAt' |
     options: [
       { label: 'PostgreSQL',  description: 'Relational, ACID, row-level security', implications: 'Best for structured data + complex queries' },
       { label: 'MongoDB',     description: 'Document store, flexible schema',       implications: 'Good for nested/variable data' },
-      { label: 'SQLite',      description: 'Embedded, zero-config',                 implications: 'POC/solo use only — not production-scalable' },
+      { label: 'SQLite',      description: 'Embedded, zero-config',                 implications: 'POC/solo use only � not production-scalable' },
       { label: 'PlanetScale', description: 'Serverless MySQL (Vitess)',              implications: 'Great for edge deployments' },
     ],
     raisedBy: 'architecture',
@@ -98,11 +98,11 @@ export async function raise(
             : `PO decided: ${chosen.label}`;
 
         if (isBa) {
-          r.say('ba', `I can resolve this: "${params.question}" → ${chosen.label}`);
-          r.system(`Rationale: ${chosen.description} — ${chosen.implications}`);
+          r.say('ba', `I can resolve this: "${params.question}" ? ${chosen.label}`);
+          r.system(`Rationale: ${chosen.description} � ${chosen.implications}`);
           r.newline();
         } else if (isArch) {
-          r.say('architecture', `Architecture recommendation: ${chosen.label} — ${chosen.description}`);
+          r.say('architecture', `Architecture recommendation: ${chosen.label} � ${chosen.description}`);
           r.say('ba', `Architecture has resolved this. Proceeding with: ${chosen.label}`);
           r.newline();
         }
@@ -154,9 +154,9 @@ export async function microAlign(
 
   r.say(actorA, `Acknowledged. My concern on "${topic}": aligning on shared contract.`);
   r.say(actorB, `Confirmed. I'll consume the output from ${actorA} at this boundary.`);
-  r.system(`✓ ${actorA} ↔ ${actorB} aligned on: ${topic}`);
+  r.system(`? ${actorA} ? ${actorB} aligned on: ${topic}`);
   r.newline();
-  return `${actorA} ↔ ${actorB}: ${topic} — aligned`;
+  return `${actorA} ? ${actorB}: ${topic} � aligned`;
 }
 
 export function getDecisions(this: IArbiter): ArbiterDecision[] {
@@ -169,7 +169,7 @@ export async function runStandardDecisions(
   board: IBacklogBoard,
 ): Promise<void> {
   const r = this._renderer;
-  r.say('ba', 'Running standard architecture decision points…');
+  r.say('ba', 'Running standard architecture decision points�');
   r.newline();
 
   const hasAgent = (id: ActorId) => plan.steps.some((s) => s.agent === id);
@@ -207,7 +207,7 @@ export async function runStandardDecisions(
   }
 
   this._save();
-  r.say('ba', `Arbitration complete — ${this._decisions.length} decisions recorded.`);
+  r.say('ba', `Arbitration complete � ${this._decisions.length} decisions recorded.`);
   r.newline();
 }
 

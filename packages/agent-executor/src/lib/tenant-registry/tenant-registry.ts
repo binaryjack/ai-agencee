@@ -1,5 +1,8 @@
 import * as path from 'path'
-import './prototype/index.js'
+import { TENANTS_DIR } from '../path-constants.js'
+import { deleteTenant, exportTenant, listTenants } from './prototype/admin.js'
+import { _configPath, _runDir } from './prototype/helpers.js'
+import { appendEvent, complete, create, deleteRun, get, list, listActive, purgeOld } from './prototype/lifecycle.js'
 
 export interface RunMeta {
   runId: string;
@@ -51,9 +54,26 @@ export const TenantRunRegistry = function(
   tenantId?: string,
 ) {
   this.tenantId    = tenantId ?? process.env['AIKIT_TENANT_ID'] ?? 'default';
-  this.tenantsRoot = path.join(projectRoot, '.agents', 'tenants');
+  this.tenantsRoot = path.join(projectRoot, TENANTS_DIR);
   this.tenantRoot  = path.join(this.tenantsRoot, this.tenantId);
   this.runsRoot    = path.join(this.tenantRoot, 'runs');
 } as unknown as {
   new(projectRoot: string, tenantId?: string): ITenantRunRegistry;
 };
+
+// Attach prototype methods after TenantRunRegistry is defined (avoids circular-import race)
+Object.assign((TenantRunRegistry as unknown as { prototype: object }).prototype, {
+  create,
+  complete,
+  appendEvent,
+  get,
+  delete: deleteRun,
+  list,
+  listActive,
+  purgeOld,
+  listTenants,
+  exportTenant,
+  deleteTenant,
+  _runDir,
+  _configPath,
+});

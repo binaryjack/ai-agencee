@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for GeminiProvider
  * All network calls are intercepted via jest.spyOn / global.fetch mock.
  */
@@ -32,20 +32,20 @@ function mockFetch(responseBody: unknown, ok = true, status = 200) {
 
 describe('GeminiProvider', () => {
   it('isAvailable() returns true when API key is present', async () => {
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('test-api-key');
     expect(await provider.isAvailable()).toBe(true);
   });
 
   it('isAvailable() returns false when API key is empty string', async () => {
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('');
     expect(await provider.isAvailable()).toBe(false);
   });
 
   it('isAvailable() reads GEMINI_API_KEY from env', async () => {
     process.env['GEMINI_API_KEY'] = 'env-key';
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider();
     expect(await provider.isAvailable()).toBe(true);
     delete process.env['GEMINI_API_KEY'];
@@ -54,7 +54,7 @@ describe('GeminiProvider', () => {
   it('complete() throws when API key is missing', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch({});
 
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('');
 
     await expect(
@@ -81,7 +81,7 @@ describe('GeminiProvider', () => {
       });
     });
 
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('my-key');
 
     const result = await provider.complete(
@@ -97,7 +97,7 @@ describe('GeminiProvider', () => {
   it('complete() throws on non-200 response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch({ error: { message: 'Invalid API key' } }, false, 401);
 
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('bad-key');
 
     await expect(
@@ -120,7 +120,7 @@ describe('GeminiProvider', () => {
       });
     });
 
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('my-key');
 
     await provider.complete(
@@ -177,7 +177,7 @@ describe('GeminiProvider', () => {
       text: () => Promise.resolve(''),
     });
 
-    const { GeminiProvider } = await import('../lib/providers/gemini.provider.js');
+    const { GeminiProvider } = await import('../lib/providers/gemini-provider/index.js');
     const provider = new GeminiProvider('my-key');
 
     const tokens: string[] = [];

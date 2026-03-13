@@ -16,7 +16,7 @@ export async function open(this: IAuditLog): Promise<void> {
       this._lastHash   = last.hash;
       this._seq        = last.seq + 1;
     } catch {
-      // malformed last line — start fresh chain from that point
+      // malformed last line � start fresh chain from that point
     }
   }
 }

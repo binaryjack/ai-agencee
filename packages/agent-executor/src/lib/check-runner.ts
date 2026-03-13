@@ -1,5 +1,5 @@
 import { CheckDefinition } from './agent-types.js'
-import { CheckHandlerRegistry } from './checks/check-handler-registry.js'
+import { CheckHandlerRegistry } from './checks/check-handler-registry/index.js'
 import type { RoutedResponse } from './model-router/index.js'
 import type { IModelRouter } from './model-router/model-router.js'
 

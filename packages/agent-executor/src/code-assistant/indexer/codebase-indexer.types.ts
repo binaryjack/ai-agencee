@@ -2,27 +2,35 @@
  * Type definitions for Codebase Indexer
  */
 
-import type { FileParseResult } from '../parsers/parser-protocol.types'
+import type { IModelRouter } from '../../lib/model-router/model-router.js'
 import type { EmbeddingProvider } from '../embeddings/embedding-provider.types'
+import type { FileParseResult } from '../parsers/parser-protocol.types'
+import type { ParserRegistryInstance } from '../parsers/parser-registry'
+import type { CodebaseIndexStoreInstance } from '../storage/codebase-index-store.types'
 
 export type { FileParseResult } from '../parsers/parser-protocol.types'
 
+/** Minimal audit-log interface for codebase-indexer (different shape from IAuditLog) */
+export type IIndexerAuditLog = {
+  write(event: Record<string, unknown>): void;
+};
+
 export type CodebaseIndexerOptions = {
   projectRoot: string;
-  indexStore: any; // CodebaseIndexStore
-  parserRegistry: any; // ParserRegistry
+  indexStore: CodebaseIndexStoreInstance;
+  parserRegistry: ParserRegistryInstance;
   embeddingProvider?: EmbeddingProvider;
-  modelRouter?: any; // ModelRouter
-  auditLog?: any; // AuditLog
+  modelRouter?: IModelRouter;
+  auditLog?: IIndexerAuditLog;
 };
 
 export type CodebaseIndexerInstance = {
   _projectRoot: string;
-  _indexStore: any;
-  _parserRegistry: any;
-  _embeddingProvider?: any;
-  _modelRouter?: any;
-  _auditLog?: any;
+  _indexStore: CodebaseIndexStoreInstance;
+  _parserRegistry: ParserRegistryInstance;
+  _embeddingProvider?: EmbeddingProvider;
+  _modelRouter?: IModelRouter;
+  _auditLog?: IIndexerAuditLog;
   _state: {
     indexedFiles: Set<string>;
     symbolCache: Map<string, Symbol[]>;

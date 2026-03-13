@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Unit tests for eval-harness.ts
  * The judgeProvider is mocked to control scoring.
  */
 
-import { formatEvalReport, runEval } from '../lib/eval-harness.js'
+import { formatEvalReport, runEval } from '../lib/eval-harness/index.js'
 import type { LLMProvider, LLMResponse } from '../lib/llm-provider.js'
 
 // ─── Mock judge provider factory ──────────────────────────────────────────────

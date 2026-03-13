@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'events';
 
 // ─── Event Payloads ───────────────────────────────────────────────────────────
 
@@ -96,7 +96,7 @@ export interface DagEventMap {
 // ─── DagEventBus ─────────────────────────────────────────────────────────────
 
 // DagEventBus extends EventEmitter — kept as class (EventEmitter subclass exception)
-export class DagEventBus extends EventEmitter {
+class DagEventBus extends EventEmitter {
   constructor() {
     super();
     this.setMaxListeners(100);
@@ -148,8 +148,7 @@ export class DagEventBus extends EventEmitter {
   on(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): this;
   on(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): this;
   on(event: string | symbol,       listener: (...args: unknown[]) => void): this;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(event: string | symbol, listener: (...args: any[]) => void): this {
+  on(event: string | symbol, listener: Parameters<EventEmitter['on']>[1]): this {
     return super.on(event, listener);
   }
 
@@ -163,8 +162,7 @@ export class DagEventBus extends EventEmitter {
   once(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): this;
   once(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): this;
   once(event: string | symbol,       listener: (...args: unknown[]) => void): this;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  once(event: string | symbol, listener: (...args: any[]) => void): this {
+  once(event: string | symbol, listener: Parameters<EventEmitter['once']>[1]): this {
     return super.once(event, listener);
   }
 
@@ -176,6 +174,7 @@ export class DagEventBus extends EventEmitter {
     }
   }
 }
+export { DagEventBus };
 
 // ─── Singleton ────────────────────────────────────────────────────────────────
 

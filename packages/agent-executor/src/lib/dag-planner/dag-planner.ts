@@ -4,7 +4,14 @@ export interface IDagPlanner {
   new(): IDagPlanner;
 }
 
-export const DagPlanner = function(this: IDagPlanner) {} as unknown as IDagPlanner;
+export interface IDagPlannerStatic {
+  new(): IDagPlanner;
+  validateDag(dag: DagDefinition): void;
+  topologicalSort(lanes: LaneDefinition[]): LaneDefinition[][];
+  buildCapabilityRegistry(dag: DagDefinition): Record<string, string[]>;
+}
+
+export const DagPlanner = function(this: IDagPlanner) {} as unknown as IDagPlannerStatic;
 
 (DagPlanner as unknown as Record<string, unknown>).validateDag = function(dag: DagDefinition): void {
   if (!dag.name) throw new Error('dag.json: missing "name"');

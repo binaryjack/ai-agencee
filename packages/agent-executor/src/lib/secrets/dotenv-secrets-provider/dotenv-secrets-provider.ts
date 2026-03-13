@@ -1,4 +1,4 @@
-import './prototype/index.js';
+import { _load, get, has, invalidate } from './prototype/methods.js';
 
 export interface IDotenvSecretsProvider {
   new(projectRoot: string, fileNames?: string[]): IDotenvSecretsProvider;
@@ -20,3 +20,6 @@ export const DotenvSecretsProvider = function(
   this._fileNames   = fileNames;
   this._cache       = null;
 } as unknown as IDotenvSecretsProvider;
+
+// Attach prototype methods after DotenvSecretsProvider is defined (avoids circular-import race)
+Object.assign((DotenvSecretsProvider as unknown as { prototype: object }).prototype, { get, has, invalidate, _load });

@@ -1,4 +1,4 @@
-import type { DagEndEvent } from '../../dag-events.js'
+import type { DagEndEvent } from '../../dag-events/index.js'
 import {
     CreatedIssue,
     IIssueSync,
@@ -34,11 +34,11 @@ export async function httpPost(
 
 // ─── IIssueSync methods ───────────────────────────────────────────────────────
 
-export function attach(this: IIssueSync, bus: import('../../dag-events.js').DagEventBus): void {
+export function attach(this: IIssueSync, bus: import('../../dag-events/index.js').DagEventBus): void {
   bus.on('dag:end', this._onDagEnd);
 }
 
-export function detach(this: IIssueSync, bus: import('../../dag-events.js').DagEventBus): void {
+export function detach(this: IIssueSync, bus: import('../../dag-events/index.js').DagEventBus): void {
   bus.removeListener('dag:end', this._onDagEnd);
 }
 

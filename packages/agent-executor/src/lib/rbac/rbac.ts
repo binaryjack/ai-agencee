@@ -1,11 +1,12 @@
-import * as fs from 'fs/promises';
-import * as os from 'os';
-import * as path from 'path';
+import * as fs from 'fs/promises'
+import * as os from 'os'
+import * as path from 'path'
 
-import type { RbacPolicyFile, RbacPrincipalDefinition } from './rbac.types.js';
-export { RbacDeniedError } from './rbac.types.js';
+import { RBAC_FILE } from '../path-constants.js'
+import type { RbacPolicyFile, RbacPrincipalDefinition } from './rbac.types.js'
+export { RbacDeniedError } from './rbac.types.js'
 
-import './prototype/index.js';
+import { _matches, _permissions, assertCan, can, canRunLane, checkLanes, getRateLimits, principalsWith, summarize } from './prototype/methods.js'
 
 export interface IRbacPolicy {
   new(policyFile: RbacPolicyFile): IRbacPolicy;
@@ -38,7 +39,7 @@ export const RbacPolicy = function(
 (RbacPolicy as unknown as Record<string, unknown>).load = async function(
   projectRoot: string,
 ): Promise<IRbacPolicy> {
-  const filePath = path.join(projectRoot, '.agents', 'rbac.json');
+  const filePath = path.join(projectRoot, RBAC_FILE);
   try {
     const raw    = await fs.readFile(filePath, 'utf-8');
     const parsed = JSON.parse(raw) as RbacPolicyFile;
@@ -79,3 +80,16 @@ export const RbacPolicy = function(
     '<anonymous>'
   );
 };
+
+// Attach prototype methods after RbacPolicy is defined (avoids circular-import race)
+Object.assign((RbacPolicy as unknown as { prototype: object }).prototype, {
+  can,
+  canRunLane,
+  assertCan,
+  checkLanes,
+  principalsWith,
+  getRateLimits,
+  summarize,
+  _permissions,
+  _matches,
+});

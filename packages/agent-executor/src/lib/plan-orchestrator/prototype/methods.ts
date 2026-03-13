@@ -1,24 +1,25 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import type { ChatRenderer } from '../../chat-renderer.js'
+import type { IChatRenderer } from '../../chat-renderer/index.js'
+import { PLAN_STATE_DIR } from '../../path-constants.js'
 import type { PlanDefinition, PlanPhase, StepDefinition } from '../../plan-types.js'
 import {
-    IPlanOrchestrator,
-    PlanResult,
-    PlanStepResult
+  IPlanOrchestrator,
+  PlanResult,
+  PlanStepResult
 } from '../plan-orchestrator.js'
 
 // ─── run ─────────────────────────────────────────────────────────────────────
 
 export async function run(this: IPlanOrchestrator): Promise<PlanResult> {
-  const { Arbiter }           = await import('../../arbiter.js');
-  const { BacklogBoard }      = await import('../../backlog.js');
-  const { ChatRenderer }      = await import('../../chat-renderer.js');
-  const { DagOrchestrator }   = await import('../../dag-orchestrator.js');
-  const { DiscoverySession }  = await import('../../discovery-session.js');
-  const { PlanModelAdvisor }  = await import('../../plan-model-advisor.js');
-  const { PlanSynthesizer }   = await import('../../plan-synthesizer.js');
-  const { SprintPlanner }     = await import('../../sprint-planner.js');
+  const { Arbiter }           = await import('../../arbiter/index.js');
+  const { BacklogBoard }      = await import('../../backlog/index.js');
+  const { ChatRenderer }      = await import('../../chat-renderer/index.js');
+  const { DagOrchestrator }   = await import('../../dag-orchestrator/index.js');
+  const { DiscoverySession }  = await import('../../discovery-session/index.js');
+  const { PlanModelAdvisor }  = await import('../../plan-model-advisor/index.js');
+  const { PlanSynthesizer }   = await import('../../plan-synthesizer/index.js');
+  const { SprintPlanner }     = await import('../../sprint-planner/index.js');
 
   const startMs = Date.now();
   fs.mkdirSync(this._stateDir, { recursive: true });
@@ -52,7 +53,7 @@ export async function run(this: IPlanOrchestrator): Promise<PlanResult> {
     }
   } else {
     discovery = DiscoverySession.load(this._projectRoot);
-    if (!discovery) throw new Error('Cannot skip Phase 0: no discovery.json found in .agents/plan-state/');
+    if (!discovery) throw new Error(`Cannot skip Phase 0: no discovery.json found in ${PLAN_STATE_DIR}/`);
   }
 
   // Phase 1: SYNTHESIZE
@@ -67,7 +68,7 @@ export async function run(this: IPlanOrchestrator): Promise<PlanResult> {
     }
   } else {
     plan = PlanSynthesizer.load(this._projectRoot);
-    if (!plan) throw new Error('Cannot skip Phase 1: no plan.json found in .agents/plan-state/');
+    if (!plan) throw new Error(`Cannot skip Phase 1: no plan.json found in ${PLAN_STATE_DIR}/`);
   }
 
   // Phase 2: DECOMPOSE
@@ -145,7 +146,7 @@ export async function run(this: IPlanOrchestrator): Promise<PlanResult> {
 export async function _executeSteps(
   this: IPlanOrchestrator,
   plan: PlanDefinition,
-  r: ChatRenderer,
+  r: IChatRenderer,
 ): Promise<PlanStepResult[]> {
   const results: PlanStepResult[] = [];
   const groups = this._topoGroups(plan.steps);
@@ -199,7 +200,7 @@ export async function _runStep(
   step: StepDefinition,
   plan: PlanDefinition,
 ): Promise<PlanStepResult> {
-  const { DagOrchestrator } = await import('../../dag-orchestrator.js');
+  const { DagOrchestrator } = await import('../../dag-orchestrator/index.js');
 
   const r       = this._renderer;
   const startMs = Date.now();
@@ -325,7 +326,7 @@ export function _waitForAnyInput(this: IPlanOrchestrator): Promise<void> {
 export function _printSummary(
   this: IPlanOrchestrator,
   result: PlanResult,
-  r: ChatRenderer,
+  r: IChatRenderer,
 ): void {
   const statusIcon = result.status === 'success' ? '✅' : result.status === 'partial' ? '⚠️' : '❌';
   r.newline();

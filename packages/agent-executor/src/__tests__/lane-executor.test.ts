@@ -1,14 +1,16 @@
-import { AgentResult } from '../lib/agent-types';
-import { BarrierCoordinator } from '../lib/barrier-coordinator';
-import { ContractRegistry } from '../lib/contract-registry';
+import { AgentResult } from '../lib/agent-types'
+import type { IBarrierCoordinator } from '../lib/barrier-coordinator'
+import { BarrierCoordinator } from '../lib/barrier-coordinator'
+import type { IContractRegistry } from '../lib/contract-registry'
+import { ContractRegistry } from '../lib/contract-registry'
 import {
-    CheckpointPayload,
-    LaneDefinition,
-    SupervisorVerdict
-} from '../lib/dag-types';
-import { IntraSupervisor } from '../lib/intra-supervisor';
-import { LaneExecutor } from '../lib/lane-executor';
-import { SupervisedAgent } from '../lib/supervised-agent';
+  CheckpointPayload,
+  LaneDefinition,
+  SupervisorVerdict
+} from '../lib/dag-types'
+import { IntraSupervisor } from '../lib/intra-supervisor'
+import { LaneExecutor } from '../lib/lane-executor'
+import { SupervisedAgent } from '../lib/supervised-agent'
 
 // ─── fs mock ──────────────────────────────────────────────────────────────────
 
@@ -69,8 +71,8 @@ const NO_SUP_LANE: LaneDefinition = {
 // ─── tests ────────────────────────────────────────────────────────────────────
 
 describe('LaneExecutor', () => {
-  let registry: ContractRegistry;
-  let coordinator: BarrierCoordinator;
+  let registry: IContractRegistry;
+  let coordinator: IBarrierCoordinator;
   let agentFromFileSpy: jest.SpyInstance;
   let supFromFileSpy: jest.SpyInstance;
 

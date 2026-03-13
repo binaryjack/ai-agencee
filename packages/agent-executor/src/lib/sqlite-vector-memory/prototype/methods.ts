@@ -1,7 +1,8 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import type { Embedding, SearchOptions, SearchResult, StoreOptions } from '../../vector-memory.js'
-import { ISqliteVectorMemory } from '../sqlite-vector-memory.js'
+import * as fs from 'fs';
+import * as path from 'path';
+import type { Embedding, SearchOptions, SearchResult, StoreOptions } from '../../vector-memory/index.js';
+import { ISqliteVectorMemory } from '../sqlite-vector-memory.js';
+import { SqliteVectorRepository } from '../sqlite-vector-repository.js';
 
 // ─── Module helpers ──────────────────────────────────────────────────────────
 
@@ -30,22 +31,13 @@ export function _open(this: ISqliteVectorMemory): void {
     const dir = path.dirname(this._dbPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-    this._db = new Database(this._dbPath);
-    this._db.pragma('journal_mode = WAL');
-    this._db.exec(`
-      CREATE TABLE IF NOT EXISTS vectors (
-        store      TEXT    NOT NULL,
-        id         TEXT    NOT NULL,
-        content    TEXT,
-        embedding  BLOB    NOT NULL,
-        metadata   TEXT    NOT NULL DEFAULT '{}',
-        created_at TEXT    NOT NULL,
-        PRIMARY KEY (store, id)
-      );
-      CREATE INDEX IF NOT EXISTS idx_vectors_store ON vectors(store);
-    `);
+    const db = new Database(this._dbPath);
+    this._db = db;
+    this._repo = new SqliteVectorRepository(db);
+    this._repo.createSchema();
   } catch {
-    this._db = null;
+    this._db   = null;
+    this._repo = null;
   }
 }
 
@@ -55,39 +47,20 @@ export async function store(
   embedding: Embedding,
   options: StoreOptions = {},
 ): Promise<void> {
+  if (!this._repo) return;
   const emb  = _toFloat32(embedding);
   const blob = Buffer.from(emb.buffer);
-  const payload = {
-    store:      this._namespace,
+  this._repo.insert({
+    store:     this._namespace,
     id,
-    content:    options.text ?? null,
-    embedding:  blob,
-    metadata:   JSON.stringify(options.metadata ?? {}),
-    created_at: new Date().toISOString(),
-  };
-
-  if (this._db) {
-    this._db
-      .prepare(
-        `INSERT OR REPLACE INTO vectors (store, id, content, embedding, metadata, created_at)
-         VALUES (@store, @id, @content, @embedding, @metadata, @created_at)`,
-      )
-      .run(payload);
-
-    const count: number = (
-      this._db
-        .prepare('SELECT COUNT(*) as n FROM vectors WHERE store = ?')
-        .get(this._namespace) as { n: number }
-    ).n;
-    if (count > this._maxEntries) {
-      this._db
-        .prepare(
-          `DELETE FROM vectors WHERE store = ? AND id IN (
-             SELECT id FROM vectors WHERE store = ? ORDER BY created_at ASC LIMIT ?
-           )`,
-        )
-        .run(this._namespace, this._namespace, count - this._maxEntries);
-    }
+    content:   options.text ?? null,
+    embedding: blob,
+    metadata:  JSON.stringify(options.metadata ?? {}),
+    createdAt: new Date().toISOString(),
+  });
+  const n = this._repo.count(this._namespace);
+  if (n > this._maxEntries) {
+    this._repo.trimOldest(this._namespace, n - this._maxEntries);
   }
 }
 
@@ -100,59 +73,46 @@ export async function search(
   const minScore = options.minScore ?? 0.0;
   const ns       = options.namespace ?? this._namespace;
 
-  if (!this._db) return [];
+  if (!this._repo) return [];
 
-  const rows: Array<{
-    id: string;
-    embedding: Buffer;
-    metadata: string;
-    content: string | null;
-    created_at: string;
-  }> = this._db
-    .prepare('SELECT id, embedding, metadata, content, created_at FROM vectors WHERE store = ?')
-    .all(ns);
-
+  const rows = this._repo.fetchAll(ns);
   if (rows.length === 0) return [];
 
   const queryVec = _toFloat32(query);
-  const scored = rows
+  return rows
     .map((row) => {
       const vec   = new Float32Array(row.embedding.buffer, row.embedding.byteOffset, row.embedding.byteLength / 4);
       const score = _cosineSim(queryVec, vec);
       return {
-        id:        row.id,
+        id:       row.id,
         score,
-        metadata:  JSON.parse(row.metadata) as Record<string, unknown>,
-        text:      row.content ?? undefined,
-        storedAt:  row.created_at,
+        metadata: JSON.parse(row.metadata) as Record<string, unknown>,
+        text:     row.content ?? undefined,
+        storedAt: row.createdAt,
       };
     })
     .filter((r) => r.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK);
-
-  return scored;
 }
 
 export async function deleteEntry(this: ISqliteVectorMemory, id: string): Promise<void> {
-  this._db?.prepare('DELETE FROM vectors WHERE store = ? AND id = ?').run(this._namespace, id);
+  this._repo?.delete(id, this._namespace);
 }
 
 export async function clear(this: ISqliteVectorMemory, namespace?: string): Promise<void> {
-  const ns = namespace ?? this._namespace;
-  this._db?.prepare('DELETE FROM vectors WHERE store = ?').run(ns);
+  this._repo?.clear(namespace ?? this._namespace);
 }
 
 export async function size(this: ISqliteVectorMemory, namespace?: string): Promise<number> {
-  const ns = namespace ?? this._namespace;
-  if (!this._db) return 0;
-  const row = this._db.prepare('SELECT COUNT(*) as n FROM vectors WHERE store = ?').get(ns) as { n: number };
-  return row.n;
+  if (!this._repo) return 0;
+  return this._repo.count(namespace ?? this._namespace);
 }
 
 export function close(this: ISqliteVectorMemory): void {
-  this._db?.close();
-  this._db = null;
+  this._repo?.close();
+  this._db   = null;
+  this._repo = null;
 }
 
 export function instanceToFloat32(this: ISqliteVectorMemory, emb: Embedding): Float32Array {

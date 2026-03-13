@@ -1,28 +1,28 @@
 import { randomUUID } from 'crypto'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { AuditLog } from '../../audit-log.js'
-import { BarrierCoordinator } from '../../barrier-coordinator.js'
-import { ContractRegistry } from '../../contract-registry.js'
-import { CostTracker } from '../../cost-tracker.js'
-import { getGlobalEventBus } from '../../dag-events.js'
-import { DagPlanner } from '../../dag-planner.js'
-import { DagResultBuilder } from '../../dag-result-builder.js'
+import { AuditLog } from '../../audit-log/index.js'
+import { BarrierCoordinator } from '../../barrier-coordinator/index.js'
+import { ContractRegistry } from '../../contract-registry/index.js'
+import { CostTracker } from '../../cost-tracker/index.js'
+import { getGlobalEventBus } from '../../dag-events/index.js'
+import { DagPlanner } from '../../dag-planner/index.js'
+import { DagResultBuilder } from '../../dag-result-builder/index.js'
 import type { DagDefinition, DagResult, LaneResult } from '../../dag-types.js'
-import { runLane } from '../../lane-executor.js'
-import { ModelRouterFactory } from '../../model-router-factory.js'
-import type { ModelRouter } from '../../model-router.js'
+import { runLane } from '../../lane-executor/index.js'
+import { ModelRouterFactory } from '../../model-router-factory/index.js'
+import type { IModelRouter } from '../../model-router/index.js'
 import { getGlobalTracer } from '../../otel.js'
 import {
-    createInjectionSafeProvider,
-} from '../../prompt-injection-detector.js'
-import { RateLimiter } from '../../rate-limiter.js'
-import { RbacPolicy } from '../../rbac.js'
-import { RunRegistry } from '../../run-registry.js'
+  createInjectionSafeProvider,
+} from '../../prompt-injection-detector/index.js'
+import { RateLimiter } from '../../rate-limiter/index.js'
+import { RbacPolicy } from '../../rbac/index.js'
+import { RunRegistry } from '../../run-registry/index.js'
 import {
-    createDefaultSecretsProvider,
-    injectSecretsToEnv,
-} from '../../secrets.js'
+  createDefaultSecretsProvider,
+  injectSecretsToEnv,
+} from '../../secrets/index.js'
 import type { IDagOrchestrator } from '../dag-orchestrator.js'
 
 // ─── run ─────────────────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ export async function execute(
 
   // Model router
   const routerFile   = this._options.modelRouterFile ?? dag.modelRouterFile;
-  const modelRouter: ModelRouter | undefined = await ModelRouterFactory.create({
+  const modelRouter: IModelRouter | undefined = await ModelRouterFactory.create({
     routerFilePath:   routerFile,
     samplingCallback: this._options.samplingCallback,
     agentsBaseDir,

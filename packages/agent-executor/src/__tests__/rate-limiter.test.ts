@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
+import type { IRateLimiter } from '../lib/rate-limiter'
 import { RateLimiter, RateLimitExceededError } from '../lib/rate-limiter'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ async function makeTmp(): Promise<string> {
 
 describe('RateLimiter', () => {
   let tmpDir: string
-  let limiter: RateLimiter
+  let limiter: IRateLimiter
 
   beforeEach(async () => {
     tmpDir = await makeTmp()

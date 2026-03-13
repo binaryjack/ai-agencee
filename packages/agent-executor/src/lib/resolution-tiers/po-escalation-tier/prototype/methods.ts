@@ -11,7 +11,7 @@ export async function resolve(this: IPOEscalationTier, pending: PendingDecision)
   r.say('ba', escalationMsg);
   r.decision(pending);
 
-  const choice = await (await import('../../../chat-renderer.js')).promptChoice(r, pending.options.length);
+  const choice = await (await import('../../../chat-renderer/index.js')).promptChoice(r, pending.options.length);
   const indexFromLetter = choice.toUpperCase().charCodeAt(0) - 65;
 
   let chosen: DecisionOption;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for BedrockProvider (E10)
  *
  * All network calls are intercepted via global.fetch mock.
@@ -70,25 +70,25 @@ const BASIC_PROMPT = {
 
 describe('BedrockProvider — isAvailable()', () => {
   it('returns false when no credentials', async () => {
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider();
     expect(await p.isAvailable()).toBe(false);
   });
 
   it('returns false when only accessKeyId is set', async () => {
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: '' });
     expect(await p.isAvailable()).toBe(false);
   });
 
   it('returns false when only secretKey is set', async () => {
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: '', secretKey: 'secret' });
     expect(await p.isAvailable()).toBe(false);
   });
 
   it('returns true when both keys supplied via constructor', async () => {
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
     expect(await p.isAvailable()).toBe(true);
   });
@@ -96,7 +96,7 @@ describe('BedrockProvider — isAvailable()', () => {
   it('returns true when both keys present in env', async () => {
     process.env['AWS_ACCESS_KEY_ID']     = 'AKID-env';
     process.env['AWS_SECRET_ACCESS_KEY'] = 'secret-env';
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider();
     expect(await p.isAvailable()).toBe(true);
   });
@@ -108,7 +108,7 @@ describe('BedrockProvider — complete()', () => {
   it('throws when credentials are missing', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeOkFetch(CONVERSE_RESPONSE);
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider();
 
     await expect(
@@ -129,7 +129,7 @@ describe('BedrockProvider — complete()', () => {
       } as Partial<Response>);
     });
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret', region: 'eu-west-1' });
     const modelId = 'anthropic.claude-haiku-20240307-v1:0';
 
@@ -156,7 +156,7 @@ describe('BedrockProvider — complete()', () => {
       },
     );
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     await p.complete(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0');
@@ -181,7 +181,7 @@ describe('BedrockProvider — complete()', () => {
       },
     );
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret', sessionToken: 'TOKEN' });
 
     await p.complete(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0');
@@ -204,7 +204,7 @@ describe('BedrockProvider — complete()', () => {
       },
     );
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     await p.complete({
@@ -229,7 +229,7 @@ describe('BedrockProvider — complete()', () => {
   it('parses ConverseResponse text and usage', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeOkFetch(CONVERSE_RESPONSE);
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     const result = await p.complete(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0');
@@ -243,7 +243,7 @@ describe('BedrockProvider — complete()', () => {
   it('returns empty content when response has no content array', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeOkFetch({ output: {}, usage: { inputTokens: 1, outputTokens: 0 } });
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     const result = await p.complete(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0');
@@ -254,7 +254,7 @@ describe('BedrockProvider — complete()', () => {
   it('throws on non-ok HTTP response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeErrorFetch(403, 'AccessDeniedException');
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     await expect(
@@ -275,7 +275,7 @@ describe('BedrockProvider — complete()', () => {
       } as Partial<Response>);
     });
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     await p.complete(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0');
@@ -297,7 +297,7 @@ describe('BedrockProvider — complete()', () => {
       } as Partial<Response>);
     });
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     await p.complete(BASIC_PROMPT, 'model');
@@ -335,7 +335,7 @@ async function readChunks(iterable: AsyncIterable<{ token: string; done: boolean
 
 describe('BedrockProvider — stream()', () => {
   it('throws when credentials are missing', async () => {
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider();
 
     const iterable = p.stream!(BASIC_PROMPT, 'model')!;
@@ -376,7 +376,7 @@ describe('BedrockProvider — stream()', () => {
       text: () => Promise.resolve(''),
     } as unknown as Response);
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     const chunks = await readChunks(p.stream!(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0')!);
@@ -409,7 +409,7 @@ describe('BedrockProvider — stream()', () => {
       } as unknown as Response);
     });
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret', region: 'us-west-2' });
 
     await readChunks(p.stream!(BASIC_PROMPT, 'anthropic.claude-haiku-20240307-v1:0')!);
@@ -421,7 +421,7 @@ describe('BedrockProvider — stream()', () => {
   it('throws on non-ok stream response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = makeErrorFetch(401, 'UnauthorizedException');
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret' });
 
     await expect(
@@ -448,7 +448,7 @@ describe('SigV4 signing (structural)', () => {
       },
     );
 
-    const { BedrockProvider } = await import('../lib/providers/bedrock.provider.js');
+    const { BedrockProvider } = await import('../lib/providers/bedrock-provider/index.js');
     const p = new BedrockProvider({ accessKeyId: 'AKID', secretKey: 'secret', region: 'ca-central-1' });
 
     await p.complete(BASIC_PROMPT, 'model');

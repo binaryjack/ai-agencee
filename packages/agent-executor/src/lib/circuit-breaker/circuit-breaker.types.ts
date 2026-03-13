@@ -10,7 +10,7 @@ export interface CircuitBreakerOptions {
 }
 
 // Error class — kept as class because it extends Error
-export class CircuitBreakerOpenError extends Error {
+class CircuitBreakerOpenError extends Error {
   readonly providerName: string;
   readonly recoverAfter: Date;
 
@@ -23,3 +23,4 @@ export class CircuitBreakerOpenError extends Error {
     this.recoverAfter = recoverAfter;
   }
 }
+export { CircuitBreakerOpenError };

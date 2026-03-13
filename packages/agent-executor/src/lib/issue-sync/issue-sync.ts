@@ -1,4 +1,4 @@
-import type { DagEndEvent, DagEventBus } from '../dag-events.js';
+import type { DagEndEvent, DagEventBus } from '../dag-events/index.js';
 
 export type { DagEndEvent, DagEventBus };
 

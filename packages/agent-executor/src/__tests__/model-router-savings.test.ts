@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for ModelRouter savings-proof additions (BYOK pivot).
  * Tests cover estimateCost with familyCosts, estimateNaiveCost, and that
  * naiveCostUSD is correctly set on every RoutedResponse.
@@ -8,7 +8,7 @@
 
 import { ModelRouter } from '../lib/model-router/model-router'
 import type { ModelRouterConfig } from '../lib/model-router/model-router.types'
-import { MockProvider } from '../lib/providers/mock.provider'
+import { MockProvider } from '../lib/providers/mock-provider/index.js'
 
 // ─── shared config ────────────────────────────────────────────────────────────
 

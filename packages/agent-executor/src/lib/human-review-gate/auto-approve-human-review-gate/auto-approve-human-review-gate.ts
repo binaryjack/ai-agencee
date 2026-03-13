@@ -1,6 +1,6 @@
 import type { CheckpointPayload, SupervisorVerdict } from '../../dag-types.js';
 import type { IHumanReviewGate } from '../human-review-gate.types.js';
-import './prototype/index.js';
+import { prompt } from './prototype/methods.js';
 
 export interface IAutoApproveHumanReviewGate extends IHumanReviewGate {
   prompt(payload: CheckpointPayload, verdict: SupervisorVerdict): Promise<SupervisorVerdict>;
@@ -13,3 +13,6 @@ export const AutoApproveHumanReviewGate = function(
 } as unknown as {
   new(): IAutoApproveHumanReviewGate;
 };
+
+// Attach prototype methods after AutoApproveHumanReviewGate is defined (avoids circular-import race)
+Object.assign((AutoApproveHumanReviewGate as unknown as { prototype: object }).prototype, { prompt });

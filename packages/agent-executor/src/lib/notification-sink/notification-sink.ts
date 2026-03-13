@@ -3,10 +3,10 @@ import type {
     DagEndEvent,
     DagEventBus,
     LaneEndEvent,
-} from '../dag-events/dag-events.js'
-import type { NotificationSinkOptions } from './notification-sink.types.js'
+} from '../dag-events/dag-events.js';
+import type { NotificationSinkOptions } from './notification-sink.types.js';
 
-import './prototype/index.js'
+import { _post, attach, detach, sendBudgetExceeded, sendDagEnd, sendLaneEnd } from './prototype/methods.js';
 
 export interface INotificationSink {
   new(opts: NotificationSinkOptions): INotificationSink;
@@ -53,6 +53,16 @@ export const NotificationSink = function(
     }
   };
 } as unknown as INotificationSink;
+
+// Attach prototype methods after NotificationSink is defined (avoids circular-import race)
+Object.assign((NotificationSink as unknown as { prototype: object }).prototype, {
+  attach,
+  detach,
+  sendDagEnd,
+  sendLaneEnd,
+  sendBudgetExceeded,
+  _post,
+});
 
 (NotificationSink as unknown as Record<string, unknown>).fromEnv = function(
   extra?: Partial<NotificationSinkOptions>,

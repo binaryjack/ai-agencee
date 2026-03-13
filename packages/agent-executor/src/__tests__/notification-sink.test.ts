@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for NotificationSink — E12 Slack / Teams notifications.
  * All HTTP calls are intercepted via global.fetch mock.
  */
@@ -25,7 +25,7 @@ function mockFetch(ok = true, status = 200, body = 'ok') {
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const DAG_SUCCESS: import('../lib/dag-events.js').DagEndEvent = {
+const DAG_SUCCESS: import('../lib/dag-events/index.js').DagEndEvent = {
   runId:      'run-001',
   dagName:    'deploy-dag',
   status:     'success',
@@ -33,7 +33,7 @@ const DAG_SUCCESS: import('../lib/dag-events.js').DagEndEvent = {
   timestamp:  '2026-03-05T09:00:00.000Z',
 };
 
-const DAG_FAILED: import('../lib/dag-events.js').DagEndEvent = {
+const DAG_FAILED: import('../lib/dag-events/index.js').DagEndEvent = {
   runId:      'run-002',
   dagName:    'deploy-dag',
   status:     'failed',
@@ -41,7 +41,7 @@ const DAG_FAILED: import('../lib/dag-events.js').DagEndEvent = {
   timestamp:  '2026-03-05T09:05:00.000Z',
 };
 
-const DAG_PARTIAL: import('../lib/dag-events.js').DagEndEvent = {
+const DAG_PARTIAL: import('../lib/dag-events/index.js').DagEndEvent = {
   runId:      'run-003',
   dagName:    'ci-dag',
   status:     'partial',
@@ -49,7 +49,7 @@ const DAG_PARTIAL: import('../lib/dag-events.js').DagEndEvent = {
   timestamp:  '2026-03-05T09:10:00.000Z',
 };
 
-const LANE_END: import('../lib/dag-events.js').LaneEndEvent = {
+const LANE_END: import('../lib/dag-events/index.js').LaneEndEvent = {
   runId:      'run-001',
   laneId:     'backend',
   status:     'failed',
@@ -58,7 +58,7 @@ const LANE_END: import('../lib/dag-events.js').LaneEndEvent = {
   timestamp:  '2026-03-05T09:01:00.000Z',
 };
 
-const BUDGET_EVENT: import('../lib/dag-events.js').BudgetExceededEvent = {
+const BUDGET_EVENT: import('../lib/dag-events/index.js').BudgetExceededEvent = {
   runId:     'run-002',
   laneId:    'frontend',
   limitUSD:  2.00,
@@ -71,26 +71,26 @@ const BUDGET_EVENT: import('../lib/dag-events.js').BudgetExceededEvent = {
 
 describe('NotificationSink — constructor', () => {
   it('throws when neither slack nor teams is configured', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(() => new NotificationSink({} as never)).toThrow();
   });
 
   it('accepts slack-only config', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(
       () => new NotificationSink({ slack: { webhookUrl: 'https://hooks.slack.com/x' } }),
     ).not.toThrow();
   });
 
   it('accepts teams-only config', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(
       () => new NotificationSink({ teams: { webhookUrl: 'https://outlook.office.com/x' } }),
     ).not.toThrow();
   });
 
   it('accepts both slack and teams', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(
       () => new NotificationSink({
         slack: { webhookUrl: 'https://hooks.slack.com/x' },
@@ -104,26 +104,26 @@ describe('NotificationSink — constructor', () => {
 
 describe('NotificationSink.fromEnv()', () => {
   it('returns undefined when no env vars set', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(NotificationSink.fromEnv()).toBeUndefined();
   });
 
   it('returns instance when SLACK_WEBHOOK_URL is set', async () => {
     process.env['SLACK_WEBHOOK_URL'] = 'https://hooks.slack.com/test';
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(NotificationSink.fromEnv()).toBeDefined();
   });
 
   it('returns instance when TEAMS_WEBHOOK_URL is set', async () => {
     process.env['TEAMS_WEBHOOK_URL'] = 'https://outlook.office.com/test';
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     expect(NotificationSink.fromEnv()).toBeDefined();
   });
 
   it('returns instance with both when both env vars are set', async () => {
     process.env['SLACK_WEBHOOK_URL'] = 'https://hooks.slack.com/test';
     process.env['TEAMS_WEBHOOK_URL'] = 'https://outlook.office.com/test';
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = NotificationSink.fromEnv()!;
     const opts = (sink as unknown as { opts: { slack?: object; teams?: object } }).opts;
     expect(opts.slack).toBeDefined();
@@ -141,7 +141,7 @@ describe('NotificationSink — Slack dag:end', () => {
       return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('ok') } as Partial<Response>);
     });
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://hooks.slack.com/my-hook' } });
 
     await sink.sendDagEnd(DAG_FAILED);
@@ -158,7 +158,7 @@ describe('NotificationSink — Slack dag:end', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ slack: { webhookUrl: 'https://x' } }).sendDagEnd(DAG_FAILED);
 
     const body = JSON.stringify(capturedBody);
@@ -175,7 +175,7 @@ describe('NotificationSink — Slack dag:end', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ slack: { webhookUrl: 'https://x' } }).sendDagEnd(DAG_FAILED);
 
     const body = JSON.stringify(capturedBody);
@@ -191,7 +191,7 @@ describe('NotificationSink — Slack dag:end', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ slack: { webhookUrl: 'https://x' } }).sendDagEnd(DAG_PARTIAL);
 
     const body = JSON.stringify(capturedBody);
@@ -202,7 +202,7 @@ describe('NotificationSink — Slack dag:end', () => {
     const fetchMock = mockFetch();
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({
       slack:         { webhookUrl: 'https://x' },
       failuresOnly:  true,
@@ -221,7 +221,7 @@ describe('NotificationSink — Slack dag:end', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({
       slack: { webhookUrl: 'https://x', username: 'CI Bot', iconEmoji: ':ci:', channel: '#alerts' },
     }).sendDagEnd(DAG_FAILED);
@@ -234,7 +234,7 @@ describe('NotificationSink — Slack dag:end', () => {
   it('throws when Slack returns non-ok response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch(false, 400, 'invalid_payload');
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
 
     await expect(sink.sendDagEnd(DAG_FAILED)).rejects.toThrow(/400/);
@@ -251,7 +251,7 @@ describe('NotificationSink — Teams dag:end', () => {
       return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('1') } as Partial<Response>);
     });
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({ teams: { webhookUrl: 'https://outlook.office.com/my-hook' } });
 
     await sink.sendDagEnd(DAG_FAILED);
@@ -268,7 +268,7 @@ describe('NotificationSink — Teams dag:end', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ teams: { webhookUrl: 'https://x' } }).sendDagEnd(DAG_FAILED);
 
     const body = capturedBody as { '@type': string; themeColor: string };
@@ -285,7 +285,7 @@ describe('NotificationSink — Teams dag:end', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ teams: { webhookUrl: 'https://x' } }).sendDagEnd(DAG_FAILED);
 
     expect(JSON.stringify(capturedBody)).toContain('deploy-dag');
@@ -302,7 +302,7 @@ describe('NotificationSink — both Slack + Teams', () => {
       return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('ok') } as Partial<Response>);
     });
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({
       slack: { webhookUrl: 'https://slack/hook' },
       teams: { webhookUrl: 'https://teams/hook' },
@@ -320,7 +320,7 @@ describe('NotificationSink — both Slack + Teams', () => {
       .mockImplementationOnce(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('ok') } as Partial<Response>))
       .mockImplementationOnce(() => Promise.resolve({ ok: false, status: 503, text: () => Promise.resolve('Service unavailable') } as Partial<Response>));
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({
       slack: { webhookUrl: 'https://slack/hook' },
       teams: { webhookUrl: 'https://teams/hook' },
@@ -337,7 +337,7 @@ describe('NotificationSink — sendLaneEnd()', () => {
     const fetchMock = mockFetch();
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({
       slack:          { webhookUrl: 'https://x' },
       notifyLaneEnd:  true,
@@ -356,7 +356,7 @@ describe('NotificationSink — sendLaneEnd()', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ slack: { webhookUrl: 'https://x' } }).sendLaneEnd(LANE_END);
 
     const body = JSON.stringify(capturedBody);
@@ -377,7 +377,7 @@ describe('NotificationSink — sendBudgetExceeded()', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ slack: { webhookUrl: 'https://x' } }).sendBudgetExceeded(BUDGET_EVENT);
 
     const body = JSON.stringify(capturedBody);
@@ -395,7 +395,7 @@ describe('NotificationSink — sendBudgetExceeded()', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     await new NotificationSink({ teams: { webhookUrl: 'https://x' } }).sendBudgetExceeded(BUDGET_EVENT);
 
     const body = JSON.stringify(capturedBody);
@@ -408,8 +408,8 @@ describe('NotificationSink — sendBudgetExceeded()', () => {
 
 describe('NotificationSink — event bus attach/detach', () => {
   it('attach() wires dag:end → sendDagEnd', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
-    const { DagEventBus }       = await import('../lib/dag-events.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
+    const { DagEventBus }       = await import('../lib/dag-events/index.js');
 
     const bus  = new DagEventBus();
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
@@ -429,8 +429,8 @@ describe('NotificationSink — event bus attach/detach', () => {
   });
 
   it('attach() wires budget:exceeded → sendBudgetExceeded', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
-    const { DagEventBus }       = await import('../lib/dag-events.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
+    const { DagEventBus }       = await import('../lib/dag-events/index.js');
 
     const bus  = new DagEventBus();
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
@@ -453,8 +453,8 @@ describe('NotificationSink — event bus attach/detach', () => {
     const fetchMock = mockFetch();
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
-    const { DagEventBus }       = await import('../lib/dag-events.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
+    const { DagEventBus }       = await import('../lib/dag-events/index.js');
 
     const bus  = new DagEventBus();
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
@@ -469,8 +469,8 @@ describe('NotificationSink — event bus attach/detach', () => {
   });
 
   it('attach() wires lane:end when notifyLaneEnd=true', async () => {
-    const { NotificationSink } = await import('../lib/notification-sink.js');
-    const { DagEventBus }       = await import('../lib/dag-events.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
+    const { DagEventBus }       = await import('../lib/dag-events/index.js');
 
     const bus  = new DagEventBus();
     const sink = new NotificationSink({
@@ -501,7 +501,7 @@ describe('NotificationSink — event bus attach/detach', () => {
       },
     );
 
-    const { NotificationSink } = await import('../lib/notification-sink.js');
+    const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = new NotificationSink({
       slack:        { webhookUrl: 'https://x' },
       extraContext: { Environment: 'staging', Team: 'platform' },

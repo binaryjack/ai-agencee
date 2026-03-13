@@ -2,8 +2,8 @@
  * Unit tests for TypeScriptParser
  */
 
-import { createTypeScriptParser } from './create-typescript-parser';
-import type { TypeScriptParserInstance } from './typescript-parser';
+import { createTypeScriptParser } from './create-typescript-parser'
+import type { TypeScriptParserInstance } from './typescript-parser'
 
 describe('TypeScriptParser', () => {
   let parser: TypeScriptParserInstance;
@@ -67,7 +67,7 @@ describe('TypeScriptParser', () => {
       // class + 2 individual method symbols
       expect(symbols).toHaveLength(3);
 
-      const classSymbol = symbols.find((s: any) => s.kind === 'class')!;
+      const classSymbol = symbols.find((s) => s.kind === 'class')!;
       expect(classSymbol).toMatchObject({
         name: 'TestClass',
         kind: 'class',
@@ -77,7 +77,7 @@ describe('TypeScriptParser', () => {
       expect(classSymbol.methods).toContain('method1');
       expect(classSymbol.methods).toContain('method2');
 
-      const methodNames = symbols.filter((s: any) => s.kind === 'method').map((s: any) => s.name);
+      const methodNames = symbols.filter((s) => s.kind === 'method').map((s) => s.name);
       expect(methodNames).toContain('TestClass.method1');
       expect(methodNames).toContain('TestClass.method2');
     });
@@ -93,7 +93,7 @@ describe('TypeScriptParser', () => {
       const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
       const symbols = await parser.extractSymbols(ast);
 
-      const methods = symbols.filter((s: any) => s.kind === 'method');
+      const methods = symbols.filter((s) => s.kind === 'method');
       expect(methods).toHaveLength(2);
       expect(methods[0]).toMatchObject({ name: 'Service.getData', kind: 'method', isExported: false });
       expect(methods[1]).toMatchObject({ name: 'Service.setData', kind: 'method', isExported: false });
@@ -110,7 +110,7 @@ describe('TypeScriptParser', () => {
       const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
       const symbols = await parser.extractSymbols(ast);
 
-      const methodNames = symbols.filter((s: any) => s.kind === 'method').map((s: any) => s.name);
+      const methodNames = symbols.filter((s) => s.kind === 'method').map((s) => s.name);
       expect(methodNames).toContain('Factory.create');
       expect(methodNames).toContain('Factory.instance');
     });
@@ -125,7 +125,7 @@ describe('TypeScriptParser', () => {
       const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
       const symbols = await parser.extractSymbols(ast);
 
-      const method = symbols.find((s: any) => s.name === 'Calculator.add')!;
+      const method = symbols.find((s) => s.name === 'Calculator.add')!;
       expect(method).toBeDefined();
       expect(method.signature).toContain('add');
     });
@@ -143,7 +143,7 @@ describe('TypeScriptParser', () => {
       const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
       const symbols = await parser.extractSymbols(ast);
 
-      const method = symbols.find((s: any) => s.name === 'Formatter.format')!;
+      const method = symbols.find((s) => s.name === 'Formatter.format')!;
       expect(method).toBeDefined();
       expect(method.docstring).toBeDefined();
       expect(method.docstring).toContain('Formats the input string');
@@ -160,7 +160,7 @@ describe('TypeScriptParser', () => {
       const ast = await parser.parse(sourceCode, { filePath: 'test.ts' });
       const symbols = await parser.extractSymbols(ast);
 
-      const methodNames = symbols.filter((s: any) => s.kind === 'method').map((s: any) => s.name);
+      const methodNames = symbols.filter((s) => s.kind === 'method').map((s) => s.name);
       expect(methodNames).not.toContain('Widget.constructor');
       expect(methodNames).toContain('Widget.render');
     });
@@ -286,7 +286,7 @@ describe('TypeScriptParser', () => {
       const symbols = await parser.extractSymbols(ast);
 
       expect(symbols).toHaveLength(5);
-      expect(symbols.map((s: any) => s.name)).toEqual([
+      expect(symbols.map((s) => s.name)).toEqual([
         'func1',
         'func2',
         'MyClass',
@@ -313,7 +313,7 @@ describe('TypeScriptParser', () => {
       const symbols = await parser.extractSymbols(ast);
 
       expect(symbols).toHaveLength(3);
-      expect(symbols.every((s: any) => !s.isExported)).toBe(true);
+      expect(symbols.every((s) => !s.isExported)).toBe(true);
     });
   });
 
@@ -341,7 +341,7 @@ describe('TypeScriptParser', () => {
       const imports = await parser.extractImports(ast);
 
       expect(imports).toHaveLength(2);
-      expect(imports.every((imp: any) => imp.type === 'local')).toBe(true);
+      expect(imports.every((imp) => imp.type === 'local')).toBe(true);
     });
 
     it('should identify npm imports', async () => {
@@ -354,7 +354,7 @@ describe('TypeScriptParser', () => {
       const imports = await parser.extractImports(ast);
 
       expect(imports).toHaveLength(2);
-      expect(imports.every((imp: any) => imp.type === 'npm')).toBe(true);
+      expect(imports.every((imp) => imp.type === 'npm')).toBe(true);
     });
 
     it('should identify builtin Node.js imports', async () => {
@@ -368,7 +368,7 @@ describe('TypeScriptParser', () => {
       const imports = await parser.extractImports(ast);
 
       expect(imports).toHaveLength(3);
-      expect(imports.every((imp: any) => imp.type === 'builtin')).toBe(true);
+      expect(imports.every((imp) => imp.type === 'builtin')).toBe(true);
     });
 
     it('should extract named imports', async () => {
@@ -500,7 +500,7 @@ describe('TypeScriptParser', () => {
       const exports = await parser.extractExports(ast);
 
       expect(exports).toHaveLength(2);
-      expect(exports.every((exp: any) => exp.kind === 'variable')).toBe(true);
+      expect(exports.every((e) => e.kind === 'variable')).toBe(true);
     });
 
     // TODO: Handle export { ... } re-export syntax
@@ -517,7 +517,7 @@ describe('TypeScriptParser', () => {
       const exports = await parser.extractExports(ast);
 
       expect(exports).toHaveLength(3);
-      expect(exports.map((e: any) => e.name)).toEqual(['func1', 'func2', 'var1']);
+      expect(exports.map((e) => e.name)).toEqual(['func1', 'func2', 'var1']);
     });
 
     // TODO: Fix default export name extraction

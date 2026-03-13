@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
+import type { ITenantRunRegistry, RunMeta } from '../lib/tenant-registry'
 import { TenantRunRegistry } from '../lib/tenant-registry'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -13,7 +14,7 @@ async function makeTmp(): Promise<string> {
 
 describe('TenantRunRegistry', () => {
   let tmpDir: string
-  let registry: TenantRunRegistry
+  let registry: ITenantRunRegistry
 
   beforeEach(async () => {
     tmpDir = await makeTmp()
@@ -116,8 +117,8 @@ describe('TenantRunRegistry', () => {
     await registry.create('run-021', 'dag.json')
     await registry.complete('run-021', 'completed') // done
     const active = await registry.listActive()
-    expect(active.map((m) => m.runId)).toContain('run-020')
-    expect(active.map((m) => m.runId)).not.toContain('run-021')
+    expect(active.map((m: RunMeta) => m.runId)).toContain('run-020')
+    expect(active.map((m: RunMeta) => m.runId)).not.toContain('run-021')
   })
 
   // ─── delete ──────────────────────────────────────────────────────────────

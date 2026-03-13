@@ -1,12 +1,13 @@
-import type { AgentResult } from '../../agent-types.js';
+import type { AgentResult } from '../../agent-types.js'
 import type {
-    BarrierResolution,
-    ExpectRules,
-    SupervisorCheckpointRule,
-    SupervisorVerdict,
-    VerdictType,
-} from '../../dag-types.js';
-import type { IIntraSupervisor } from '../intra-supervisor.js';
+  BarrierResolution,
+  ExpectRules,
+  SupervisorCheckpointRule,
+  SupervisorVerdict,
+  VerdictType,
+} from '../../dag-types.js'
+import { VERDICT } from '../../dag-types.js'
+import type { IIntraSupervisor } from '../intra-supervisor.js'
 
 export function evaluate(
   this: IIntraSupervisor,
@@ -17,31 +18,31 @@ export function evaluate(
   const rule = this._config.checkpoints.find((c) => c.checkpointId === checkpointId);
 
   if (!rule) {
-    return { type: 'APPROVE' };
+    return { type: VERDICT.APPROVE };
   }
 
   if (rule.mode === 'hard-barrier' && barrier.timedOut.length > 0) {
     const fallback = rule.fallback ?? 'escalate';
     if (fallback === 'escalate') {
       return {
-        type: 'ESCALATE',
+        type: VERDICT.ESCALATE,
         reason: `Hard-barrier timed out waiting for lanes: ${barrier.timedOut.join(', ')}`,
         evidence: { timedOut: barrier.timedOut, checkpointId },
       };
     }
-    return { type: 'APPROVE' };
+    return { type: VERDICT.APPROVE };
   }
 
   if (rule.mode === 'soft-align' && barrier.timedOut.length > 0) {
     const fallback = rule.fallback ?? 'proceed-with-snapshot';
     if (fallback === 'escalate') {
       return {
-        type: 'ESCALATE',
+        type: VERDICT.ESCALATE,
         reason: `Soft-align timed out waiting for lanes: ${barrier.timedOut.join(', ')}`,
         evidence: { timedOut: barrier.timedOut, checkpointId },
       };
     }
-    return { type: 'APPROVE' };
+    return { type: VERDICT.APPROVE };
   }
 
   if (rule.expect) {
@@ -51,7 +52,7 @@ export function evaluate(
     }
   }
 
-  return { type: 'APPROVE' };
+  return { type: VERDICT.APPROVE };
 }
 
 export function isExhausted(this: IIntraSupervisor, checkpointId: string): boolean {
@@ -148,39 +149,39 @@ function _buildFailVerdict(
   checkpointId: string,
   failureReason: string,
 ): SupervisorVerdict {
-  const onFail: VerdictType = rule.onFail ?? 'RETRY';
+  const onFail: VerdictType = rule.onFail ?? VERDICT.RETRY;
 
-  if (onFail === 'RETRY' && self.isExhausted(checkpointId)) {
+  if (onFail === VERDICT.RETRY && self.isExhausted(checkpointId)) {
     return {
-      type: 'ESCALATE',
+      type: VERDICT.ESCALATE,
       reason: `Retry budget exhausted (${self._config.retryBudget} retries) for checkpoint "${checkpointId}". Last failure: ${failureReason}`,
       evidence: { checkpointId, failureReason, retries: self._retryCounters.get(checkpointId) },
     };
   }
 
   switch (onFail) {
-    case 'APPROVE':
-      return { type: 'APPROVE' };
+    case VERDICT.APPROVE:
+      return { type: VERDICT.APPROVE };
 
-    case 'RETRY':
+    case VERDICT.RETRY:
       return {
-        type: 'RETRY',
+        type: VERDICT.RETRY,
         instructions:
           rule.retryInstructions ??
           `Re-examine checkpoint "${checkpointId}". Issue: ${failureReason}`,
       };
 
-    case 'HANDOFF':
+    case VERDICT.HANDOFF:
       return {
-        type: 'HANDOFF',
+        type: VERDICT.HANDOFF,
         targetLaneId: rule.handoffTo,
         handoffContext: { failureReason, checkpointId },
       };
 
-    case 'ESCALATE':
+    case VERDICT.ESCALATE:
     default:
       return {
-        type: 'ESCALATE',
+        type: VERDICT.ESCALATE,
         reason: failureReason,
         evidence: { checkpointId, rule },
       };

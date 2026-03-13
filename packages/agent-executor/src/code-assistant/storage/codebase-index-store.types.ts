@@ -15,29 +15,53 @@ export type CodebaseIndexStoreInstance = {
   _dbPath: string;
   initialize(): Promise<void>;
   _createTables(): Promise<void>;
-  upsertFile(fileData: any): Promise<number>;
-  upsertSymbols(fileId: number, symbols: any[]): Promise<void>;
-  upsertDependencies(dependencies: any[]): Promise<void>;
-  getFileByPath(filePath: string): Promise<any>;
-  getFileByHash(hash: string): Promise<any>;
-  getAllFiles(): Promise<any[]>;
+  upsertFile(fileData: FileData): Promise<number>;
+  upsertSymbols(fileId: number, symbols: SymbolData[]): Promise<void>;
+  upsertDependencies(dependencies: DependencyData[]): Promise<void>;
+  getFileByPath(filePath: string): Promise<FileRecord | undefined>;
+  getFileByHash(hash: string): Promise<FileRecord | undefined>;
+  getAllFiles(): Promise<FileRecord[]>;
   getSymbolsByFile(fileId: number): Promise<{ id: number; name: string; docstring: string | null; is_exported: number }[]>;
   storeEmbedding(symbolId: number, vector: Float32Array): Promise<void>;
   semanticSearch(queryVector: Float32Array, topK: number, ftsQuery?: string): Promise<import('../embeddings/embedding-provider.types').SemanticSearchResult[]>;
   rebuildFts(): void;
-  query(sql: string, params?: any[]): Promise<any>;
+  query(sql: string, params?: unknown[]): Promise<unknown>;
   getStats(): Promise<{ totalFiles: number; totalSymbols: number; totalDependencies: number }>;
   close(): Promise<void>;
 };
 
+export type FileData = {
+  filePath: string;
+  hash: string;
+  language: string;
+  sizeBytes?: number;
+};
+
+export type SymbolData = {
+  name: string;
+  kind: string;
+  lineStart: number;
+  lineEnd: number;
+  signature?: string;
+  docstring?: string;
+  isExported: boolean;
+};
+
+export type DependencyData = {
+  sourceFileId: number;
+  targetFileId?: number | null;
+  importSpecifier: string;
+  type: string;
+};
+
 export type FileRecord = {
   id: number;
-  projectId: string;
-  filePath: string;
-  fileHash: string;
+  project_id: string;
+  file_path: string;
+  file_hash: string;
   language: string;
-  sizeBytes: number;
-  lastIndexedAt: number;
+  size_bytes: number;
+  last_indexed_at: number;
 };
 
 export type SymbolRecord = {

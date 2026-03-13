@@ -5,7 +5,7 @@
 
 import * as ts from 'typescript';
 import type { Export, Import, Symbol } from '../indexer/codebase-indexer.types';
-import type { ParserOptions } from './parser-protocol.types';
+import type { ParserOptions, PrintOptions } from './parser-protocol.types';
 
 export type TypeScriptParserInstance = {
   _compilerOptions: ts.CompilerOptions;
@@ -19,7 +19,7 @@ export type TypeScriptParserInstance = {
   _extractJSDoc(node: ts.Node): string | null;
   _classifyImport(specifier: string): 'local' | 'npm' | 'builtin';
   _isBuiltinModule(name: string): boolean;
-  print(ast: ts.SourceFile, options?: any): string;
+  print(ast: ts.SourceFile, options?: PrintOptions): string;
 };
 
 export const TypeScriptParser = function(this: TypeScriptParserInstance, options: ParserOptions = {}) {
@@ -300,7 +300,7 @@ TypeScriptParser.prototype._isBuiltinModule = function(this: TypeScriptParserIns
   return builtins.includes(name);
 };
 
-TypeScriptParser.prototype.print = function(this: TypeScriptParserInstance, ast: ts.SourceFile, options: any = {}): string {
+TypeScriptParser.prototype.print = function(this: TypeScriptParserInstance, ast: ts.SourceFile, options: PrintOptions = {}): string {
   const printer = ts.createPrinter({
     newLine: ts.NewLineKind.LineFeed,
     removeComments: false

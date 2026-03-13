@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Integration tests for distillation.ts — uses a real temp directory.
  *
  * These tests do NOT mock fs. They write and read real files to ensure
@@ -9,7 +9,7 @@ import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
 
-import { buildExamplesBlock, loadExamples, saveExample } from '../../src/lib/distillation.js'
+import { buildExamplesBlock, loadExamples, saveExample } from '../../src/lib/distillation/index.js'
 
 let tempDir: string;
 

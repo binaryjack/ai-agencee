@@ -2,12 +2,12 @@ import * as fs from 'fs/promises'
 import type { AgentDefinition, AgentResult } from '../agent-types.js'
 import type { CheckpointMode, CheckpointPayload, ContractSnapshot, SupervisorVerdict } from '../dag-types.js'
 import type { IModelRouter, RoutedResponse } from '../model-router/index.js'
-import './prototype/index.js'
+import { run } from './prototype/run.js'
 
 export interface ISupervisedAgent {
   _definition: AgentDefinition;
-  name(): string;
-  icon(): string;
+  name: string;
+  icon: string;
   run(
     projectRoot: string,
     defaultMode?: CheckpointMode,
@@ -23,6 +23,8 @@ export const SupervisedAgent = function(
   definition: AgentDefinition,
 ) {
   this._definition = definition;
+  this.name = definition.name;
+  this.icon = definition.icon;
 } as unknown as {
   new(definition: AgentDefinition): ISupervisedAgent;
   fromFile(agentFile: string): Promise<ISupervisedAgent>;
@@ -34,9 +36,12 @@ export const SupervisedAgent = function(
   return new SupervisedAgent(definition);
 };
 
-// ─── Error Types ──────────────────────────────────────────────────────────────
+// Attach prototype methods after SupervisedAgent is defined (avoids circular-import race)
+Object.assign((SupervisedAgent as unknown as { prototype: object }).prototype, { run });
 
-export class EscalationError extends Error {
+// ─── Error Types ────────────────────────────────────────────────────────────────
+
+class EscalationError extends Error {
   constructor(
     message: string,
     public readonly verdict: SupervisorVerdict,
@@ -45,3 +50,5 @@ export class EscalationError extends Error {
     this.name = 'EscalationError';
   }
 }
+export { EscalationError }
+

@@ -5,7 +5,7 @@ import { ACTOR_COLOR, BG_RED, bold, BOLD, c, colors, dim, PHASE_META, RESET, WHI
 
 export function phaseHeader(this: IChatRenderer, phase: PlanPhase): void {
   const meta = PHASE_META[phase];
-  const bar = '━'.repeat(this._width);
+  const bar = '?'.repeat(this._width);
   console.log('');
   console.log(meta.color(bar));
   console.log(meta.color(`  ${bold(meta.label)}`));
@@ -33,18 +33,18 @@ export function question(this: IChatRenderer, actor: ActorId, text: string): voi
 }
 
 export function system(this: IChatRenderer, text: string): void {
-  console.log(dim(`  ⚡ ${text}`));
+  console.log(dim(`  ? ${text}`));
 }
 
 export function warn(this: IChatRenderer, text: string): void {
-  console.log(`  ${c('yellow', '⚠')}  ${c('yellow', text)}`);
+  console.log(`  ${c('yellow', '?')}  ${c('yellow', text)}`);
 }
 
 export function error(this: IChatRenderer, text: string): void {
-  console.log(`  ${c('brightRed', '✖')}  ${c('brightRed', text)}`);
+  console.log(`  ${c('brightRed', '?')}  ${c('brightRed', text)}`);
 }
 
-export function separator(this: IChatRenderer, char = '─'): void {
+export function separator(this: IChatRenderer, char = '-'): void {
   console.log(dim(char.repeat(this._width)));
 }
 
@@ -54,7 +54,7 @@ export function newline(this: IChatRenderer): void {
 
 export function checklist(this: IChatRenderer, title: string, items: ChecklistDisplayItem[]): void {
   this.separator();
-  console.log(`  ${bold(c('cyan', `📋 ${title}`))}`);
+  console.log(`  ${bold(c('cyan', `?? ${title}`))}`);
   this.separator();
   for (const item of items) {
     const actor = ACTORS[item.owner];
@@ -63,7 +63,7 @@ export function checklist(this: IChatRenderer, title: string, items: ChecklistDi
     const text = item.status === 'answered' ? dim(item.text) : item.text;
     console.log(`  ${icon}  ${actorTag}  ${text}`);
     if (item.answer && item.status === 'answered') {
-      console.log(`       ${dim(`→ ${item.answer}`)}`);
+      console.log(`       ${dim(`? ${item.answer}`)}`);
     }
   }
   this.separator();
@@ -77,9 +77,9 @@ export function checklist(this: IChatRenderer, title: string, items: ChecklistDi
 }
 
 export function decision(this: IChatRenderer, d: PendingDecision): void {
-  const bar = '━'.repeat(this._width);
+  const bar = '?'.repeat(this._width);
   console.log('');
-  console.log(`${BG_RED}${WHITE}${BOLD}  🚨 DECISION REQUIRED [PO]  ${RESET}`);
+  console.log(`${BG_RED}${WHITE}${BOLD}  ?? DECISION REQUIRED [PO]  ${RESET}`);
   console.log(c('brightRed', bar));
   const lines = this._wrap(d.question, this._width - 4);
   for (const l of lines) {
@@ -95,7 +95,7 @@ export function decision(this: IChatRenderer, d: PendingDecision): void {
     console.log(`  ${bold(c('brightCyan', `${String.fromCharCode(65 + i)})`))}`
       + `  ${bold(opt.label)}`);
     console.log(`      ${opt.description}`);
-    console.log(`      ${dim('→ ' + opt.implications)}`);
+    console.log(`      ${dim('? ' + opt.implications)}`);
     console.log('');
   });
   const affected = d.affectedActors.map((a) => `${ACTORS[a].emoji} ${ACTORS[a].label}`).join('  ');
@@ -112,30 +112,30 @@ export function modelRecommendation(this: IChatRenderer, rec: {
   review: string;
   estimatedCostNote: string;
 }): void {
-  this.separator('─');
-  console.log(`  ${bold(c('cyan', '💰 Model Recommendation (cost guidance)'))}`);
-  console.log(`  ${dim('Discovery / Planning')}   → ${c('green', rec.discovery)}`);
-  console.log(`  ${dim('Architecture / Design')}  → ${c('yellow', rec.planning)}`);
-  console.log(`  ${dim('Implementation')}         → ${c('cyan', rec.implementation)}`);
-  console.log(`  ${dim('Review / Audit')}         → ${c('green', rec.review)}`);
+  this.separator('-');
+  console.log(`  ${bold(c('cyan', '?? Model Recommendation (cost guidance)'))}`);
+  console.log(`  ${dim('Discovery / Planning')}   ? ${c('green', rec.discovery)}`);
+  console.log(`  ${dim('Architecture / Design')}  ? ${c('yellow', rec.planning)}`);
+  console.log(`  ${dim('Implementation')}         ? ${c('cyan', rec.implementation)}`);
+  console.log(`  ${dim('Review / Audit')}         ? ${c('green', rec.review)}`);
   console.log(`  ${dim(rec.estimatedCostNote)}`);
-  this.separator('─');
+  this.separator('-');
   console.log('');
 }
 
 export function approvalPrompt(this: IChatRenderer, what: string): void {
   console.log('');
-  console.log(`  ${c('cyan', '┌')}${'─'.repeat(this._width - 2)}${c('cyan', '┐')}`);
-  console.log(`  ${c('cyan', '│')}  ${bold('✋ APPROVAL NEEDED')}${''.padEnd(this._width - 20)}${c('cyan', '│')}`);
-  console.log(`  ${c('cyan', '│')}  ${what}${''.padEnd(Math.max(0, this._width - 4 - what.length))}${c('cyan', '│')}`);
-  console.log(`  ${c('cyan', '└')}${'─'.repeat(this._width - 2)}${c('cyan', '┘')}`);
+  console.log(`  ${c('cyan', '+')}${'-'.repeat(this._width - 2)}${c('cyan', '+')}`);
+  console.log(`  ${c('cyan', '�')}  ${bold('? APPROVAL NEEDED')}${''.padEnd(this._width - 20)}${c('cyan', '�')}`);
+  console.log(`  ${c('cyan', '�')}  ${what}${''.padEnd(Math.max(0, this._width - 4 - what.length))}${c('cyan', '�')}`);
+  console.log(`  ${c('cyan', '+')}${'-'.repeat(this._width - 2)}${c('cyan', '+')}`);
   console.log('');
 }
 
 export function phaseSummary(this: IChatRenderer, phase: PlanPhase, lines: string[]): void {
   const meta = PHASE_META[phase];
   console.log('');
-  console.log(meta.color(`  ✓ ${meta.label} — COMPLETE`));
+  console.log(meta.color(`  ? ${meta.label} � COMPLETE`));
   for (const l of lines) {
     console.log(`    ${dim(l)}`);
   }
@@ -144,16 +144,16 @@ export function phaseSummary(this: IChatRenderer, phase: PlanPhase, lines: strin
 
 export function _statusIcon(this: IChatRenderer, status: BacklogItem['status']): string {
   switch (status) {
-    case 'answered': return c('green', '✅');
-    case 'blocked':  return c('yellow', '⏸');
-    case 'skipped':  return dim('⊘');
-    default:         return c('gray', '□');
+    case 'answered': return c('green', '?');
+    case 'blocked':  return c('yellow', '?');
+    case 'skipped':  return dim('?');
+    default:         return c('gray', '?');
   }
 }
 
 export function _progressBar(this: IChatRenderer, pct: number, width: number): string {
   const filled = Math.round((pct / 100) * width);
-  const bar = '█'.repeat(filled) + '░'.repeat(width - filled);
+  const bar = '�'.repeat(filled) + '�'.repeat(width - filled);
   const color = pct >= 100 ? 'green' : pct >= 50 ? 'cyan' : 'yellow';
   return `${colors[color]}[${bar}]${RESET} ${pct}%`;
 }

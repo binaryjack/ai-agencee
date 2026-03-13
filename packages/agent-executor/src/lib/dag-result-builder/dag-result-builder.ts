@@ -1,12 +1,25 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import type { DagResult, LaneResult } from '../dag-types.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { DagResult, LaneResult } from '../dag-types.js'
 
 export interface IDagResultBuilder {
   new(): IDagResultBuilder;
 }
 
-export const DagResultBuilder = function(this: IDagResultBuilder) {} as unknown as IDagResultBuilder;
+export interface IDagResultBuilderStatic {
+  new(): IDagResultBuilder;
+  build(params: {
+    dagName: string;
+    runId: string;
+    laneResults: LaneResult[];
+    startedAt: string;
+    completedAt: string;
+    totalDurationMs: number;
+  }): DagResult;
+  save(result: DagResult, resultsDir: string, projectRoot: string, log: (msg: string) => void): Promise<void>;
+}
+
+export const DagResultBuilder = function(this: IDagResultBuilder) {} as unknown as IDagResultBuilderStatic;
 
 (DagResultBuilder as unknown as Record<string, unknown>).build = function(params: {
   dagName: string;

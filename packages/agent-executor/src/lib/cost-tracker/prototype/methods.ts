@@ -1,4 +1,4 @@
-import type { RoutedResponse } from '../../model-router.js'
+import type { RoutedResponse } from '../../model-router/index.js'
 import type { ICostTracker } from '../cost-tracker.js'
 import type { LaneCostSummary, RunCostSummary } from '../cost-tracker.types.js'
 

@@ -126,9 +126,9 @@ export interface LLMProvider {
 
 // ─── Provider implementations (re-exported for backward compatibility) ────────
 
-export { AnthropicProvider } from './providers/anthropic.provider.js'
-export { MockProvider } from './providers/mock.provider.js'
-export { OpenAIProvider } from './providers/openai.provider.js'
-export { VSCodeSamplingProvider } from './providers/vscode-sampling.provider.js'
-export type { SamplingCallback } from './providers/vscode-sampling.provider.js'
+export { AnthropicProvider } from './providers/anthropic-provider/index.js';
+export { MockProvider } from './providers/mock-provider/index.js';
+export { OpenAIProvider } from './providers/openai-provider/index.js';
+export { VSCodeSamplingProvider } from './providers/vscode-sampling-provider/index.js';
+export type { SamplingCallback } from './providers/vscode-sampling-provider/index.js';
 

@@ -1,4 +1,4 @@
-import { DagBuilder, LaneBuilder } from '../lib/dag-builder.js'
+﻿import { DagBuilder, LaneBuilder } from '../lib/dag-builder/index.js'
 
 describe('DagBuilder', () => {
   describe('basic construction', () => {

@@ -19,7 +19,19 @@ import { discover, register, run } from './prototype/index.js'
 
 export const CheckHandlerRegistry = function(this: ICheckHandlerRegistry) {
   this._handlers = new Map();
-} as unknown as ICheckHandlerRegistry;
+} as unknown as {
+  new(): ICheckHandlerRegistry;
+  createDefault(modelRouter?: IModelRouter, onLlmResponse?: (response: RoutedResponse) => void): ICheckHandlerRegistry;
+  buildContext(
+    check: CheckDefinition,
+    projectRoot: string,
+    retryInstructions?: string,
+    modelRouter?: IModelRouter,
+    onLlmResponse?: (response: RoutedResponse) => void,
+    onLlmStream?: (token: string) => void,
+    toolExecutor?: ToolExecutorFn,
+  ): CheckContext;
+};
 
 Object.assign(CheckHandlerRegistry.prototype, { register, discover, run });
 

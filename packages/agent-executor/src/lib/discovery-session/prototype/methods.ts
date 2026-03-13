@@ -1,15 +1,16 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { promptUser } from '../../chat-renderer.js'
+import { promptUser } from '../../chat-renderer/index.js'
+import { PLAN_STATE_DIR } from '../../path-constants.js'
 import type { DiscoveryResult, StoryDefinition } from '../../plan-types.js'
 import {
-    buildModelRecommendation,
-    DiscoverySession,
-    IDiscoverySession,
-    parseLayers,
-    parseQuality,
-    parseStoryTypes,
-    QUESTION_BANK,
+  buildModelRecommendation,
+  DiscoverySession,
+  IDiscoverySession,
+  parseLayers,
+  parseQuality,
+  parseStoryTypes,
+  QUESTION_BANK,
 } from '../discovery-session.js'
 
 // ─── run ─────────────────────────────────────────────────────────────────────
@@ -237,7 +238,7 @@ export function _save(this: IDiscoverySession, result: DiscoveryResult): void {
 (DiscoverySession as unknown as Record<string, unknown>).load = function load(
   projectRoot: string,
 ): DiscoveryResult | null {
-  const file = path.join(projectRoot, '.agents', 'plan-state', 'discovery.json');
+  const file = path.join(projectRoot, PLAN_STATE_DIR, 'discovery.json');
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, 'utf-8')) as DiscoveryResult;
 };

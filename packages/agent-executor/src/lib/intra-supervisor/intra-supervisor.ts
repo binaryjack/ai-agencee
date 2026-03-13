@@ -6,7 +6,7 @@ import type {
     SupervisorConfig,
     SupervisorVerdict,
 } from '../dag-types.js';
-import './prototype/index.js';
+import { evaluate, getRuleFor, incrementRetry, isExhausted, retryCount } from './prototype/methods.js';
 
 export interface IIntraSupervisor {
   _config: SupervisorConfig;
@@ -19,8 +19,8 @@ export interface IIntraSupervisor {
   isExhausted(checkpointId: string): boolean;
   incrementRetry(checkpointId: string): number;
   retryCount(checkpointId: string): number;
-  laneId(): string;
-  retryBudget(): number;
+  laneId: string;
+  retryBudget: number;
   getRuleFor(checkpointId: string): SupervisorCheckpointRule | undefined;
 }
 
@@ -30,6 +30,8 @@ export const IntraSupervisor = function(
 ) {
   this._config = config;
   this._retryCounters = new Map<string, number>();
+  this.laneId = config.laneId;
+  this.retryBudget = config.retryBudget;
 } as unknown as {
   new(config: SupervisorConfig): IIntraSupervisor;
   fromFile(filePath: string): Promise<IIntraSupervisor>;
@@ -45,3 +47,12 @@ export const IntraSupervisor = function(
 (IntraSupervisor as unknown as Record<string, unknown>).noOp = function(laneId: string): IIntraSupervisor {
   return new IntraSupervisor({ laneId, retryBudget: 0, checkpoints: [] });
 };
+
+// Attach prototype methods after IntraSupervisor is defined (avoids circular-import race)
+Object.assign((IntraSupervisor as unknown as { prototype: object }).prototype, {
+  evaluate,
+  isExhausted,
+  incrementRetry,
+  retryCount,
+  getRuleFor,
+});

@@ -1,14 +1,14 @@
 import * as fs from 'fs/promises'
 import type { TaskType } from '../../../llm-provider.js'
-import type { RoutedResponse } from '../../../model-router.js'
+import type { RoutedResponse } from '../../../model-router/index.js'
 import type { CheckContext } from '../../check-context.js'
-import type { RawCheckResult } from '../../check-handler.interface.js'
+import type { RawCheckResult } from '../../check-handler.types.js'
 
 export async function execute(this: unknown, ctx: CheckContext): Promise<RawCheckResult> {
   if (!ctx.modelRouter) {
     return {
       passed:        true,
-      extraFindings: ['⚠️ llm-review skipped: no ModelRouter provided'],
+      extraFindings: ['?? llm-review skipped: no ModelRouter provided'],
     };
   }
 
@@ -25,7 +25,7 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
           entries.slice(0, 50).join('\n');
       }
     } catch {
-      // path not found — run the review with empty context
+      // path not found � run the review with empty context
     }
 
     const taskType        = (ctx.check.taskType as TaskType | undefined) ?? 'validation';
@@ -89,7 +89,7 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
   } catch (err) {
     return {
       passed:        false,
-      extraFindings: [`❌ LLM review failed: ${err}`],
+      extraFindings: [`? LLM review failed: ${err}`],
     };
   }
 }

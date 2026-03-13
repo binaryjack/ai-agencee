@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for distillation.ts
  * fs/promises and fs.existsSync are mocked to avoid real disk I/O.
  */
@@ -30,7 +30,7 @@ const mockExistsSync = fsSync.existsSync as jest.Mock;
 
 // ─── Import module under test ─────────────────────────────────────────────────
 
-import { buildExamplesBlock, loadExamples, saveExample } from '../lib/distillation.js'
+import { buildExamplesBlock, loadExamples, saveExample } from '../lib/distillation/index.js'
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 

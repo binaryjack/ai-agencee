@@ -1,10 +1,10 @@
-import * as path from 'path'
-import type { ChatRenderer } from '../chat-renderer.js'
+﻿import * as path from 'path'
+import type { IChatRenderer } from '../chat-renderer/index.js'
 import type { ActorId, BacklogItem, BacklogItemStatus } from '../plan-types.js'
 import './prototype/index.js'
 
 export interface IBacklogBoard {
-  _renderer: ChatRenderer;
+  _renderer: IChatRenderer;
   _stateDir: string;
   _items: Map<string, BacklogItem>;
   _seq: number;
@@ -35,7 +35,7 @@ export interface IBacklogBoard {
 
 export const BacklogBoard = function(
   this: IBacklogBoard,
-  renderer: ChatRenderer,
+  renderer: IChatRenderer,
   projectRoot: string,
 ) {
   this._renderer = renderer;
@@ -43,5 +43,5 @@ export const BacklogBoard = function(
   this._items = new Map<string, BacklogItem>();
   this._seq = 0;
 } as unknown as {
-  new(renderer: ChatRenderer, projectRoot: string): IBacklogBoard;
+  new(renderer: IChatRenderer, projectRoot: string): IBacklogBoard;
 };

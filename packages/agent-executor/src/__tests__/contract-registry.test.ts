@@ -1,5 +1,6 @@
-import { ContractRegistry } from '../lib/contract-registry';
-import { ContractSnapshot } from '../lib/dag-types';
+import type { IContractRegistry } from '../lib/contract-registry'
+import { ContractRegistry } from '../lib/contract-registry'
+import { ContractSnapshot } from '../lib/dag-types'
 
 // ─── helpers ───────────────────────────────────────────────────────────────────
 
@@ -12,7 +13,7 @@ const snap = (laneId: string): Omit<ContractSnapshot, 'version' | 'timestamp'> =
 // ─── publish / read ────────────────────────────────────────────────────────────
 
 describe('ContractRegistry', () => {
-  let registry: ContractRegistry;
+  let registry: IContractRegistry;
 
   beforeEach(() => {
     registry = new ContractRegistry();

@@ -1,21 +1,22 @@
 import { randomUUID } from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
-import { promptUser } from '../../chat-renderer.js'
+import { promptUser } from '../../chat-renderer/index.js'
 import type {
-    ActorId,
-    AlignmentGate,
-    DiscoveryResult,
-    PlanDefinition,
-    QualityGrade,
-    StepDefinition,
+  ActorId,
+  AlignmentGate,
+  DiscoveryResult,
+  PlanDefinition,
+  QualityGrade,
+  StepDefinition,
 } from '../../plan-types.js'
-import { PromptRegistry } from '../../prompt-registry.js'
+import type { IPromptRegistry } from '../../prompt-registry/index.js'
+import { PromptRegistry } from '../../prompt-registry/index.js'
 import {
-    buildSteps,
-    IPlanSynthesizer,
-    PlanSynthesizer,
-    selectAgents,
+  buildSteps,
+  IPlanSynthesizer,
+  PlanSynthesizer,
+  selectAgents,
 } from '../plan-synthesizer.js'
 
 // ─── synthesize ───────────────────────────────────────────────────────────────
@@ -233,7 +234,7 @@ export async function _processApprovalFeedback(
 
 // ─── _ensurePromptRegistry ────────────────────────────────────────────────────
 
-export async function _ensurePromptRegistry(this: IPlanSynthesizer): Promise<PromptRegistry> {
+export async function _ensurePromptRegistry(this: IPlanSynthesizer): Promise<IPromptRegistry> {
   if (!this._promptRegistry) {
     this._promptRegistry = new PromptRegistry(this._promptsDir);
     await this._promptRegistry.loadAll();

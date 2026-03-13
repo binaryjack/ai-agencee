@@ -1,23 +1,4 @@
-/**
- * G-50: LLM-as-judge Evaluation Harness
- *
- * Runs a suite of (input, expected) test cases through an agent pipeline and
- * scores each response using a judge model.  Produces a structured EvalReport
- * that can be written to disk, printed as a table, or compared across runs.
- *
- * Usage:
- *   import { runEval } from './eval-harness.js';
- *   const report = await runEval({
- *     name: 'code-review-quality',
- *     cases: [...],
- *     judgeProvider,
- *     judgeModelId: 'claude-opus-4',
- *     taskFn: async (input) => myAgent.complete(input),
- *   });
- *   console.table(report.cases.map(c => ({ id: c.id, score: c.score, pass: c.pass })));
- */
-
-import type { LLMProvider } from './llm-provider.js'
+import type { LLMProvider } from '../llm-provider.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -119,7 +100,6 @@ export async function runEval(options: RunEvalOptions): Promise<EvalReport> {
 
   const results: EvalCaseResult[] = [];
 
-  // Process in chunks to respect concurrency
   for (let i = 0; i < cases.length; i += concurrency) {
     const chunk = cases.slice(i, i + concurrency);
     const chunkResults = await Promise.all(chunk.map((c) => runSingleCase(c, taskFn, judgeProvider, judgeModelId, passThreshold)));
@@ -164,7 +144,6 @@ async function runSingleCase(
 
   const durationMs = Date.now() - start;
 
-  // Judge
   let score = 0;
   let reasoning = error ? `Task errored: ${error}` : 'Could not obtain judge score';
 
@@ -179,8 +158,7 @@ async function runSingleCase(
         judgeModelId
       );
 
-      // Strip possible markdown fences
-      const raw = judgeResp.content.replace(/^```[a-z]*\n?/i, '').replace(/```$/,'').trim();
+      const raw = judgeResp.content.replace(/^```[a-z]*\n?/i, '').replace(/```$/, '').trim();
       const parsed = JSON.parse(raw) as { score: number; reasoning: string };
       score = Math.max(0, Math.min(1, Number(parsed.score)));
       reasoning = parsed.reasoning ?? '';
@@ -202,7 +180,6 @@ async function runSingleCase(
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-/** Print a compact ASCII table of results to a string. */
 export function formatEvalReport(report: EvalReport): string {
   const lines: string[] = [
     `Eval: ${report.name}  run=${report.runId}`,

@@ -1,16 +1,16 @@
-import * as path from 'path';
-import type { ChatRenderer } from '../chat-renderer.js';
-import type { ModelRouter } from '../model-router.js';
+import * as path from 'path'
+import type { IChatRenderer } from '../chat-renderer/index.js'
+import type { IModelRouter } from '../model-router/index.js'
 import type {
-    ActorId,
-    DiscoveryResult,
-    PlanDefinition,
-    PlanItemStatus,
-    StepDefinition,
-} from '../plan-types.js';
-import { PromptRegistry } from '../prompt-registry.js';
+  ActorId,
+  DiscoveryResult,
+  PlanDefinition,
+  PlanItemStatus,
+  StepDefinition,
+} from '../plan-types.js'
+import type { IPromptRegistry } from '../prompt-registry/index.js'
 
-export type { ActorId, DiscoveryResult, PlanDefinition, StepDefinition };
+export type { ActorId, DiscoveryResult, PlanDefinition, StepDefinition }
 
 // ─── Module-level helpers (preserved as exports) ─────────────────────────────
 
@@ -177,11 +177,11 @@ export function buildSteps(discovery: DiscoveryResult, agents: ActorId[]): StepD
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface IPlanSynthesizer {
-  _renderer:       ChatRenderer;
+  _renderer:       IChatRenderer;
   _stateDir:       string;
-  _modelRouter:    ModelRouter | undefined;
+  _modelRouter:    IModelRouter | undefined;
   _promptsDir:     string;
-  _promptRegistry: PromptRegistry | undefined;
+  _promptRegistry: IPromptRegistry | undefined;
 
   synthesize(discovery: DiscoveryResult):                                         Promise<PlanDefinition>;
   _buildStepsWithFallback(discovery: DiscoveryResult, agents: ActorId[]):        Promise<StepDefinition[]>;
@@ -191,15 +191,15 @@ export interface IPlanSynthesizer {
     steps:     StepDefinition[],
     discovery: DiscoveryResult,
   ):                                                                               Promise<string>;
-  _ensurePromptRegistry():                                                        Promise<PromptRegistry>;
+  _ensurePromptRegistry():                                                        Promise<IPromptRegistry>;
   _save(plan: PlanDefinition):                                                    void;
 }
 
 export const PlanSynthesizer = function PlanSynthesizer(
   this: IPlanSynthesizer,
-  renderer:    ChatRenderer,
+  renderer:    IChatRenderer,
   projectRoot: string,
-  modelRouter?: ModelRouter,
+  modelRouter?: IModelRouter,
   promptsDir?:  string,
 ) {
   this._renderer       = renderer;
@@ -208,6 +208,6 @@ export const PlanSynthesizer = function PlanSynthesizer(
   this._promptsDir     = promptsDir ?? path.join(projectRoot, 'agents', 'prompts');
   this._promptRegistry = undefined;
 } as unknown as {
-  new (renderer: ChatRenderer, projectRoot: string, modelRouter?: ModelRouter, promptsDir?: string): IPlanSynthesizer;
+  new (renderer: IChatRenderer, projectRoot: string, modelRouter?: IModelRouter, promptsDir?: string): IPlanSynthesizer;
   load(projectRoot: string): PlanDefinition | null;
 };

@@ -1,18 +1,19 @@
-import * as path from 'path';
+import * as path from 'path'
+import { RATE_LIMITS_FILE } from '../path-constants.js'
 import {
-    _empty,
-    _getState,
-    _load,
-    _nextMidnightMs,
-    _save,
-    _utcDate,
-    acquireRun,
-    assertWithinLimits,
-    getStatus,
-    recordTokens,
-    reset,
-} from './prototype/index.js';
-import type { PrincipalState, RateLimitConfig, RateLimitStatus } from './rate-limiter.types.js';
+  _empty,
+  _getState,
+  _load,
+  _nextMidnightMs,
+  _save,
+  _utcDate,
+  acquireRun,
+  assertWithinLimits,
+  getStatus,
+  recordTokens,
+  reset,
+} from './prototype/index.js'
+import type { PrincipalState, RateLimitConfig, RateLimitStatus } from './rate-limiter.types.js'
 
 export interface IRateLimiter {
   new(projectRoot: string): IRateLimiter;
@@ -36,7 +37,7 @@ export interface IRateLimiter {
 }
 
 export const RateLimiter = function(this: IRateLimiter, projectRoot: string) {
-  this._statePath = path.join(projectRoot, '.agents', 'rate-limits.json');
+  this._statePath = path.join(projectRoot, RATE_LIMITS_FILE);
   this._state     = {};
   this._loaded    = false;
 } as unknown as IRateLimiter;

@@ -1,6 +1,7 @@
-import * as readline from 'readline';
-import type { CheckpointPayload, SupervisorVerdict } from '../../../dag-types.js';
-import type { IInteractiveHumanReviewGate } from '../interactive-human-review-gate.js';
+import * as readline from 'readline'
+import type { CheckpointPayload, SupervisorVerdict } from '../../../dag-types.js'
+import { VERDICT } from '../../../dag-types.js'
+import type { IInteractiveHumanReviewGate } from '../interactive-human-review-gate.js'
 
 export async function prompt(
   this: IInteractiveHumanReviewGate,
@@ -14,7 +15,7 @@ export async function prompt(
   process.stdout.write('  🔔  HUMAN REVIEW CHECKPOINT\n');
   process.stdout.write(`  Checkpoint : ${payload.checkpointId}\n`);
   process.stdout.write(`  Supervisor : ${verdict.type}`);
-  if (verdict.type === 'RETRY') {
+  if (verdict.type === VERDICT.RETRY) {
     process.stdout.write(` ("${verdict.instructions ?? ''}")`);
   }
   process.stdout.write('\n');
@@ -32,11 +33,11 @@ export async function prompt(
     rl.once('line', (input) => {
       rl.close();
       const ch = input.trim().toLowerCase();
-      if (ch === 'a') return resolve({ type: 'APPROVE' });
-      if (ch === 'r') return resolve({ type: 'RETRY', instructions: 'Human-requested retry' });
+      if (ch === 'a') return resolve({ type: VERDICT.APPROVE });
+      if (ch === 'r') return resolve({ type: VERDICT.RETRY, instructions: 'Human-requested retry' });
       if (ch === 'e') {
         return resolve({
-          type: 'ESCALATE',
+          type: VERDICT.ESCALATE,
           reason: 'Human escalated at review checkpoint',
         });
       }

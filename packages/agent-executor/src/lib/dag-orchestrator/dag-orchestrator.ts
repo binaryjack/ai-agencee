@@ -1,5 +1,6 @@
-import * as path from 'path';
-import type { DagRunOptions } from '../dag-orchestrator.js';
+import * as path from 'path'
+import { RESULTS_DIR } from '../path-constants.js'
+import type { DagRunOptions } from './dag-run-options.types.js'
 
 // ─── IDagOrchestrator ────────────────────────────────────────────────────────
 
@@ -29,10 +30,11 @@ export const DagOrchestrator = function DagOrchestrator(
   this._options     = options ?? {};
   this._verbose     = options?.verbose ?? false;
   this._resultsDir  =
-    options?.resultsDir ?? path.join(projectRoot, '.agents', 'results');
+    options?.resultsDir ?? path.join(projectRoot, RESULTS_DIR);
 } as unknown as new (
   projectRoot: string,
   options?: DagRunOptions,
 ) => IDagOrchestrator;
 
-export { type DagRunOptions };
+export { type DagRunOptions }
+

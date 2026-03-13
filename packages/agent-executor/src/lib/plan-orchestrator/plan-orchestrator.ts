@@ -1,16 +1,17 @@
-import * as path from 'path';
-import type { ChatRenderer } from '../chat-renderer.js';
-import type { DagResult } from '../dag-types.js';
-import type { ModelRouter } from '../model-router.js';
+import * as path from 'path'
+import type { IChatRenderer } from '../chat-renderer/index.js'
+import type { DagResult } from '../dag-types.js'
+import type { IModelRouter } from '../model-router/index.js'
+import { PLAN_STATE_DIR } from '../path-constants.js'
 import type {
-    DiscoveryResult,
-    PlanDefinition,
-    PlanPhase,
-    PlanRunOptions,
-    StepDefinition,
-} from '../plan-types.js';
+  DiscoveryResult,
+  PlanDefinition,
+  PlanPhase,
+  PlanRunOptions,
+  StepDefinition,
+} from '../plan-types.js'
 
-export type { DagResult, DiscoveryResult, PlanDefinition, PlanPhase, StepDefinition };
+export type { DagResult, DiscoveryResult, PlanDefinition, PlanPhase, StepDefinition }
 
 export interface PlanStepResult {
   stepId:     string;
@@ -34,20 +35,20 @@ export interface PlanResult {
 
 export interface IPlanOrchestrator {
   _projectRoot: string;
-  _options:     Required<Omit<PlanRunOptions, 'modelRouter'>> & { modelRouter?: ModelRouter };
-  _renderer:    ChatRenderer;
+  _options:     Required<Omit<PlanRunOptions, 'modelRouter'>> & { modelRouter?: IModelRouter };
+  _renderer:    IChatRenderer;
   _stateDir:    string;
-  _modelRouter: ModelRouter | undefined;
+  _modelRouter: IModelRouter | undefined;
 
   run():                                                                        Promise<PlanResult>;
-  _executeSteps(plan: PlanDefinition, r: ChatRenderer):                        Promise<PlanStepResult[]>;
+  _executeSteps(plan: PlanDefinition, r: IChatRenderer):                        Promise<PlanStepResult[]>;
   _runStep(step: StepDefinition, plan: PlanDefinition):                        Promise<PlanStepResult>;
   _topoGroups(steps: StepDefinition[]):                                        StepDefinition[][];
   _shouldRun(phase: PlanPhase):                                                boolean;
   _inferDagFile(step: StepDefinition, plan: PlanDefinition):                  string | null;
   _savePlan(plan: PlanDefinition):                                              void;
   _waitForAnyInput():                                                           Promise<void>;
-  _printSummary(result: PlanResult, r: ChatRenderer):                          void;
+  _printSummary(result: PlanResult, r: IChatRenderer):                          void;
 }
 
 export const PlanOrchestrator = function PlanOrchestrator(
@@ -55,10 +56,10 @@ export const PlanOrchestrator = function PlanOrchestrator(
   projectRoot: string,
   options: PlanRunOptions = {},
 ) {
-  const ChatRendererCtor = require('../chat-renderer.js').ChatRenderer as new () => ChatRenderer;
+  const ChatRendererCtor = require('../chat-renderer/index.js').ChatRenderer as new () => IChatRenderer;
 
   this._projectRoot = path.resolve(projectRoot);
-  this._modelRouter = options.modelRouter as ModelRouter | undefined;
+  this._modelRouter = options.modelRouter as IModelRouter | undefined;
   this._options     = {
     startFrom:    options.startFrom    ?? 'discover',
     skipApproval: options.skipApproval ?? false,
@@ -67,5 +68,5 @@ export const PlanOrchestrator = function PlanOrchestrator(
     verbose:      options.verbose      ?? true,
   };
   this._renderer = new ChatRendererCtor();
-  this._stateDir = path.join(this._projectRoot, '.agents', 'plan-state');
+  this._stateDir = path.join(this._projectRoot, PLAN_STATE_DIR);
 } as unknown as new (projectRoot: string, options?: PlanRunOptions) => IPlanOrchestrator;

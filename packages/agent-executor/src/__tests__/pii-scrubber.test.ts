@@ -1,4 +1,5 @@
 import type { LLMPrompt, LLMProvider, LLMResponse, ToolExecutorFn } from '../lib/llm-provider'
+import type { IPiiScrubber } from '../lib/pii-scrubber'
 import { createPiiSafeProvider, PiiScrubber, ScrubResult } from '../lib/pii-scrubber'
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -23,7 +24,7 @@ const prompt = (content: string): LLMPrompt => ({
 // ─── PiiScrubber ─────────────────────────────────────────────────────────────
 
 describe('PiiScrubber', () => {
-  let scrubber: PiiScrubber
+  let scrubber: IPiiScrubber
 
   beforeEach(() => {
     scrubber = new PiiScrubber()

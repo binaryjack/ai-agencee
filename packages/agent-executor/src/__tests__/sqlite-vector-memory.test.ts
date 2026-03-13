@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for SqliteVectorMemory
  *
  * Because `better-sqlite3` is a native module and may not be installed in CI,
@@ -99,7 +99,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
     }, { virtual: true });
 
     // Re-import the module fresh
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
 
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
     expect(mem).toBeDefined();
@@ -111,7 +111,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
       throw new Error('MODULE_NOT_FOUND');
     }, { virtual: true });
 
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
 
     // Should not throw
@@ -124,7 +124,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
       throw new Error('MODULE_NOT_FOUND');
     }, { virtual: true });
 
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
 
     const results = await mem.search([1, 0, 0], { topK: 5 });
@@ -137,7 +137,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
       throw new Error('MODULE_NOT_FOUND');
     }, { virtual: true });
 
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
 
     expect(await mem.size()).toBe(0);
@@ -149,7 +149,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
       throw new Error('MODULE_NOT_FOUND');
     }, { virtual: true });
 
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
 
     await expect(mem.delete('id1')).resolves.toBeUndefined();
@@ -161,7 +161,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
       throw new Error('MODULE_NOT_FOUND');
     }, { virtual: true });
 
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
 
     await expect(mem.clear()).resolves.toBeUndefined();
@@ -173,7 +173,7 @@ describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
       throw new Error('MODULE_NOT_FOUND');
     }, { virtual: true });
 
-    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory.js') as typeof import('../lib/sqlite-vector-memory.js');
+    const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
 
     expect(() => mem.close()).not.toThrow();

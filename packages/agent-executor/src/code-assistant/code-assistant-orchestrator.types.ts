@@ -2,14 +2,18 @@
  * Type definitions for Code Assistant orchestrator
  */
 
+import type { IIndexerAuditLog } from './indexer/codebase-indexer.types';
+import type { ParserRegistryInstance } from './parsers/parser-registry';
+import type { CodebaseIndexStoreInstance } from './storage/codebase-index-store.types';
+
 export type CodeAssistantOptions = {
   projectRoot: string;
   dagPath?: string;
   budgetCap?: number;
   modelProvider?: string;
-  indexStore?: any; // CodebaseIndexStore
-  parserRegistry?: any; // ParserRegistry
-  auditLog?: any; // AuditLog
+  indexStore?: CodebaseIndexStoreInstance;
+  parserRegistry?: ParserRegistryInstance;
+  auditLog?: IIndexerAuditLog;
 };
 
 export type ExecutionRequest = {
@@ -25,7 +29,7 @@ export type ExecutionResult = {
   newFiles?: string[];
   totalCost: number;
   duration: number;
-  plan?: any;
+  plan?: unknown;
   planId?: string;
   error?: string;
   rollback?: boolean;

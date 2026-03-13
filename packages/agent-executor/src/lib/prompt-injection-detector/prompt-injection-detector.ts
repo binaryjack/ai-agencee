@@ -21,7 +21,7 @@ export interface InjectionDetectorOptions {
 }
 
 // Error subclass — kept as class
-export class PromptInjectionError extends Error {
+class PromptInjectionError extends Error {
   readonly scanResult: InjectionScanResult;
 
   constructor(result: InjectionScanResult) {
@@ -31,6 +31,7 @@ export class PromptInjectionError extends Error {
     this.scanResult = result;
   }
 }
+export { PromptInjectionError };
 
 export const BUILT_IN_SIGNATURES: InjectionSignature[] = [
   {

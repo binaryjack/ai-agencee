@@ -7,7 +7,7 @@
 
 import type { CheckDefinition } from '../agent-types.js'
 import type { StepResult } from '../check-runner.js'
-import type { RawCheckResult } from './check-handler.interface.js'
+import type { RawCheckResult } from './check-handler.types.js'
 
 /**
  * Interpolate `{count}`, `{value}`, `{path}`, `{pattern}`, `{field}`

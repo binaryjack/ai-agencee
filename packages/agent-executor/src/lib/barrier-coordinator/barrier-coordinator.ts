@@ -1,13 +1,13 @@
-import type { IContractRegistry } from '../contract-registry/index.js';
-import type { BarrierResolution, CheckpointPayload } from '../dag-types.js';
+import type { IContractRegistry } from '../contract-registry/index.js'
+import type { BarrierResolution, CheckpointPayload } from '../dag-types.js'
 import {
-    _resolveHardBarrier,
-    _resolveReadContract,
-    _resolveSelf,
-    _resolveSoftAlign,
-    resolve,
-    resolveGlobalBarrier,
-} from './prototype/index.js';
+  _resolveHardBarrier,
+  _resolveReadContract,
+  _resolveSelf,
+  _resolveSoftAlign,
+  resolve,
+  resolveGlobalBarrier,
+} from './prototype/index.js'
 
 export interface IBarrierCoordinator {
   new(registry: IContractRegistry): IBarrierCoordinator;
@@ -28,7 +28,10 @@ export const BarrierCoordinator = function(
   registry: IContractRegistry,
 ) {
   this._registry = registry;
-} as unknown as IBarrierCoordinator;
+} as unknown as {
+  new(registry: IContractRegistry): IBarrierCoordinator;
+  DEFAULT_TIMEOUT_MS: number;
+};
 
 /** Default timeout when a checkpoint does not specify one (ms) */
 (BarrierCoordinator as unknown as Record<string, unknown>).DEFAULT_TIMEOUT_MS = 5_000;

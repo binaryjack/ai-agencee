@@ -1,13 +1,13 @@
-import * as path from 'path';
-import type { IBacklogBoard } from '../backlog/index.js';
-import type { ChatRenderer } from '../chat-renderer.js';
-import type { IModelRouter } from '../model-router/index.js';
-import type { ActorId, DecisionOption, PlanDefinition } from '../plan-types.js';
-import { ArchResolutionTier } from '../resolution-tiers/arch-resolution-tier/index.js';
-import { BAResolutionTier } from '../resolution-tiers/ba-resolution-tier/index.js';
-import { POEscalationTier } from '../resolution-tiers/po-escalation-tier/index.js';
-import type { ResolutionTier } from '../resolution-tiers/resolution-tiers.types.js';
-import './prototype/index.js';
+﻿import * as path from 'path'
+import type { IBacklogBoard } from '../backlog/index.js'
+import type { IChatRenderer } from '../chat-renderer/index.js'
+import type { IModelRouter } from '../model-router/index.js'
+import type { ActorId, DecisionOption, PlanDefinition } from '../plan-types.js'
+import { ArchResolutionTier } from '../resolution-tiers/arch-resolution-tier/index.js'
+import { BAResolutionTier } from '../resolution-tiers/ba-resolution-tier/index.js'
+import { POEscalationTier } from '../resolution-tiers/po-escalation-tier/index.js'
+import type { ResolutionTier } from '../resolution-tiers/resolution-tiers.types.js'
+import './prototype/index.js'
 
 export interface ArbiterDecision {
   id: string;
@@ -22,7 +22,7 @@ export interface ArbiterDecision {
 }
 
 export interface IArbiter {
-  _renderer: ChatRenderer;
+  _renderer: IChatRenderer;
   _stateDir: string;
   _modelRouter?: IModelRouter;
   _decisions: ArbiterDecision[];
@@ -44,7 +44,7 @@ export interface IArbiter {
 
 export const Arbiter = function(
   this: IArbiter,
-  renderer: ChatRenderer,
+  renderer: IChatRenderer,
   projectRoot: string,
   modelRouter?: IModelRouter,
   tiers?: ResolutionTier[],
@@ -60,7 +60,7 @@ export const Arbiter = function(
   ];
 } as unknown as {
   new(
-    renderer: ChatRenderer,
+    renderer: IChatRenderer,
     projectRoot: string,
     modelRouter?: IModelRouter,
     tiers?: ResolutionTier[],

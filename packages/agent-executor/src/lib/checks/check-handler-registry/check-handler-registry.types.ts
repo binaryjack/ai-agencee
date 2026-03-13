@@ -1,7 +1,7 @@
 import type { CheckType } from '../../agent-types.js';
 import type { StepResult } from '../../check-runner.js';
 import type { CheckContext } from '../check-context.js';
-import type { ICheckHandler } from '../check-handler.interface.js';
+import type { ICheckHandler } from '../check-handler.types.js';
 
 export interface ICheckHandlerRegistry {
   new(): ICheckHandlerRegistry;

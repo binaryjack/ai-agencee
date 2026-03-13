@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unit tests for IssueSync — E11 Jira/Linear integration.
  * All HTTP calls are intercepted via global.fetch mock.
  */
@@ -27,7 +27,7 @@ function mockFetch(body: unknown, ok = true, status = 200) {
   } as Partial<Response>);
 }
 
-const DAG_FAILED: import('../lib/dag-events.js').DagEndEvent = {
+const DAG_FAILED: import('../lib/dag-events/index.js').DagEndEvent = {
   runId:       'run-abc',
   dagName:     'deployment-dag',
   status:      'failed',
@@ -35,7 +35,7 @@ const DAG_FAILED: import('../lib/dag-events.js').DagEndEvent = {
   timestamp:   '2026-03-05T10:00:00.000Z',
 };
 
-const DAG_PARTIAL: import('../lib/dag-events.js').DagEndEvent = {
+const DAG_PARTIAL: import('../lib/dag-events/index.js').DagEndEvent = {
   runId:       'run-def',
   dagName:     'ci-dag',
   status:      'partial',
@@ -43,7 +43,7 @@ const DAG_PARTIAL: import('../lib/dag-events.js').DagEndEvent = {
   timestamp:   '2026-03-05T11:00:00.000Z',
 };
 
-const DAG_SUCCESS: import('../lib/dag-events.js').DagEndEvent = {
+const DAG_SUCCESS: import('../lib/dag-events/index.js').DagEndEvent = {
   runId:       'run-ghi',
   dagName:     'ci-dag',
   status:      'success',
@@ -55,7 +55,7 @@ const DAG_SUCCESS: import('../lib/dag-events.js').DagEndEvent = {
 
 describe('IssueSync.fromEnv()', () => {
   it('returns undefined when no env vars are set', async () => {
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     expect(IssueSync.fromEnv()).toBeUndefined();
   });
 
@@ -65,7 +65,7 @@ describe('IssueSync.fromEnv()', () => {
     process.env['JIRA_TOKEN']   = 'token123';
     process.env['JIRA_PROJECT'] = 'AIKIT';
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync = IssueSync.fromEnv();
     expect(sync).toBeDefined();
   });
@@ -74,7 +74,7 @@ describe('IssueSync.fromEnv()', () => {
     process.env['LINEAR_API_KEY'] = 'lin_api_123';
     process.env['LINEAR_TEAM_ID'] = 'team-uuid';
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync = IssueSync.fromEnv();
     expect(sync).toBeDefined();
   });
@@ -87,7 +87,7 @@ describe('IssueSync.fromEnv()', () => {
     process.env['LINEAR_API_KEY'] = 'lin_api_123';
     process.env['LINEAR_TEAM_ID'] = 'team-uuid';
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync = IssueSync.fromEnv() as NonNullable<ReturnType<typeof IssueSync.fromEnv>>;
 
     // Cast to access internal opts for verification
@@ -113,7 +113,7 @@ describe('IssueSync — Jira', () => {
       self: 'https://myteam.atlassian.net/rest/api/3/issue/10001',
     });
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync = new IssueSync({ provider: 'jira', jira: JIRA_CONFIG });
 
     const issue = await sync.createIssueForRun(DAG_FAILED);
@@ -140,7 +140,7 @@ describe('IssueSync — Jira', () => {
       },
     );
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     await new IssueSync({ provider: 'jira', jira: JIRA_CONFIG }).createIssueForRun(DAG_FAILED);
 
     expect(capturedUrl).toBe('https://myteam.atlassian.net/rest/api/3/issue');
@@ -160,7 +160,7 @@ describe('IssueSync — Jira', () => {
       },
     );
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     await new IssueSync({ provider: 'jira', jira: JIRA_CONFIG }).createIssueForRun(DAG_FAILED);
 
     const expected = 'Basic ' + Buffer.from('bot@example.com:jira-token').toString('base64');
@@ -181,7 +181,7 @@ describe('IssueSync — Jira', () => {
       },
     );
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync = new IssueSync({ provider: 'jira', jira: JIRA_CONFIG });
 
     await sync.createIssueForRun(DAG_FAILED);
@@ -194,7 +194,7 @@ describe('IssueSync — Jira', () => {
 
   it('returns undefined for a successful run', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch({});
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync   = new IssueSync({ provider: 'jira', jira: JIRA_CONFIG });
     const result = await sync.createIssueForRun(DAG_SUCCESS);
     expect(result).toBeUndefined();
@@ -202,7 +202,7 @@ describe('IssueSync — Jira', () => {
 
   it('respects failuresOnly flag — skips partial', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch({});
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync   = new IssueSync({ provider: 'jira', jira: JIRA_CONFIG, failuresOnly: true });
     const result = await sync.createIssueForRun(DAG_PARTIAL);
     expect(result).toBeUndefined();
@@ -211,7 +211,7 @@ describe('IssueSync — Jira', () => {
 
   it('throws on non-ok HTTP response', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch('Unauthorized', false, 401);
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     await expect(
       new IssueSync({ provider: 'jira', jira: JIRA_CONFIG }).createIssueForRun(DAG_FAILED)
     ).rejects.toThrow(/401/);
@@ -242,7 +242,7 @@ describe('IssueSync — Linear', () => {
   it('creates an issue on Linear for a failed run', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch(LINEAR_SUCCESS_RESP);
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync  = new IssueSync({ provider: 'linear', linear: LINEAR_CONFIG });
     const issue = await sync.createIssueForRun(DAG_FAILED);
 
@@ -266,7 +266,7 @@ describe('IssueSync — Linear', () => {
       },
     );
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     await new IssueSync({ provider: 'linear', linear: LINEAR_CONFIG }).createIssueForRun(DAG_FAILED);
 
     expect(capturedUrl).toBe('https://api.linear.app/graphql');
@@ -285,7 +285,7 @@ describe('IssueSync — Linear', () => {
       },
     );
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     await new IssueSync({ provider: 'linear', linear: LINEAR_CONFIG }).createIssueForRun(DAG_FAILED);
 
     expect(capturedAuth).toBe('lin_api_test');
@@ -295,7 +295,7 @@ describe('IssueSync — Linear', () => {
     const errResp = { errors: [{ message: 'Not authenticated' }] };
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch(errResp);
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     await expect(
       new IssueSync({ provider: 'linear', linear: LINEAR_CONFIG }).createIssueForRun(DAG_FAILED),
     ).rejects.toThrow('Not authenticated');
@@ -314,7 +314,7 @@ describe('IssueSync — Linear', () => {
       },
     );
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
     const sync = new IssueSync({ provider: 'linear', linear: LINEAR_CONFIG });
 
     await sync.createIssueForRun(DAG_FAILED);
@@ -332,8 +332,8 @@ describe('IssueSync — event bus', () => {
   it('attaches and fires on dag:end events', async () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch({ id: '1', key: 'A-1', self: '' });
 
-    const { IssueSync } = await import('../lib/issue-sync.js');
-    const { DagEventBus } = await import('../lib/dag-events.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
+    const { DagEventBus } = await import('../lib/dag-events/index.js');
 
     const bus  = new DagEventBus();
     const sync = new IssueSync({
@@ -363,8 +363,8 @@ describe('IssueSync — event bus', () => {
   });
 
   it('detach() stops creating issues', async () => {
-    const { IssueSync } = await import('../lib/issue-sync.js');
-    const { DagEventBus } = await import('../lib/dag-events.js');
+    const { IssueSync } = await import('../lib/issue-sync/index.js');
+    const { DagEventBus } = await import('../lib/dag-events/index.js');
 
     const fetchMock = mockFetch({ id: '1', key: 'A-1', self: '' });
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;

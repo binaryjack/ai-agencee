@@ -1,26 +1,28 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import type { AgentResult } from '../../agent-types.js';
-import type { AuditLog } from '../../audit-log.js';
-import type { BarrierCoordinator } from '../../barrier-coordinator.js';
-import type { ContractRegistry } from '../../contract-registry.js';
-import type { CostTracker } from '../../cost-tracker.js';
-import { getGlobalEventBus } from '../../dag-events.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { AgentResult } from '../../agent-types.js'
+import type { IAuditLog } from '../../audit-log/index.js'
+import type { IBarrierCoordinator } from '../../barrier-coordinator/index.js'
+import type { IContractRegistry } from '../../contract-registry/index.js'
+import type { ICostTracker } from '../../cost-tracker/index.js'
+import { getGlobalEventBus } from '../../dag-events/index.js'
 import type {
-    BarrierResolution,
-    CheckpointPayload,
-    CheckpointRecord,
-    ContractExports,
-    ContractSnapshot,
-    LaneDefinition,
-    LaneResult,
-    SupervisorVerdict,
-} from '../../dag-types.js';
-import { IntraSupervisor } from '../../intra-supervisor.js';
-import type { ModelRouter, RoutedResponse } from '../../model-router.js';
-import { getGlobalTracer } from '../../otel.js';
-import { EscalationError, SupervisedAgent } from '../../supervised-agent.js';
-import { ILaneExecutor, LaneExecutor } from '../lane-executor.js';
+  BarrierResolution,
+  CheckpointPayload,
+  CheckpointRecord,
+  ContractExports,
+  ContractSnapshot,
+  LaneDefinition,
+  LaneResult,
+  SupervisorVerdict,
+} from '../../dag-types.js'
+import { VERDICT } from '../../dag-types.js'
+import type { IIntraSupervisor } from '../../intra-supervisor/index.js'
+import { IntraSupervisor } from '../../intra-supervisor/index.js'
+import type { IModelRouter, RoutedResponse } from '../../model-router/index.js'
+import { getGlobalTracer } from '../../otel.js'
+import { EscalationError, SupervisedAgent } from '../../supervised-agent/index.js'
+import { ILaneExecutor, LaneExecutor } from '../lane-executor.js'
 
 // ─── runLane ──────────────────────────────────────────────────────────────────
 
@@ -62,7 +64,7 @@ export async function runLane(this: ILaneExecutor, lane: LaneDefinition): Promis
   const completedAt  = new Date().toISOString();
   const durationMs   = Date.now() - startMs;
   const totalRetries = checkpoints.reduce((sum, cp) => sum + cp.retryCount, 0);
-  const handoffsRecv = checkpoints.filter((cp) => cp.verdict.type === 'HANDOFF').length;
+  const handoffsRecv = checkpoints.filter((cp) => cp.verdict.type === VERDICT.HANDOFF).length;
   const finalStatus  = agentResult ? 'success' : laneStatus;
 
   laneSpan
@@ -110,7 +112,7 @@ export async function driveLane(
   const agentFilePath = path.resolve(this._agentsBaseDir, lane.agentFile);
   const agent         = await SupervisedAgent.fromFile(agentFilePath);
 
-  let supervisor: IntraSupervisor;
+  let supervisor: IIntraSupervisor;
   if (lane.supervisorFile) {
     const supPath = path.resolve(this._agentsBaseDir, lane.supervisorFile);
     supervisor = await IntraSupervisor.fromFile(supPath);
@@ -166,7 +168,7 @@ export async function driveLane(
     });
   };
 
-  const effectiveRouter: ModelRouter | undefined = lane.providerOverride && this._modelRouter
+  const effectiveRouter: IModelRouter | undefined = lane.providerOverride && this._modelRouter
     ? this._modelRouter.withProviderOverride(lane.providerOverride)
     : this._modelRouter;
 
@@ -174,7 +176,7 @@ export async function driveLane(
     this._projectRoot, 'self', publishContract, effectiveRouter, onLlmResponse, onLlmStream,
   );
 
-  let currentVerdict: SupervisorVerdict = { type: 'APPROVE' };
+  let currentVerdict: SupervisorVerdict = { type: VERDICT.APPROVE };
   let iteration = await generator.next(currentVerdict);
 
   while (!iteration.done) {
@@ -218,10 +220,10 @@ export async function driveLane(
 
     let retryCount = 0;
 
-    if (verdict.type === 'RETRY') {
+    if (verdict.type === VERDICT.RETRY) {
       if (supervisor.isExhausted(payload.checkpointId)) {
         verdict = {
-          type:     'ESCALATE',
+          type:     VERDICT.ESCALATE,
           reason:   `Retry budget exhausted for checkpoint "${payload.checkpointId}"`,
           evidence: { checkpointId: payload.checkpointId, laneId: lane.id },
         };
@@ -231,10 +233,10 @@ export async function driveLane(
       }
     }
 
-    if (verdict.type === 'HANDOFF') {
+    if (verdict.type === VERDICT.HANDOFF) {
       verdict = this.resolveHandoffTarget(verdict, lane.id);
 
-      if (verdict.type === 'HANDOFF' && verdict.targetLaneId) {
+      if (verdict.type === VERDICT.HANDOFF && verdict.targetLaneId) {
         const specialistLaneId = verdict.targetLaneId;
         const specialistLane   = await this.findHandoffLane(specialistLaneId, lane);
 
@@ -246,14 +248,14 @@ export async function driveLane(
           );
 
           if (handoffResult.agentResult) {
-            currentVerdict = { type: 'APPROVE' };
+            currentVerdict = { type: VERDICT.APPROVE };
             iteration      = await generator.next(currentVerdict);
             continue;
           }
         }
 
         verdict = {
-          type:     'ESCALATE',
+          type:     VERDICT.ESCALATE,
           reason:   `HANDOFF target lane "${specialistLaneId}" not found or failed`,
           evidence: { originalVerdict: verdict, laneId: lane.id },
         };
@@ -264,7 +266,7 @@ export async function driveLane(
       this.buildRecord(effectivePayload, verdict, retryCount, barrierResolution, checkpointStartMs),
     );
 
-    if (verdict.type === 'ESCALATE') {
+    if (verdict.type === VERDICT.ESCALATE) {
       await generator.return(null);
       throw new EscalationError(verdict.reason ?? 'Escalated', verdict);
     }
@@ -282,7 +284,7 @@ export function resolveHandoffTarget(
   verdict:      SupervisorVerdict,
   sourceLaneId: string,
 ): SupervisorVerdict {
-  if (verdict.type !== 'HANDOFF') return verdict;
+  if (verdict.type !== VERDICT.HANDOFF) return verdict;
   if (!verdict.targetLaneId) return verdict;
 
   const targetId = verdict.targetLaneId;
@@ -291,7 +293,7 @@ export function resolveHandoffTarget(
   const candidates = this._capabilityRegistry[targetId].filter((id) => id !== sourceLaneId);
   if (candidates.length === 0) {
     return {
-      type:     'ESCALATE',
+      type:     VERDICT.ESCALATE,
       reason:   `No lane with capability "${targetId}" found (excluding self "${sourceLaneId}")`,
       evidence: { capabilityRegistry: this._capabilityRegistry },
     };
@@ -386,14 +388,14 @@ export async function saveCheckpoints(
 export async function createAndRunLane(
   lane:                LaneDefinition,
   projectRoot:         string,
-  registry:            ContractRegistry,
-  coordinator:         BarrierCoordinator,
+  registry:            IContractRegistry,
+  coordinator:         IBarrierCoordinator,
   capabilityRegistry?: Record<string, string[]>,
-  modelRouter?:        ModelRouter,
-  costTracker?:        CostTracker,
+  modelRouter?:        IModelRouter,
+  costTracker?:        ICostTracker,
   interactive?:        boolean,
   agentsBaseDir?:      string,
-  auditLog?:           AuditLog,
+  auditLog?:           IAuditLog,
   checkpointBaseDir?:  string,
   runId?:              string,
 ): Promise<LaneResult> {

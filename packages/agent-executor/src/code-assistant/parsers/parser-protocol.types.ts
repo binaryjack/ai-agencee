@@ -4,19 +4,19 @@
 
 export type ParserOptions = {
   filePath?: string;
-  compilerOptions?: any;
-  [key: string]: any;
+  compilerOptions?: Record<string, unknown>;
+  [key: string]: unknown;
 };
 
 export type Parser = {
-  parse: (content: string, context?: ParserOptions) => Promise<any>;
-  extractSymbols: (ast: any) => Promise<import('../indexer/codebase-indexer.types').Symbol[]>;
-  extractImports: (ast: any) => Promise<import('../indexer/codebase-indexer.types').Import[]>;
-  extractExports: (ast: any) => Promise<import('../indexer/codebase-indexer.types').Export[]>;
-  typeCheck?: (filePath: string) => Promise<void>;
-  addImport?: (ast: any, importStatement: string) => any;
-  wrapFunction?: (ast: any, functionName: string, wrapper: string) => any;
-  print?: (ast: any, options?: PrintOptions) => string;
+  parse(content: string, context?: ParserOptions): Promise<unknown>;
+  extractSymbols(ast: unknown): Promise<import('../indexer/codebase-indexer.types').Symbol[]>;
+  extractImports(ast: unknown): Promise<import('../indexer/codebase-indexer.types').Import[]>;
+  extractExports(ast: unknown): Promise<import('../indexer/codebase-indexer.types').Export[]>;
+  typeCheck?(filePath: string): Promise<void>;
+  addImport?(ast: unknown, importStatement: string): unknown;
+  wrapFunction?(ast: unknown, functionName: string, wrapper: string): unknown;
+  print?(ast: unknown, options?: PrintOptions): string;
 };
 
 export type PrintOptions = {

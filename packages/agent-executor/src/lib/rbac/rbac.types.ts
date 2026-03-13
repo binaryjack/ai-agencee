@@ -30,7 +30,7 @@ export interface RbacPolicyFile {
   principals:   Record<string, RbacPrincipalDefinition>;
 }
 
-export class RbacDeniedError extends Error {
+class RbacDeniedError extends Error {
   constructor(
     public readonly principal: string,
     public readonly action:    string,
@@ -41,3 +41,4 @@ export class RbacDeniedError extends Error {
     this.name = 'RbacDeniedError';
   }
 }
+export { RbacDeniedError };
