@@ -30,7 +30,7 @@ pnpx @ai-agencee/cli <command>
 | `ai-kit data:export` | Export tenant run data (GDPR Art. 20) |
 | `ai-kit data:delete` | Delete tenant run data (GDPR Art. 17) |
 | `ai-kit data:list-tenants` | List all known tenant IDs |
-| `ai-kit code` | Index, search, and watch the codebase (Codernic / E14) |
+| `ai-kit code` | Index, search, generate, and watch the codebase (Codernic / E14) |
 | `ai-kit mcp` | Start the MCP server |
 
 ---
@@ -206,7 +206,7 @@ ai-kit data:list-tenants
 
 ## `ai-kit code`
 
-Codbase indexing, search, and watch commands powered by the Codernic (E14) module.  
+Codebase indexing, search, code generation, and watch commands powered by the Codernic (E14) module.  
 See [Feature 28: Codernic (E14)](./28-code-assistant.md) for full API and architecture details.
 
 ### `ai-kit code index`
@@ -262,6 +262,33 @@ ai-kit code watch --project /path/to/project
 ```
 
 Uses native file-system events — no polling. Press `Ctrl+C` to stop.
+
+### `ai-kit code generate <task>`
+
+Write or modify source files from a natural-language task description.  
+Codernic queries the live codebase index for relevant symbols, injects their signatures and file snippets into the LLM prompt, and applies the resulting `## FILE:` patches to disk.
+
+```bash
+# Feature development
+ai-kit code generate "add input validation to UserService.create"
+
+# Quick fix
+ai-kit code generate "fix the off-by-one in PaginationHelper" --mode quick-fix
+
+# Preview without writing
+ai-kit code generate "migrate AuthGuard to RbacPolicy API" --dry-run
+```
+
+| Flag | Description |
+|------|-------------|
+| `--mode <mode>` | `quick-fix` \| `feature` \| `refactor` \| `debug` (default: `feature`) |
+| `--dry-run` | Show the plan without writing files |
+| `--auto-approve` | Skip confirmation prompts (CI use) |
+| `--project <path>` | Project root (default: `cwd`) |
+| `--provider <name>` | LLM provider override: `anthropic` \| `openai` |
+| `--router <path>` | Explicit path to `model-router.json` |
+
+Requires `ai-kit code index` to have been run and at least one LLM API key.
 
 ---
 

@@ -22,8 +22,13 @@ Codernic is a codebase-aware coding agent that gives every LLM a structural unde
 ## Architecture
 
 ```
+┌──────────────────────────────┐
+│  CodeAssistantOrchestrator   │  Code WRITING — generate, refactor, fix
+└──────────────┬───────────────┘
+               │  queries index, builds prompt, writes file patches
+               ▼
 ┌─────────────────────┐
-│  CodebaseIndexer    │  Orchestrates indexing workflow
+│  CodebaseIndexer    │  Code READING — indexing workflow
 └──────────┬──────────┘
            │
            ├──> ParserRegistry ──> TypeScriptParser  (.ts, .js)
@@ -39,9 +44,24 @@ Codernic is a codebase-aware coding agent that gives every LLM a structural unde
                 └─> codebase_symbols_fts   (FTS5 search index)
 ```
 
+**Two distinct engines — both production-ready:**
+
+| Engine | Entry point | Purpose |
+|--------|-------------|---------|
+| `CodeAssistantOrchestrator` | `createCodeAssistantOrchestrator()` | Write / modify files from a natural-language task |
+| `CodebaseIndexer` | `createCodebaseIndexer()` | Index, search, and watch the codebase |
+
 ---
 
 ## Core Capabilities
+
+### 0. Code Generation (CodeAssistantOrchestrator)
+- **Natural-language tasks**: `"add input validation to UserService.create"` → writes the actual file
+- **Index-grounded output**: FTS5 search pulls real symbol signatures into the prompt — no hallucinated imports
+- **Four modes**: `quick-fix` · `feature` · `refactor` · `debug` (each maps to the right model family via ModelRouter)
+- **File-patch protocol**: LLM emits `## FILE:` / `## DELETE:` blocks; orchestrator applies them atomically
+- **Dry-run**: pass `dryRun: true` to preview the plan before spending tokens
+- **Prototype architecture**: constructor + `prototype/` split, zero circular imports — same pattern as `DagOrchestrator`
 
 ### 1. Multi-Language Parsing
 - **TypeScript/JavaScript**: Full ES6+ support via AST parsing — classes, methods, imports, exports, enums, types
@@ -86,6 +106,50 @@ Codernic is a codebase-aware coding agent that gives every LLM a structural unde
 ---
 
 ## API Reference
+
+### Code Generation
+
+```typescript
+import {
+  createCodeAssistantOrchestrator,
+} from '@ai-agencee/engine/code-assistant';
+
+const orchestrator = createCodeAssistantOrchestrator({
+  projectRoot: process.cwd(),
+  // Optional — if omitted, discovers agents/model-router.json or falls back
+  // to env vars (ANTHROPIC_API_KEY / OPENAI_API_KEY)
+});
+
+// Generate code from a natural-language task
+const result = await orchestrator.execute({
+  task: 'add input validation to UserService.create',
+  mode: 'feature',   // quick-fix | feature | refactor | debug
+});
+
+console.log(result.filesModified);  // ['src/services/user.service.ts']
+console.log(result.newFiles);       // ['src/validators/user.validator.ts']
+console.log(result.totalCost);      // e.g. 0.0018 USD
+
+// Dry run — preview the plan without writing any files
+const preview = await orchestrator.execute({
+  task: 'refactor AuthGuard to use the new RbacPolicy API',
+  mode: 'refactor',
+  dryRun: true,
+});
+console.log(preview.plan);  // raw LLM response with proposed changes
+```
+
+**How it works (internal pipeline):**
+1. `_openStore()` — opens the SQLite index for the project
+2. `_gatherContext()` — FTS5 keyword search → symbol list + file snippets (no embedding API call)
+3. `_buildRouter()` — resolves `IModelRouter` (pre-wired > config file > env var)
+4. `route('code-generation' | 'refactoring', prompt)` — single LLM call with real context
+5. `_parsePatches()` — extracts `## FILE:` / `## DELETE:` blocks from response
+6. Applies patches to disk; returns `ExecutionResult`
+
+**Sustainability:** context gathering uses only FTS5 (zero API cost). Token budget is controlled by `MAX_SYMBOLS = 40` symbols and `MAX_FILES = 8` × `MAX_FILE_LINES = 200` — tight by design to avoid context dilution.
+
+---
 
 ### Creating an Indexer
 
@@ -375,6 +439,38 @@ ai-kit code watch
 # ✔ Re-indexed in 47 ms
 ```
 
+### `ai-kit code generate <task>`
+
+Write or modify source files from a natural-language description.
+
+```bash
+# Feature development
+ai-kit code generate "add input validation to UserService.create"
+
+# Quick fix
+ai-kit code generate "fix the off-by-one error in PaginationHelper" --mode quick-fix
+
+# Refactor
+ai-kit code generate "migrate AuthGuard to the new RbacPolicy API" --mode refactor
+
+# Dry run — see the proposed changes without writing files
+ai-kit code generate "add rate limiting to all HTTP handlers" --dry-run
+
+# Non-interactive (CI pipelines)
+ai-kit code generate "add JSDoc to all public functions" --mode feature --auto-approve
+```
+
+| Flag | Description |
+|------|-------------|
+| `--mode <mode>` | `quick-fix` \| `feature` \| `refactor` \| `debug` (default: `feature`) |
+| `--dry-run` | Preview planned changes — no files are written |
+| `--auto-approve` | Skip interactive confirmation prompts |
+| `--project <path>` | Project root (default: `cwd`) |
+| `--provider <name>` | LLM provider override: `anthropic` \| `openai` |
+| `--router <path>` | Explicit path to `model-router.json` |
+
+Requires a built index (`ai-kit code index`) and at least one LLM API key.
+
 ---
 
 ## Cloud Dashboard
@@ -587,14 +683,14 @@ pnpm jest --coverage code-assistant
 - [x] `ai-kit code stats` — index statistics CLI
 - [x] `ai-kit code search <term>` — FTS5 symbol search CLI
 - [x] `ai-kit code watch` — file-system watch + incremental re-index CLI
+- [x] `ai-kit code generate <task>` — **code writing engine** (prototype-split architecture, FTS5-grounded context, `## FILE:` patch protocol)
 - [x] Cloud-API routes for snapshot reporting (`/api/codernic/status`, `/api/codernic/stats/history`)
 - [x] Codernic dashboard page (React, `ai-agencee-cloud`)
 - [ ] Java parser (JavaParser library)
 - [ ] Go parser (go/parser package)
-- [ ] Embedding generation for semantic search
 - [ ] Symbol reference tracking ("Find all usages")
 - [ ] Type inference and flow analysis
-- [ ] AST serialization for LLM context
+- [ ] Streaming patch application (show writes as they happen)
 
 ---
 

@@ -3,6 +3,7 @@
  */
 
 import { Command } from 'commander'
+import { runCodeGenerate } from './generate-cmd.js'
 import { runCodeIndex } from './index-cmd.js'
 import { runCodeSearch } from './search-cmd.js'
 import { runCodeStats } from './stats-cmd.js'
@@ -83,8 +84,34 @@ export const codeCommand = function() {
       }
     });
 
+  // Add generate subcommand
+  command
+    .command('generate <task>')
+    .description('Write or modify code from a natural-language task description')
+    .option('-p, --project <path>', 'Project root directory', process.cwd())
+    .option('--mode <mode>', 'Execution mode: quick-fix | feature | refactor | debug', 'feature')
+    .option('--dry-run', 'Preview planned changes without writing files')
+    .option('--auto-approve', 'Skip interactive confirmation prompts')
+    .option('--provider <name>', 'LLM provider override (anthropic | openai)', 'anthropic')
+    .option('--router <path>', 'Path to model-router.json config file')
+    .action(async (task, options) => {
+      try {
+        await runCodeGenerate(task, {
+          project:     options.project,
+          mode:        options.mode,
+          dryRun:      options.dryRun,
+          autoApprove: options.autoApprove,
+          provider:    options.provider,
+          router:      options.router,
+        });
+      } catch (error) {
+        console.error('\n❌ Command failed');
+        process.exit(1);
+      }
+    });
+
   return command;
 };
 
-export { runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch }
+export { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch }
 

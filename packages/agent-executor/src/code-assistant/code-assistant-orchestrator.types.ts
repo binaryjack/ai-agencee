@@ -1,16 +1,26 @@
 /**
  * Type definitions for Code Assistant orchestrator
+ *
+ * Kept deliberately provider-agnostic — no imports from heavy runtime modules so
+ * callers can import these types without pulling in SQLite or the model router.
  */
 
+import type { IModelRouter } from '../lib/model-router/index.js';
 import type { IIndexerAuditLog } from './indexer/codebase-indexer.types';
 import type { ParserRegistryInstance } from './parsers/parser-registry';
 import type { CodebaseIndexStoreInstance } from './storage/codebase-index-store.types';
 
+// ─── Options ─────────────────────────────────────────────────────────────────
+
 export type CodeAssistantOptions = {
   projectRoot: string;
+  /** Path to a model-router.json or agents/ directory containing one. */
   dagPath?: string;
   budgetCap?: number;
   modelProvider?: string;
+  /** Pre-wired model router — skips the bootstrap step when provided. */
+  modelRouter?: IModelRouter;
+  /** Pre-opened index store — used in tests and when the caller already holds one. */
   indexStore?: CodebaseIndexStoreInstance;
   parserRegistry?: ParserRegistryInstance;
   auditLog?: IIndexerAuditLog;
@@ -41,4 +51,18 @@ export type IndexStatus = {
   filesIndexed: number;
   symbolsExtracted: number;
   lastIndexedAt?: number;
+};
+
+// ─── Internal patch descriptor ────────────────────────────────────────────────
+
+/**
+ * A single file operation emitted by the LLM and applied by execute().
+ * Shared between parse-patches.ts and execute.ts to avoid circular imports.
+ */
+export type FilePatch = {
+  /** Relative (or absolute) path as declared in the ## FILE / ## DELETE block. */
+  relativePath: string;
+  /** Full replacement content for FILE blocks; empty string for DELETE. */
+  content:      string;
+  delete?:      boolean;
 };
