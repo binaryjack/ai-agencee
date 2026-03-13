@@ -3,8 +3,8 @@
  * Watch a project directory and automatically re-index on changes
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { runCodeIndex } from './index-cmd.js';
 
 type WatchOptions = {
@@ -26,7 +26,7 @@ const ALWAYS_IGNORE = new Set([
 ]);
 
 function shouldIgnore(relativePath: string): boolean {
-  const parts = relativePath.replace(/\\/g, '/').split('/');
+  const parts = relativePath.replaceAll('\\', '/').split('/');
   return parts.some(p => ALWAYS_IGNORE.has(p));
 }
 
@@ -85,8 +85,9 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
       reindexing = true;
       try {
         await runCodeIndex({ project, languages, exclude, verbose, incremental: true });
-      } catch (err: any) {
-        console.error(`❌ Re-index failed: ${err?.message || err}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`❌ Re-index failed: ${msg}`);
       } finally {
         reindexing = false;
       }
@@ -103,8 +104,9 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
       changedFiles.add(filename);
       scheduleReindex();
     });
-  } catch (err: any) {
-    console.error(`❌ Cannot watch directory: ${err?.message}`);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`❌ Cannot watch directory: ${msg}`);
     console.error(`   Try running with --no-watch on systems where recursive watch is unsupported.`);
     process.exit(1);
   }

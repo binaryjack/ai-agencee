@@ -3,9 +3,9 @@
  * Full-text search (FTS5) or semantic vector search across indexed symbols.
  */
 
-import { OllamaEmbeddingProvider, OpenAIEmbeddingProvider } from '@ai-agencee/engine/code-assistant/embeddings'
-import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage'
-import * as path from 'path'
+import { OllamaEmbeddingProvider, OpenAIEmbeddingProvider } from '@ai-agencee/engine/code-assistant/embeddings';
+import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage';
+import * as path from 'node:path';
 
 type SearchOptions = {
   project?: string;
@@ -98,8 +98,9 @@ async function runSemanticSearch(
   try {
     const vectors = await provider.embed([term])
     queryVector = vectors[0]
-  } catch (err: any) {
-    console.error(`❌ Embedding failed: ${err?.message ?? err}`)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`❌ Embedding failed: ${msg}`)
     console.error('   Make sure Ollama is running (ollama serve) or set OPENAI_API_KEY.')
     process.exit(1)
   }

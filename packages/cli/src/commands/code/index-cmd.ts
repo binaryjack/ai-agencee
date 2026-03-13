@@ -3,10 +3,10 @@
  * Indexes a codebase for intelligent search and assistance
  */
 
-import { createCodebaseIndexer } from '@ai-agencee/engine/code-assistant'
-import { createParserRegistry, createTypeScriptParser } from '@ai-agencee/engine/code-assistant/parsers'
-import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage'
-import * as path from 'path'
+import { createCodebaseIndexer } from '@ai-agencee/engine/code-assistant';
+import { createParserRegistry, createTypeScriptParser } from '@ai-agencee/engine/code-assistant/parsers';
+import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage';
+import * as path from 'node:path';
 
 export const checkIndexStatus = async function(projectRoot: string) {
   try {
@@ -23,7 +23,7 @@ export const checkIndexStatus = async function(projectRoot: string) {
       indexed: stats.totalFiles > 0,
       ...stats
     };
-  } catch (error) {
+  } catch {
     return { indexed: false, totalFiles: 0, totalSymbols: 0, totalDependencies: 0 };
   }
 };
@@ -101,10 +101,11 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     }
     
     console.log(`\n💾 Index stored at: ${dbPath}`);
-  } catch (error: any) {
-    console.error(`\n❌ Indexing failed: ${error?.message || 'Unknown error'}`);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error(`\n❌ Indexing failed: ${msg}`);
     if (verbose) {
-      console.error(error?.stack);
+      console.error(error instanceof Error ? error.stack : undefined);
     }
     throw error;
   }
