@@ -280,7 +280,7 @@ CodebaseIndexStore.prototype.upsertDependencies = async function(this: CodebaseI
 
 CodebaseIndexStore.prototype.getFileByPath = async function(this: CodebaseIndexStoreInstance, filePath: string): Promise<FileRecord | undefined> {
   // Normalize path to use forward slashes for cross-platform consistency
-  const normalizedPath = filePath.replaceAll('\\', '/');
+  const normalizedPath = filePath.split('\\').join('/');
   
   const stmt = this._db!.prepare(`
     SELECT * FROM codebase_files
