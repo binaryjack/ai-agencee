@@ -93,92 +93,93 @@ export interface DagEventMap {
   'token:stream':      [event: TokenStreamEvent];
 }
 
-// ─── DagEventBus ─────────────────────────────────────────────────────────────
+// ─── DagEventBus interface ───────────────────────────────────────────────────
 
-// DagEventBus extends EventEmitter — kept as class (EventEmitter subclass exception)
-class DagEventBus extends EventEmitter {
-  constructor() {
-    super();
-    this.setMaxListeners(100);
-  }
+export interface DagEventBus {
+  emitDagStart(event: DagStartEvent): void
+  emitDagEnd(event: DagEndEvent): void
+  emitLaneStart(event: LaneStartEvent): void
+  emitLaneEnd(event: LaneEndEvent): void
+  emitLlmCall(event: LlmCallEvent): void
+  emitBudgetExceeded(event: BudgetExceededEvent): void
+  emitRbacDenied(event: RbacDeniedEvent): void
+  emitCheckpointComplete(event: CheckpointEvent): void
+  emitTokenStream(event: TokenStreamEvent): void
+  on(event: 'dag:start',           listener: (e: DagStartEvent)         => void): DagEventBus
+  on(event: 'dag:end',             listener: (e: DagEndEvent)           => void): DagEventBus
+  on(event: 'lane:start',          listener: (e: LaneStartEvent)        => void): DagEventBus
+  on(event: 'lane:end',            listener: (e: LaneEndEvent)          => void): DagEventBus
+  on(event: 'llm:call',            listener: (e: LlmCallEvent)          => void): DagEventBus
+  on(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): DagEventBus
+  on(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): DagEventBus
+  on(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): DagEventBus
+  on(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): DagEventBus
+  on(event: string | symbol,       listener: (...args: unknown[]) => void): DagEventBus
+  once(event: 'dag:start',           listener: (e: DagStartEvent)         => void): DagEventBus
+  once(event: 'dag:end',             listener: (e: DagEndEvent)           => void): DagEventBus
+  once(event: 'lane:start',          listener: (e: LaneStartEvent)        => void): DagEventBus
+  once(event: 'lane:end',            listener: (e: LaneEndEvent)          => void): DagEventBus
+  once(event: 'llm:call',            listener: (e: LlmCallEvent)          => void): DagEventBus
+  once(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): DagEventBus
+  once(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): DagEventBus
+  once(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): DagEventBus
+  once(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): DagEventBus
+  once(event: string | symbol,       listener: (...args: unknown[]) => void): DagEventBus
+  removeListener(event: 'dag:start',           listener: (e: DagStartEvent)         => void): DagEventBus
+  removeListener(event: 'dag:end',             listener: (e: DagEndEvent)           => void): DagEventBus
+  removeListener(event: 'lane:start',          listener: (e: LaneStartEvent)        => void): DagEventBus
+  removeListener(event: 'lane:end',            listener: (e: LaneEndEvent)          => void): DagEventBus
+  removeListener(event: 'llm:call',            listener: (e: LlmCallEvent)          => void): DagEventBus
+  removeListener(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): DagEventBus
+  removeListener(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): DagEventBus
+  removeListener(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): DagEventBus
+  removeListener(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): DagEventBus
+  removeListener(event: string | symbol,       listener: (...args: unknown[]) => void): DagEventBus
+}
 
-  emitDagStart(event: DagStartEvent): void {
-    this._safeEmit('dag:start', event);
-  }
+// ─── Factory ─────────────────────────────────────────────────────────────────
 
-  emitDagEnd(event: DagEndEvent): void {
-    this._safeEmit('dag:end', event);
-  }
+export function createDagEventBus(): DagEventBus {
+  const emitter = new EventEmitter()
+  emitter.setMaxListeners(100)
 
-  emitLaneStart(event: LaneStartEvent): void {
-    this._safeEmit('lane:start', event);
-  }
-
-  emitLaneEnd(event: LaneEndEvent): void {
-    this._safeEmit('lane:end', event);
-  }
-
-  emitLlmCall(event: LlmCallEvent): void {
-    this._safeEmit('llm:call', event);
-  }
-
-  emitBudgetExceeded(event: BudgetExceededEvent): void {
-    this._safeEmit('budget:exceeded', event);
-  }
-
-  emitRbacDenied(event: RbacDeniedEvent): void {
-    this._safeEmit('rbac:denied', event);
-  }
-
-  emitCheckpointComplete(event: CheckpointEvent): void {
-    this._safeEmit('checkpoint:complete', event);
-  }
-
-  emitTokenStream(event: TokenStreamEvent): void {
-    this._safeEmit('token:stream', event);
-  }
-
-  on(event: 'dag:start',           listener: (e: DagStartEvent)         => void): this;
-  on(event: 'dag:end',             listener: (e: DagEndEvent)           => void): this;
-  on(event: 'lane:start',          listener: (e: LaneStartEvent)        => void): this;
-  on(event: 'lane:end',            listener: (e: LaneEndEvent)          => void): this;
-  on(event: 'llm:call',            listener: (e: LlmCallEvent)          => void): this;
-  on(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): this;
-  on(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): this;
-  on(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): this;
-  on(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): this;
-  on(event: string | symbol,       listener: (...args: unknown[]) => void): this;
-  on(event: string | symbol, listener: Parameters<EventEmitter['on']>[1]): this {
-    return super.on(event, listener);
-  }
-
-  once(event: 'dag:start',           listener: (e: DagStartEvent)         => void): this;
-  once(event: 'dag:end',             listener: (e: DagEndEvent)           => void): this;
-  once(event: 'lane:start',          listener: (e: LaneStartEvent)        => void): this;
-  once(event: 'lane:end',            listener: (e: LaneEndEvent)          => void): this;
-  once(event: 'llm:call',            listener: (e: LlmCallEvent)          => void): this;
-  once(event: 'budget:exceeded',     listener: (e: BudgetExceededEvent)   => void): this;
-  once(event: 'rbac:denied',         listener: (e: RbacDeniedEvent)       => void): this;
-  once(event: 'checkpoint:complete', listener: (e: CheckpointEvent)       => void): this;
-  once(event: 'token:stream',        listener: (e: TokenStreamEvent)      => void): this;
-  once(event: string | symbol,       listener: (...args: unknown[]) => void): this;
-  once(event: string | symbol, listener: Parameters<EventEmitter['once']>[1]): this {
-    return super.once(event, listener);
-  }
-
-  private _safeEmit(event: string, payload: unknown): void {
+  const safeEmit = (event: string, payload: unknown): void => {
     try {
-      super.emit(event, payload);
+      emitter.emit(event, payload)
     } catch {
       // swallow listener errors — the orchestration must not be disrupted
     }
   }
+
+  const bus: DagEventBus = {
+    emitDagStart:           (e) => safeEmit('dag:start', e),
+    emitDagEnd:             (e) => safeEmit('dag:end', e),
+    emitLaneStart:          (e) => safeEmit('lane:start', e),
+    emitLaneEnd:            (e) => safeEmit('lane:end', e),
+    emitLlmCall:            (e) => safeEmit('llm:call', e),
+    emitBudgetExceeded:     (e) => safeEmit('budget:exceeded', e),
+    emitRbacDenied:         (e) => safeEmit('rbac:denied', e),
+    emitCheckpointComplete: (e) => safeEmit('checkpoint:complete', e),
+    emitTokenStream:        (e) => safeEmit('token:stream', e),
+    on: ((event: string | symbol, listener: (...args: unknown[]) => void): DagEventBus => {
+      emitter.on(event, listener as Parameters<EventEmitter['on']>[1])
+      return bus
+    }) as DagEventBus['on'],
+    once: ((event: string | symbol, listener: (...args: unknown[]) => void): DagEventBus => {
+      emitter.once(event, listener as Parameters<EventEmitter['once']>[1])
+      return bus
+    }) as DagEventBus['once'],
+    removeListener: ((event: string | symbol, listener: (...args: unknown[]) => void): DagEventBus => {
+      emitter.removeListener(event, listener as Parameters<EventEmitter['removeListener']>[1])
+      return bus
+    }) as DagEventBus['removeListener'],
+  }
+  return bus
 }
-export { DagEventBus };
 
 // ─── Singleton ────────────────────────────────────────────────────────────────
 
-let _globalBus: DagEventBus = new DagEventBus();
+let _globalBus: DagEventBus = createDagEventBus();
 
 export function getGlobalEventBus(): DagEventBus {
   return _globalBus;

@@ -1,0 +1,15 @@
+{
+  "name": "Audience Profile Agent",
+  "icon": "👥",
+  "description": "Builds detailed buyer personas and ICP (Ideal Customer Profile) for the Q1 campaign sprint.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "audience-research",
+      "prompt": "You are an audience research specialist. Create ICP personas for a B2B AI agent orchestration platform targeting engineering teams.\n\nGenerate 3 personas:\n- Engineering Lead at a 50–200 person SaaS startup\n- Platform Engineer at a 500–2000 person enterprise\n- AI/ML Lead at a Fortune 500 company\n\nFor each persona: role, primary pain point, top buying criteria (3 items), preferred content format, estimated deal size.\n\nOutput ONLY JSON: { \"personas\": [{ \"title\": \"...\", \"pain_point\": \"...\", \"buying_criteria\": [...], \"content_format\": \"...\", \"deal_size\": \"<range>\" }] }",
+      "outputKey": "audience_data",
+      "pass": "👥 Audience profiles generated",
+      "fail": "❌ Audience profiling failed"
+    }
+  ]
+}

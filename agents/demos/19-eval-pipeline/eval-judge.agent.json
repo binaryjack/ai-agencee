@@ -1,0 +1,15 @@
+{
+  "name": "Eval Judge",
+  "icon": "⚖️",
+  "description": "LLM-as-judge agent. Scores the generated content on clarity (1–5), completeness (1–5), and technical accuracy (1–5). Emits a structured scorecard.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "quality-scoring",
+      "prompt": "You are an expert technical editor acting as an LLM-as-judge. Score the following blog-post section on three dimensions, each on a scale of 1–5:\n\n1. Clarity — Is the writing clear and jargon-free?\n2. Completeness — Does it cover all four required points?\n3. Technical Accuracy — Are the claims technically correct?\n\nOutput ONLY a JSON object: { \"clarity\": <1-5>, \"completeness\": <1-5>, \"accuracy\": <1-5>, \"overall\": <average rounded to 1dp>, \"rationale\": \"<one sentence>\" }\n\nContent to evaluate:\n{generated_content}",
+      "outputKey": "eval_score",
+      "pass": "⚖️ Eval scoring complete",
+      "fail": "❌ Eval judge returned invalid output"
+    }
+  ]
+}

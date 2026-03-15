@@ -1,0 +1,15 @@
+{
+  "name": "Report Generator",
+  "icon": "📄",
+  "description": "Renders the final board-ready Markdown report from synthesized analysis. The final lane in the checkpoint chain.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "report-generation",
+      "prompt": "You are a report writer. Using the synthesis below, produce a board-ready Markdown report.\n\n{synthesis}\n\nFormat:\n# Q4 2024 Sales Performance Report\n## Executive Summary\n<summary text>\n## Key Findings\n- ...\n## Recommendations\n1. ...\n## Risk Assessment\n<risk_level with justification>\n\nOutput the full Markdown as a plain string (no surrounding JSON).",
+      "outputKey": "report_md",
+      "pass": "📄 Report generated",
+      "fail": "❌ Report generation failed"
+    }
+  ]
+}

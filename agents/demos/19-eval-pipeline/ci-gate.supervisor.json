@@ -1,0 +1,17 @@
+{
+  "laneId": "ci-gate",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "gate",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["status", "overall_score", "regression_detected", "recommendation"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be valid JSON with keys: status (PASS/WARN/FAIL), overall_score, regression_detected, scorecard, recommendation."
+    }
+  ],
+  "publishContract": {
+    "key": "ci-result",
+    "outputKeys": ["ci_result"]
+  }
+}

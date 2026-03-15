@@ -1,0 +1,17 @@
+{
+  "laneId": "ingest",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "schema-validate",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["rows", "row_count", "validation_errors", "checksum"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be a JSON object with keys: rows (array), row_count (number), validation_errors (array), checksum (string)."
+    }
+  ],
+  "publishContract": {
+    "key": "ingested-data",
+    "outputKeys": ["ingested_data"]
+  }
+}

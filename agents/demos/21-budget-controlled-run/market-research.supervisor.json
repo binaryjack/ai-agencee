@@ -1,0 +1,17 @@
+{
+  "laneId": "market-research",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "research",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["trends", "tam_estimate", "pain_points", "emerging_segments"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be valid JSON with keys: trends, tam_estimate, pain_points, emerging_segments."
+    }
+  ],
+  "publishContract": {
+    "key": "market-data",
+    "outputKeys": ["market_data"]
+  }
+}

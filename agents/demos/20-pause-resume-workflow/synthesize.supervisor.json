@@ -1,0 +1,17 @@
+{
+  "laneId": "synthesize",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "executive-summary",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["summary", "recommendations", "risk_level"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be JSON with keys: summary (3-paragraph string), recommendations (array of 3 strings), risk_level (low/medium/high)."
+    }
+  ],
+  "publishContract": {
+    "key": "synthesis",
+    "outputKeys": ["synthesis"]
+  }
+}

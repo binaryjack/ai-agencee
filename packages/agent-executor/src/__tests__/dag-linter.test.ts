@@ -4,8 +4,8 @@
  * No external I/O — lintDag is a pure function.
  */
 
-import type { DagDefinition } from '../lib/dag-types.js'
 import { lintDag } from '../lib/dag-linter.js'
+import type { DagDefinition } from '../lib/dag-types.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ describe('LINT002 — parallel lanes share no barrier', () => {
         makeLane('lane-a', { checks: ['c'] }),
         makeLane('lane-b', { checks: ['c'] }),
       ],
-      globalBarriers: [{ name: 'sync', participants: ['lane-a', 'lane-b'] }],
+      globalBarriers: [{ name: 'sync', participants: ['lane-a', 'lane-b'], timeoutMs: 30_000 }],
     })
     const results = lintDag(dag)
     expect(results.find(r => r.code === 'LINT002')).toBeUndefined()
@@ -124,8 +124,8 @@ describe('LINT004 — barrier with single participant', () => {
         makeLane('lane-b', { checks: ['c'] }),
       ],
       globalBarriers: [
-        { name: 'orphan-barrier', participants: ['lane-a'] },
-        { name: 'real-barrier',   participants: ['lane-a', 'lane-b'] },
+        { name: 'orphan-barrier', participants: ['lane-a'], timeoutMs: 30_000 },
+        { name: 'real-barrier',   participants: ['lane-a', 'lane-b'], timeoutMs: 30_000 },
       ],
     })
     const results = lintDag(dag)
@@ -141,7 +141,7 @@ describe('LINT004 — barrier with single participant', () => {
         makeLane('lane-a', { checks: ['c'] }),
         makeLane('lane-b', { checks: ['c'] }),
       ],
-      globalBarriers: [{ name: 'sync', participants: ['lane-a', 'lane-b'] }],
+      globalBarriers: [{ name: 'sync', participants: ['lane-a', 'lane-b'], timeoutMs: 30_000 }],
     })
     const results = lintDag(dag)
     expect(results.find(r => r.code === 'LINT004')).toBeUndefined()
@@ -268,7 +268,7 @@ describe('clean DAG', () => {
         makeLane('backend',  { dependsOn: ['business-analyst'], checks: ['unit-tests'] }),
         makeLane('frontend', { dependsOn: ['business-analyst'], checks: ['unit-tests'] }),
       ],
-      globalBarriers: [{ name: 'qa-sync', participants: ['backend', 'frontend'] }],
+      globalBarriers: [{ name: 'qa-sync', participants: ['backend', 'frontend'], timeoutMs: 30_000 }],
     })
     const results = lintDag(dag)
     const errors = results.filter(r => r.severity === 'error')

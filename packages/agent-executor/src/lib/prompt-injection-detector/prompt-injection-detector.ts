@@ -20,18 +20,23 @@ export interface InjectionDetectorOptions {
   customSignatures?: InjectionSignature[];
 }
 
-// Error subclass — kept as class
-class PromptInjectionError extends Error {
-  readonly scanResult: InjectionScanResult;
+type PromptInjectionErrorMutable = Error & { scanResult: InjectionScanResult }
+export type PromptInjectionErrorInstance = Error & { readonly scanResult: InjectionScanResult }
 
-  constructor(result: InjectionScanResult) {
-    const families = result.familiesMatched.join(', ');
-    super(`Prompt injection detected (confidence=${result.confidence.toFixed(2)}): ${families}`);
-    this.name = 'PromptInjectionError';
-    this.scanResult = result;
-  }
-}
-export { PromptInjectionError };
+export const PromptInjectionError = function(
+  this: PromptInjectionErrorMutable,
+  result: InjectionScanResult,
+): void {
+  const families  = result.familiesMatched.join(', ')
+  this.name       = 'PromptInjectionError'
+  this.message    = `Prompt injection detected (confidence=${result.confidence.toFixed(2)}): ${families}`
+  this.scanResult = result
+  this.stack      = new Error(this.message).stack
+} as unknown as new (result: InjectionScanResult) => PromptInjectionErrorInstance
+
+Object.setPrototypeOf(PromptInjectionError.prototype, Error.prototype)
+
+export type PromptInjectionError = PromptInjectionErrorInstance
 
 export const BUILT_IN_SIGNATURES: InjectionSignature[] = [
   {

@@ -1,0 +1,17 @@
+{
+  "laneId": "budget-gate",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "budget-eval",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["decision", "projected_total_usd", "utilization_pct", "alert_message"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be valid JSON with keys: proposed_cost_usd, mtd_spend_usd, projected_total_usd, cap_usd, utilization_pct, decision (APPROVE/WARN/SUSPEND), alert_message, cost_center, team_name, project_tag."
+    }
+  ],
+  "publishContract": {
+    "key": "budget-decision",
+    "outputKeys": ["budget_decision"]
+  }
+}

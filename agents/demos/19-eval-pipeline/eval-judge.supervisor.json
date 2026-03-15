@@ -1,0 +1,17 @@
+{
+  "laneId": "eval-judge",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "score",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["clarity", "completeness", "accuracy", "overall"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be valid JSON with keys: clarity, completeness, accuracy, overall. Do not add prose around the JSON."
+    }
+  ],
+  "publishContract": {
+    "key": "eval-score",
+    "outputKeys": ["eval_score"]
+  }
+}

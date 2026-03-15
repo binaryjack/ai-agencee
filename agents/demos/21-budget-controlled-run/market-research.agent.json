@@ -1,0 +1,15 @@
+{
+  "name": "Market Research Agent",
+  "icon": "📊",
+  "description": "Researches current market trends and opportunities for a B2B SaaS product. Costs attributed to costCenter=marketing, team=growth.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "market-analysis",
+      "prompt": "You are a market research analyst for a B2B SaaS AI agent platform. Research and summarize:\n1. Top 3 market trends driving AI agent adoption in 2025.\n2. Estimated total addressable market size for agent orchestration platforms.\n3. Key buyer pain points in the current market.\n4. Two emerging segments underserved by current tools.\n\nOutput ONLY JSON: { \"trends\": [...], \"tam_estimate\": \"<range>\", \"pain_points\": [...], \"emerging_segments\": [...] }",
+      "outputKey": "market_data",
+      "pass": "📊 Market research complete",
+      "fail": "❌ Market research failed"
+    }
+  ]
+}

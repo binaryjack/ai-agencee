@@ -1,0 +1,61 @@
+{
+  "name": "Demo 21 — Budget-Controlled Content Sprint",
+  "description": "Three research lanes run in parallel feeding a strategy lane, then a budget-gate lane decides whether to proceed based on projected cost vs. monthly cap. Demonstrates: cost_center / team_name / project_tag metadata, per-run cost attribution, and budget-alert threshold logic. Set metadata.monthlyCap to trigger a WARN or SUSPEND decision.",
+  "lanes": [
+    {
+      "id": "market-research",
+      "agentFile": "market-research.agent.json",
+      "supervisorFile": "market-research.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["market-analysis", "trend-research"]
+    },
+    {
+      "id": "competitor-scan",
+      "agentFile": "competitor-scan.agent.json",
+      "supervisorFile": "competitor-scan.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["competitor-analysis", "feature-comparison"]
+    },
+    {
+      "id": "audience-profile",
+      "agentFile": "audience-profile.agent.json",
+      "supervisorFile": "audience-profile.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["audience-research", "persona-generation"]
+    },
+    {
+      "id": "strategy",
+      "agentFile": "strategy.agent.json",
+      "supervisorFile": "strategy.supervisor.json",
+      "dependsOn": ["market-research", "competitor-scan", "audience-profile"],
+      "capabilities": ["content-strategy", "campaign-planning"]
+    },
+    {
+      "id": "budget-gate",
+      "agentFile": "budget-gate.agent.json",
+      "supervisorFile": "budget-gate.supervisor.json",
+      "dependsOn": ["strategy"],
+      "capabilities": ["budget-review", "spend-forecast"]
+    }
+  ],
+  "capabilityRegistry": {
+    "market-analysis":    ["market-research"],
+    "trend-research":     ["market-research"],
+    "competitor-analysis":["competitor-scan"],
+    "feature-comparison": ["competitor-scan"],
+    "audience-research":  ["audience-profile"],
+    "persona-generation": ["audience-profile"],
+    "content-strategy":   ["strategy"],
+    "campaign-planning":  ["strategy"],
+    "budget-review":      ["budget-gate"],
+    "spend-forecast":     ["budget-gate"]
+  },
+  "metadata": {
+    "ip": "IP-08",
+    "costCenter": "marketing",
+    "teamName": "growth",
+    "projectTag": "q1-sprint",
+    "monthlyCap": 500,
+    "warnThresholdPct": 80
+  }
+}

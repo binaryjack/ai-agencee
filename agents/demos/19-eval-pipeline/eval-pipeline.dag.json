@@ -1,0 +1,50 @@
+{
+  "name": "Demo 19 — Eval Pipeline & Quality Flywheel",
+  "description": "Generates a blog-post section, scores it with an LLM-as-judge, compares against a golden reference, then publishes a per-lane scorecard. Demonstrates: eval-harness check flow, quality score thresholds, golden output comparison, CI-gate accept/reject logic.",
+  "lanes": [
+    {
+      "id": "content-generate",
+      "agentFile": "content-generate.agent.json",
+      "supervisorFile": "content-generate.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["content-generation", "blog-writing"]
+    },
+    {
+      "id": "eval-judge",
+      "agentFile": "eval-judge.agent.json",
+      "supervisorFile": "eval-judge.supervisor.json",
+      "dependsOn": ["content-generate"],
+      "capabilities": ["llm-eval", "quality-scoring"]
+    },
+    {
+      "id": "golden-compare",
+      "agentFile": "golden-compare.agent.json",
+      "supervisorFile": "golden-compare.supervisor.json",
+      "dependsOn": ["content-generate"],
+      "capabilities": ["golden-diff", "regression-check"]
+    },
+    {
+      "id": "ci-gate",
+      "agentFile": "ci-gate.agent.json",
+      "supervisorFile": "ci-gate.supervisor.json",
+      "dependsOn": ["eval-judge", "golden-compare"],
+      "capabilities": ["ci-gate", "scorecard-publish"]
+    }
+  ],
+  "capabilityRegistry": {
+    "content-generation": ["content-generate"],
+    "blog-writing":       ["content-generate"],
+    "llm-eval":           ["eval-judge"],
+    "quality-scoring":    ["eval-judge"],
+    "golden-diff":        ["golden-compare"],
+    "regression-check":   ["golden-compare"],
+    "ci-gate":            ["ci-gate"],
+    "scorecard-publish":  ["ci-gate"]
+  },
+  "metadata": {
+    "ip": "IP-03",
+    "costCenter": "engineering",
+    "teamName": "platform",
+    "projectTag": "eval-flywheel"
+  }
+}

@@ -409,9 +409,9 @@ describe('NotificationSink — sendBudgetExceeded()', () => {
 describe('NotificationSink — event bus attach/detach', () => {
   it('attach() wires dag:end → sendDagEnd', async () => {
     const { NotificationSink } = await import('../lib/notification-sink/index.js');
-    const { DagEventBus }       = await import('../lib/dag-events/index.js');
+    const { createDagEventBus }  = await import('../lib/dag-events/index.js');
 
-    const bus  = new DagEventBus();
+    const bus  = createDagEventBus();
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
 
     await new Promise<void>((resolve) => {
@@ -430,9 +430,9 @@ describe('NotificationSink — event bus attach/detach', () => {
 
   it('attach() wires budget:exceeded → sendBudgetExceeded', async () => {
     const { NotificationSink } = await import('../lib/notification-sink/index.js');
-    const { DagEventBus }       = await import('../lib/dag-events/index.js');
+    const { createDagEventBus }  = await import('../lib/dag-events/index.js');
 
-    const bus  = new DagEventBus();
+    const bus  = createDagEventBus();
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
 
     await new Promise<void>((resolve) => {
@@ -454,9 +454,9 @@ describe('NotificationSink — event bus attach/detach', () => {
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
 
     const { NotificationSink } = await import('../lib/notification-sink/index.js');
-    const { DagEventBus }       = await import('../lib/dag-events/index.js');
+    const { createDagEventBus }  = await import('../lib/dag-events/index.js');
 
-    const bus  = new DagEventBus();
+    const bus  = createDagEventBus();
     const sink = new NotificationSink({ slack: { webhookUrl: 'https://x' } });
 
     sink.attach(bus);
@@ -470,9 +470,9 @@ describe('NotificationSink — event bus attach/detach', () => {
 
   it('attach() wires lane:end when notifyLaneEnd=true', async () => {
     const { NotificationSink } = await import('../lib/notification-sink/index.js');
-    const { DagEventBus }       = await import('../lib/dag-events/index.js');
+    const { createDagEventBus }  = await import('../lib/dag-events/index.js');
 
-    const bus  = new DagEventBus();
+    const bus  = createDagEventBus();
     const sink = new NotificationSink({
       slack:          { webhookUrl: 'https://x' },
       notifyLaneEnd:  true,

@@ -1,0 +1,17 @@
+{
+  "laneId": "content-generate",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "generate",
+      "mode": "self",
+      "expect": { "minLength": 300 },
+      "onFail": "RETRY",
+      "retryInstructions": "Generated content is too short. Expand all four required points to at least 80 words each."
+    }
+  ],
+  "publishContract": {
+    "key": "generated-content",
+    "outputKeys": ["generated_content"]
+  }
+}

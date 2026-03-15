@@ -1,0 +1,15 @@
+{
+  "name": "Data Ingestor",
+  "icon": "📥",
+  "description": "Ingests and validates a structured data payload. Checkpoint saved after schema validation so the run can resume if interrupted before analysis.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "data-ingestion",
+      "prompt": "You are a data ingestion agent. Simulate ingesting a sales dataset with the following schema: { date, product_id, region, units_sold, revenue_usd }. Generate 10 representative rows of plausible synthetic data for Q4 2024. Validate each row against the schema (no nulls, revenue_usd must be positive). Output JSON: { \"rows\": [...], \"row_count\": <n>, \"validation_errors\": [], \"checksum\": \"<sha256-hex>\" }",
+      "outputKey": "ingested_data",
+      "pass": "📥 Data ingested and validated",
+      "fail": "❌ Data ingestion or schema validation failed"
+    }
+  ]
+}

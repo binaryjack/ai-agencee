@@ -1,0 +1,15 @@
+{
+  "name": "CI Quality Gate",
+  "icon": "🚦",
+  "description": "Aggregates eval scores and golden-diff results into a final scorecard. Passes CI if overall eval score ≥ 3.5 and no golden regression is detected; fails otherwise.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "ci-gate",
+      "prompt": "You are the CI quality gate for an AI eval pipeline. Using the inputs below, produce the final pipeline scorecard.\n\nEval scores:\n{eval_score}\n\nGolden comparison:\n{golden_diff}\n\nRules:\n- PASS if overall eval score ≥ 3.5 AND regression == false\n- WARN if overall ≥ 3.0 but < 3.5, regardless of regression\n- FAIL if overall < 3.0 OR regression == true\n\nOutput ONLY JSON:\n{\n  \"status\": \"PASS\" | \"WARN\" | \"FAIL\",\n  \"overall_score\": <number>,\n  \"regression_detected\": <boolean>,\n  \"scorecard\": { \"clarity\": <n>, \"completeness\": <n>, \"accuracy\": <n> },\n  \"recommendation\": \"<one sentence action>\"\n}",
+      "outputKey": "ci_result",
+      "pass": "🚦 CI gate evaluated",
+      "fail": "❌ CI gate could not produce a decision"
+    }
+  ]
+}

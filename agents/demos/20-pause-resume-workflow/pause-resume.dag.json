@@ -1,0 +1,51 @@
+{
+  "name": "Demo 20 — Long-Running Checkpoint Workflow (Pause/Resume)",
+  "description": "Four sequential processing lanes, each saving supervisor checkpoints to persistent storage. Demonstrates the pause/resume capability: any lane can be paused mid-execution, the checkpoint state is serialized, and the run continues from the exact saved position. Run with --pause-after=analyze to observe checkpoint isolation.",
+  "lanes": [
+    {
+      "id": "ingest",
+      "agentFile": "ingest.agent.json",
+      "supervisorFile": "ingest.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["data-ingestion", "schema-validation"]
+    },
+    {
+      "id": "analyze",
+      "agentFile": "analyze.agent.json",
+      "supervisorFile": "analyze.supervisor.json",
+      "dependsOn": ["ingest"],
+      "capabilities": ["data-analysis", "pattern-detection"]
+    },
+    {
+      "id": "synthesize",
+      "agentFile": "synthesize.agent.json",
+      "supervisorFile": "synthesize.supervisor.json",
+      "dependsOn": ["analyze"],
+      "capabilities": ["synthesis", "executive-summary"]
+    },
+    {
+      "id": "report",
+      "agentFile": "report.agent.json",
+      "supervisorFile": "report.supervisor.json",
+      "dependsOn": ["synthesize"],
+      "capabilities": ["report-generation", "markdown-output"]
+    }
+  ],
+  "capabilityRegistry": {
+    "data-ingestion":    ["ingest"],
+    "schema-validation": ["ingest"],
+    "data-analysis":     ["analyze"],
+    "pattern-detection": ["analyze"],
+    "synthesis":         ["synthesize"],
+    "executive-summary": ["synthesize"],
+    "report-generation": ["report"],
+    "markdown-output":   ["report"]
+  },
+  "metadata": {
+    "ip": "IP-01",
+    "checkpointMode": "per-supervisor-step",
+    "resumeSupported": true,
+    "costCenter": "operations",
+    "teamName": "data-platform"
+  }
+}

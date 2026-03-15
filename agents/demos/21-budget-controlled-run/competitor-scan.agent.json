@@ -1,0 +1,15 @@
+{
+  "name": "Competitor Scanner",
+  "icon": "🔭",
+  "description": "Analyses top 5 competitor AI agent platforms across key dimensions: pricing, capabilities, and go-to-market approach.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "competitor-analysis",
+      "prompt": "You are a competitive intelligence analyst for an AI agent orchestration platform. Analyse the competitive landscape:\n\nCompetitors to evaluate: LangGraph, CrewAI, AutoGen, Semantic Kernel, Temporal.\n\nFor each, provide: pricing model, key differentiator, top 2 weaknesses, and enterprise-readiness score (1–5).\n\nOutput ONLY JSON: { \"competitors\": [{ \"name\": \"...\", \"pricing\": \"...\", \"differentiator\": \"...\", \"weaknesses\": [...], \"enterprise_score\": <n> }], \"our_advantage\": \"<one sentence>\" }",
+      "outputKey": "competitor_data",
+      "pass": "🔭 Competitor scan complete",
+      "fail": "❌ Competitor scan failed"
+    }
+  ]
+}

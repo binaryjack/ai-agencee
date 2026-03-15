@@ -1,0 +1,17 @@
+{
+  "laneId": "strategy",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "strategy",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["strategy", "content_types", "key_messages", "cost_breakdown"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be JSON with: strategy, content_types, key_messages, cost_breakdown (with total_usd field)."
+    }
+  ],
+  "publishContract": {
+    "key": "strategy",
+    "outputKeys": ["strategy"]
+  }
+}

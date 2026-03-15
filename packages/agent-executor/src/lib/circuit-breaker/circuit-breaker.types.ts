@@ -9,18 +9,24 @@ export interface CircuitBreakerOptions {
   cooldownMs?: number;
 }
 
-// Error class — kept as class because it extends Error
-class CircuitBreakerOpenError extends Error {
-  readonly providerName: string;
-  readonly recoverAfter: Date;
-
-  constructor(name: string, recoverAfter: Date) {
-    super(
-      `[CircuitBreaker] Provider "${name}" is OPEN — fast-failing. Will retry after ${recoverAfter.toISOString()}.`,
-    );
-    this.name         = 'CircuitBreakerOpenError';
-    this.providerName = name;
-    this.recoverAfter = recoverAfter;
-  }
+type CircuitBreakerOpenErrorMutable = Error & { providerName: string; recoverAfter: Date }
+export type CircuitBreakerOpenErrorInstance = Error & {
+  readonly providerName: string
+  readonly recoverAfter: Date
 }
-export { CircuitBreakerOpenError };
+
+export const CircuitBreakerOpenError = function(
+  this: CircuitBreakerOpenErrorMutable,
+  name:         string,
+  recoverAfter: Date,
+): void {
+  this.name         = 'CircuitBreakerOpenError'
+  this.message      = `[CircuitBreaker] Provider "${name}" is OPEN — fast-failing. Will retry after ${recoverAfter.toISOString()}.`
+  this.providerName = name
+  this.recoverAfter = recoverAfter
+  this.stack        = new Error(this.message).stack
+} as unknown as new (name: string, recoverAfter: Date) => CircuitBreakerOpenErrorInstance
+
+Object.setPrototypeOf(CircuitBreakerOpenError.prototype, Error.prototype)
+
+export type CircuitBreakerOpenError = CircuitBreakerOpenErrorInstance

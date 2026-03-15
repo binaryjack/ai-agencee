@@ -1,0 +1,17 @@
+{
+  "laneId": "report",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "render",
+      "mode": "self",
+      "expect": { "minLength": 200 },
+      "onFail": "RETRY",
+      "retryInstructions": "Report output is too short. Include all sections: Executive Summary, Key Findings, Recommendations, Risk Assessment."
+    }
+  ],
+  "publishContract": {
+    "key": "report",
+    "outputKeys": ["report_md"]
+  }
+}

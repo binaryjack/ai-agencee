@@ -333,9 +333,9 @@ describe('IssueSync — event bus', () => {
     (global as unknown as { fetch: jest.Mock }).fetch = mockFetch({ id: '1', key: 'A-1', self: '' });
 
     const { IssueSync } = await import('../lib/issue-sync/index.js');
-    const { DagEventBus } = await import('../lib/dag-events/index.js');
+    const { createDagEventBus } = await import('../lib/dag-events/index.js');
 
-    const bus  = new DagEventBus();
+    const bus  = createDagEventBus();
     const sync = new IssueSync({
       provider: 'jira',
       jira: { url: 'https://t.atlassian.net', email: 'x@x.com', token: 'tok', projectKey: 'T' },
@@ -364,12 +364,12 @@ describe('IssueSync — event bus', () => {
 
   it('detach() stops creating issues', async () => {
     const { IssueSync } = await import('../lib/issue-sync/index.js');
-    const { DagEventBus } = await import('../lib/dag-events/index.js');
+    const { createDagEventBus } = await import('../lib/dag-events/index.js');
 
     const fetchMock = mockFetch({ id: '1', key: 'A-1', self: '' });
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
 
-    const bus  = new DagEventBus();
+    const bus  = createDagEventBus();
     const sync = new IssueSync({
       provider: 'jira',
       jira: { url: 'https://t.atlassian.net', email: 'x@x.com', token: 'tok', projectKey: 'T' },

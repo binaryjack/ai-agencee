@@ -1,0 +1,15 @@
+{
+  "name": "Content Generator",
+  "icon": "✍️",
+  "description": "Generates a 400-word blog-post section on a given technical topic. Output is used as input to the eval judge lane.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "content-generation",
+      "prompt": "Write a 400-word blog post section titled 'Why Eval Pipelines Are the Missing Piece in AI Agents'. The section should cover: (1) why output quality degrades silently over time, (2) how LLM-as-judge scoring works, (3) the value of golden output regression tests, (4) how a CI eval gate blocks regressions before they ship. Write clearly and concisely for a technical engineering audience.",
+      "outputKey": "generated_content",
+      "pass": "✅ Content generated",
+      "fail": "❌ Content generation failed"
+    }
+  ]
+}

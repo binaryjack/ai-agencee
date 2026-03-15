@@ -1,0 +1,17 @@
+{
+  "laneId": "audience-profile",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "personas",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["personas"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be JSON with a personas array. Each entry must have: title, pain_point, buying_criteria, content_format, deal_size."
+    }
+  ],
+  "publishContract": {
+    "key": "audience-data",
+    "outputKeys": ["audience_data"]
+  }
+}

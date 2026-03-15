@@ -1,0 +1,15 @@
+{
+  "name": "Golden Output Comparator",
+  "icon": "🏆",
+  "description": "Compares the generated content against a stored golden reference. Reports semantic similarity and highlights any regressions in coverage.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "golden-diff",
+      "prompt": "You are a regression-test evaluator. Compare the generated content against the golden reference below.\n\nGolden reference (exemplary output from a previous passing run):\n\"Eval pipelines close the silent-quality-degradation loop by measuring every AI output against a rubric. An LLM-as-judge assigns dimension scores (clarity, completeness, accuracy). A golden output store holds curated examples for regression testing. A CI gate blocks merges when the average lane score drops below the configured threshold. Fine-tuning exports turn accepted completions into training data, creating a continuous improvement flywheel.\"\n\nGenerated content:\n{generated_content}\n\nOutput ONLY JSON: { \"semantic_similarity\": <0.0-1.0>, \"coverage_gaps\": [\"<gap1>\", ...], \"regression\": <true|false>, \"summary\": \"<one sentence>\" }",
+      "outputKey": "golden_diff",
+      "pass": "🏆 Golden comparison complete",
+      "fail": "❌ Golden comparison failed"
+    }
+  ]
+}

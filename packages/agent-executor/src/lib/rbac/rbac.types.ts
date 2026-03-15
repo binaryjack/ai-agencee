@@ -30,15 +30,28 @@ export interface RbacPolicyFile {
   principals:   Record<string, RbacPrincipalDefinition>;
 }
 
-class RbacDeniedError extends Error {
-  constructor(
-    public readonly principal: string,
-    public readonly action:    string,
-    public readonly resource?: string,
-  ) {
-    const target = resource ? ` on "${resource}"` : '';
-    super(`RBAC: principal "${principal}" is denied action "${action}"${target}`);
-    this.name = 'RbacDeniedError';
-  }
+type RbacDeniedErrorMutable = Error & { principal: string; action: string; resource?: string }
+export type RbacDeniedErrorInstance = Error & {
+  readonly principal: string
+  readonly action:    string
+  readonly resource?: string
 }
-export { RbacDeniedError };
+
+export const RbacDeniedError = function(
+  this: RbacDeniedErrorMutable,
+  principal: string,
+  action:    string,
+  resource?: string,
+): void {
+  const target   = resource ? ` on "${resource}"` : ''
+  this.name      = 'RbacDeniedError'
+  this.message   = `RBAC: principal "${principal}" is denied action "${action}"${target}`
+  this.principal = principal
+  this.action    = action
+  this.resource  = resource
+  this.stack     = new Error(this.message).stack
+} as unknown as new (principal: string, action: string, resource?: string) => RbacDeniedErrorInstance
+
+Object.setPrototypeOf(RbacDeniedError.prototype, Error.prototype)
+
+export type RbacDeniedError = RbacDeniedErrorInstance

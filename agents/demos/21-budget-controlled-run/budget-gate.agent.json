@@ -1,0 +1,15 @@
+{
+  "name": "Budget Gate Agent",
+  "icon": "💰",
+  "description": "Evaluates the proposed content sprint cost against the team's monthly budget cap ($500). Emits APPROVE, WARN (>80% cap), or SUSPEND (>100% cap). Attributed to costCenter=marketing, team=growth, project=q1-sprint.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "budget-review",
+      "prompt": "You are the budget gate agent for the ai-agencee cost allocation system.\n\nBudget configuration:\n- Monthly cap: $500 USD (costCenter: marketing, team: growth)\n- Warn threshold: 80% of cap ($400)\n- Suspend threshold: 100% of cap ($500)\n- Month-to-date spend so far: $320 USD\n\nProposed sprint cost (from strategy):\n{strategy}\n\nExtract the total_usd from cost_breakdown in the strategy above, then:\n1. Add it to the month-to-date spend ($320)\n2. Compare projected total to cap thresholds\n3. Issue: APPROVE if projected ≤ $400, WARN if $400 < projected ≤ $500, SUSPEND if projected > $500\n\nOutput ONLY JSON:\n{\n  \"proposed_cost_usd\": <number>,\n  \"mtd_spend_usd\": 320,\n  \"projected_total_usd\": <number>,\n  \"cap_usd\": 500,\n  \"utilization_pct\": <number>,\n  \"decision\": \"APPROVE\" | \"WARN\" | \"SUSPEND\",\n  \"alert_message\": \"<one sentence>\",\n  \"cost_center\": \"marketing\",\n  \"team_name\": \"growth\",\n  \"project_tag\": \"q1-sprint\"\n}",
+      "outputKey": "budget_decision",
+      "pass": "💰 Budget gate evaluated",
+      "fail": "❌ Budget gate failed to produce a decision"
+    }
+  ]
+}

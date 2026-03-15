@@ -33,18 +33,46 @@ export interface PersistedState {
   principals: Record<string, PrincipalState>;
 }
 
-// Error class — kept as class because it extends Error
-class RateLimitExceededError extends Error {
-  constructor(
-    public readonly principal: string,
-    public readonly limitType: 'tokenBudgetPerDay' | 'maxConcurrentRuns' | 'maxRunsPerHour',
-    public readonly current: number,
-    public readonly limit: number,
-    public readonly retryAfterSeconds: number,
-  ) {
-    const msg = `Rate limit exceeded for "${principal}": ${limitType} (${current}/${limit}). Retry after ${retryAfterSeconds}s.`;
-    super(msg);
-    this.name = 'RateLimitExceededError';
-  }
+type RateLimitExceededErrorMutable = Error & {
+  principal:         string
+  limitType:         'tokenBudgetPerDay' | 'maxConcurrentRuns' | 'maxRunsPerHour'
+  current:           number
+  limit:             number
+  retryAfterSeconds: number
 }
-export { RateLimitExceededError };
+export type RateLimitExceededErrorInstance = Error & {
+  readonly principal:         string
+  readonly limitType:         'tokenBudgetPerDay' | 'maxConcurrentRuns' | 'maxRunsPerHour'
+  readonly current:           number
+  readonly limit:             number
+  readonly retryAfterSeconds: number
+}
+
+export const RateLimitExceededError = function(
+  this: RateLimitExceededErrorMutable,
+  principal:         string,
+  limitType:         'tokenBudgetPerDay' | 'maxConcurrentRuns' | 'maxRunsPerHour',
+  current:           number,
+  limit:             number,
+  retryAfterSeconds: number,
+): void {
+  const msg              = `Rate limit exceeded for "${principal}": ${limitType} (${current}/${limit}). Retry after ${retryAfterSeconds}s.`
+  this.name              = 'RateLimitExceededError'
+  this.message           = msg
+  this.principal         = principal
+  this.limitType         = limitType
+  this.current           = current
+  this.limit             = limit
+  this.retryAfterSeconds = retryAfterSeconds
+  this.stack             = new Error(msg).stack
+} as unknown as new (
+  principal: string,
+  limitType: 'tokenBudgetPerDay' | 'maxConcurrentRuns' | 'maxRunsPerHour',
+  current: number,
+  limit: number,
+  retryAfterSeconds: number,
+) => RateLimitExceededErrorInstance
+
+Object.setPrototypeOf(RateLimitExceededError.prototype, Error.prototype)
+
+export type RateLimitExceededError = RateLimitExceededErrorInstance

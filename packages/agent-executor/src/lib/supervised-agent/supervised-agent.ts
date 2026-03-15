@@ -41,14 +41,22 @@ Object.assign((SupervisedAgent as unknown as { prototype: object }).prototype, {
 
 // ─── Error Types ────────────────────────────────────────────────────────────────
 
-class EscalationError extends Error {
-  constructor(
-    message: string,
-    public readonly verdict: SupervisorVerdict,
-  ) {
-    super(message);
-    this.name = 'EscalationError';
-  }
-}
-export { EscalationError }
+type EscalationErrorMutable = Error & { verdict: SupervisorVerdict }
+export type EscalationErrorInstance = Error & { readonly verdict: SupervisorVerdict }
+
+export const EscalationError = function(
+  this: EscalationErrorMutable,
+  message: string,
+  verdict: SupervisorVerdict,
+): void {
+  this.name    = 'EscalationError'
+  this.message = message
+  this.verdict = verdict
+  this.stack   = new Error(message).stack
+} as unknown as new (message: string, verdict: SupervisorVerdict) => EscalationErrorInstance
+
+Object.setPrototypeOf(EscalationError.prototype, Error.prototype)
+
+// Type alias so `err as EscalationError` works in catch blocks
+export type EscalationError = EscalationErrorInstance
 

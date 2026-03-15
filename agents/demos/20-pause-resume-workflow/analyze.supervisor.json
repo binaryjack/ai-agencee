@@ -1,0 +1,24 @@
+{
+  "laneId": "analyze",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "pattern-detect",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["top_products", "top_region", "anomalies"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Analysis output must be valid JSON with top_products, top_region, anomalies, growth_trend, checkpoint_note."
+    },
+    {
+      "checkpointId": "anomaly-confirm",
+      "mode": "self",
+      "expect": { "hasField": "checkpoint_note" },
+      "onFail": "RETRY",
+      "retryInstructions": "Include checkpoint_note: 'analysis_complete' to confirm the checkpoint is saveable for pause/resume."
+    }
+  ],
+  "publishContract": {
+    "key": "analysis",
+    "outputKeys": ["analysis"]
+  }
+}

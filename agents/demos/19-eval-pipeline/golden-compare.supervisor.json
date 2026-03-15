@@ -1,0 +1,17 @@
+{
+  "laneId": "golden-compare",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "diff",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["semantic_similarity", "regression"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be valid JSON with keys: semantic_similarity, coverage_gaps, regression, summary."
+    }
+  ],
+  "publishContract": {
+    "key": "golden-diff",
+    "outputKeys": ["golden_diff"]
+  }
+}

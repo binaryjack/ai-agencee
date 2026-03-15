@@ -1,0 +1,15 @@
+{
+  "name": "Insight Synthesizer",
+  "icon": "🧠",
+  "description": "Synthesizes the pattern-detection analysis into a concise executive narrative with prioritized recommendations.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "synthesis",
+      "prompt": "You are an executive insights synthesizer. Given the following Q4 2024 sales analysis, write a 3-paragraph executive summary:\n\n{analysis}\n\nParagraph 1: Key Q4 performance highlights.\nParagraph 2: Anomalies and risks requiring attention.\nParagraph 3: Top 3 prioritized recommendations for Q1.\n\nOutput ONLY JSON: { \"summary\": \"<full 3-paragraph text>\", \"recommendations\": [\"<rec1>\", \"<rec2>\", \"<rec3>\"], \"risk_level\": \"low\" | \"medium\" | \"high\" }",
+      "outputKey": "synthesis",
+      "pass": "🧠 Synthesis complete",
+      "fail": "❌ Synthesis failed"
+    }
+  ]
+}

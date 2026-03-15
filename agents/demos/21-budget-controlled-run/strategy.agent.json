@@ -1,0 +1,15 @@
+{
+  "name": "Content Strategy Agent",
+  "icon": "🗺️",
+  "description": "Synthesizes market, competitor, and audience data into a Q1 content sprint strategy. Output feeds the budget gate for spend-vs-cap evaluation.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "content-strategy",
+      "prompt": "You are a content strategy director. Synthesize the following research inputs into a Q1 content sprint strategy:\n\nMarket research:\n{market_data}\n\nCompetitor analysis:\n{competitor_data}\n\nAudience profiles:\n{audience_data}\n\nProduce:\n1. Content strategy statement (2 sentences)\n2. Priority content types (ranked list of 5)\n3. Key messages per persona (3 personas × 1 key message)\n4. Estimated content production cost breakdown: { blog_posts: <n_items × $cost_per_item>, case_studies: ..., webinars: ..., total_usd: <number> }\n\nOutput ONLY JSON: { \"strategy\": \"...\", \"content_types\": [...], \"key_messages\": {...}, \"cost_breakdown\": { \"blog_posts\": { \"count\": <n>, \"cost_usd\": <n> }, \"case_studies\": { \"count\": <n>, \"cost_usd\": <n> }, \"webinars\": { \"count\": <n>, \"cost_usd\": <n> }, \"total_usd\": <n> } }",
+      "outputKey": "strategy",
+      "pass": "🗺️ Strategy defined",
+      "fail": "❌ Strategy synthesis failed"
+    }
+  ]
+}

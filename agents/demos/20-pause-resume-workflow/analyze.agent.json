@@ -1,0 +1,15 @@
+{
+  "name": "Data Analyzer",
+  "icon": "🔬",
+  "description": "Detects patterns, top performers, and anomalies in the ingested dataset. This is the lane where a run can be paused — the checkpoint state (messages, partial tool calls, cost) is serialized to run_checkpoints before suspension.",
+  "checks": [
+    {
+      "type": "llm-generate",
+      "taskType": "data-analysis",
+      "prompt": "You are a data analysis agent. Analyze the following Q4 2024 sales dataset and produce insights:\n\n{ingested_data}\n\n1. Identify the top 3 products by revenue.\n2. Identify the top region by total units sold.\n3. Flag any anomalies (unusually high or low revenue for the product category).\n4. Compute week-over-week growth trend if dates allow.\n\nOutput ONLY JSON: { \"top_products\": [...], \"top_region\": \"<name>\", \"anomalies\": [...], \"growth_trend\": \"<description>\", \"checkpoint_note\": \"analysis_complete\" }",
+      "outputKey": "analysis",
+      "pass": "🔬 Analysis complete — checkpoint saved",
+      "fail": "❌ Analysis failed — previous checkpoint available for resume"
+    }
+  ]
+}

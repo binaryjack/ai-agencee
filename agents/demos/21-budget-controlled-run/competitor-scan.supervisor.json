@@ -1,0 +1,17 @@
+{
+  "laneId": "competitor-scan",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "scan",
+      "mode": "self",
+      "expect": { "validJson": true, "requiredKeys": ["competitors", "our_advantage"] },
+      "onFail": "RETRY",
+      "retryInstructions": "Output must be valid JSON with keys: competitors (array with name/pricing/differentiator/weaknesses/enterprise_score), our_advantage."
+    }
+  ],
+  "publishContract": {
+    "key": "competitor-data",
+    "outputKeys": ["competitor_data"]
+  }
+}
