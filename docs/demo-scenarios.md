@@ -323,21 +323,84 @@ agents/demos/
 │   ├── website/                       ← Plan demo 03
 │   ├── feature-in-context/            ← Plan demo 04
 │   └── mvp-sprint/                    ← Plan demo 05
-├── 01-app-boilerplate/
-│   ├── boilerplate.dag.json
-│   ├── requirements.agent.json + .supervisor.json
-│   ├── scaffold.agent.json + .supervisor.json
-│   ├── backend.agent.json + .supervisor.json
-│   ├── frontend.agent.json + .supervisor.json
-│   └── integrate.agent.json + .supervisor.json
+├── 01-app-boilerplate/                ← 5 lanes
 ├── 02-enterprise-skeleton/            ← 7 lanes
 ├── 03-website-build/                  ← 4 lanes
 ├── 04-feature-in-context/             ← 5 lanes
 ├── 05-mvp-sprint/                     ← 6 lanes
-└── 06-resilience-showcase/            ← 8 lanes (all independent)
+├── 06-resilience-showcase/            ← 8 lanes (all independent)
+├── 07-pr-review/ → 18-multitenant-hardening/   ← 12 advanced demos
+├── 19-eval-pipeline/                  ← 4 lanes  IP-03
+├── 20-pause-resume-workflow/          ← 4 lanes  IP-01
+└── 21-budget-controlled-run/          ← 5 lanes  IP-08
 
 scripts/
 ├── demo.js                            ← Original 3-lane demo
 ├── run-scenarios.js                   ← Advanced scenario runner (this guide)
 └── plan-demo.js                       ← 5-phase plan demo runner
 ```
+
+---
+
+## IP Demo Scenarios
+
+### 19 — Eval Pipeline & Quality Flywheel
+
+**IP:** IP-03  
+**Run:** `node scripts/demo.js agents/demos/19-eval-pipeline/eval-pipeline.dag.json`  
+**DAG:** `agents/demos/19-eval-pipeline/eval-pipeline.dag.json`
+
+| Lane | Depends on | What it does |
+|------|-----------|-------------|
+| `content-generate` | — | Writes a 400-word blog post section |
+| `eval-judge` | `content-generate` | LLM-as-judge scores clarity, completeness, accuracy (1–5 each) |
+| `golden-compare` | `content-generate` | Semantic-similarity diff against a golden reference |
+| `ci-gate` | `eval-judge` + `golden-compare` | Aggregates scores → `PASS` / `WARN` / `FAIL` decision |
+
+**Key concepts demonstrated:**
+- Parallel scoring lanes (`eval-judge` and `golden-compare` run simultaneously)
+- Structured JSON output validation in supervisor checkpoints
+- CI gate pattern: accept only when overall score ≥ 3.5 and no regression
+
+---
+
+### 20 — Long-Running Checkpoint Workflow (Pause/Resume)
+
+**IP:** IP-01  
+**Run:** `node scripts/demo.js agents/demos/20-pause-resume-workflow/pause-resume.dag.json`  
+**DAG:** `agents/demos/20-pause-resume-workflow/pause-resume.dag.json`
+
+| Lane | Depends on | What it does |
+|------|-----------|-------------|
+| `ingest` | — | Validates and ingests a synthetic Q4 2024 sales dataset (10 rows) |
+| `analyze` | `ingest` | Pattern detection, top performers, anomaly flagging — checkpoint saved here |
+| `synthesize` | `analyze` | Executive narrative + 3 prioritized recommendations |
+| `report` | `synthesize` | Renders final board-ready Markdown report |
+
+**Key concepts demonstrated:**
+- Sequential pipeline with per-supervisor checkpoints — any lane can be paused
+- `checkpoint_note` field lets supervisors confirm their state is serializable
+- The `analyze` lane has `retryBudget: 2` and two checkpoint steps, showing multi-step supervisor phases
+- A real pause would serialize the `analyze` lane state (messages + cost) to `run_checkpoints` and allow exact-position resume
+
+---
+
+### 21 — Budget-Controlled Content Sprint
+
+**IP:** IP-08  
+**Run:** `node scripts/demo.js agents/demos/21-budget-controlled-run/budget-sprint.dag.json`  
+**DAG:** `agents/demos/21-budget-controlled-run/budget-sprint.dag.json`
+
+| Lane | Depends on | What it does |
+|------|-----------|-------------|
+| `market-research` | — | Top 3 market trends, TAM estimate, pain points |
+| `competitor-scan` | — | 5-competitor analysis with enterprise scores |
+| `audience-profile` | — | 3 ICP personas with buying criteria and deal sizes |
+| `strategy` | all 3 above | Synthesizes inputs into Q1 content strategy + cost breakdown |
+| `budget-gate` | `strategy` | Adds projected cost to MTD spend — issues `APPROVE` / `WARN` / `SUSPEND` |
+
+**Key concepts demonstrated:**
+- 3-way parallel research fan-out — all three research lanes run simultaneously
+- `metadata.costCenter`, `teamName`, and `projectTag` on the DAG — shows run attribution
+- Budget gate logic: MTD=$320, cap=$500, warn at 80%=$400; strategy cost determines the decision
+- Structured `budget_decision` output shows `utilization_pct` and `alert_message`

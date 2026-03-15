@@ -46,6 +46,19 @@ Welcome to the comprehensive feature documentation for ai-agencee/ai-kit. This d
 - [Secrets Management](./27-secrets-management.md) — Vault integration and scoped secrets
 - [Codernic (E14)](./28-code-assistant.md) — Codebase-aware coding agent — symbol extraction, dependency graphs, code that compiles
 
+### 🏢 Enterprise — IP Series
+- [Pause / Resume & Checkpoint Timeline (IP-01)](./29-pause-resume.md) — Snapshot supervisor state to PostgreSQL, pause mid-flight, resume from any checkpoint
+- [SSO / SAML 2.0 / OIDC (IP-02)](./30-sso-saml-oidc.md) — Okta, Azure AD, Google Workspace IdP support; JIT provisioning
+- [Eval Pipeline & Quality Flywheel (IP-03)](./31-eval-pipeline.md) — LLM-as-judge scoring, golden output store, CI eval gate, fine-tuning export
+- [GitHub Webhook Triggers + Cron (IP-04)](./32-event-triggers-ip04.md) — HMAC-verified webhooks, event → DAG routing, cron scheduler
+- [AI Run Diagnostics (IP-05)](./33-ai-diagnostics.md) — One-click root-cause analysis, run comparison, DAG lint panel
+- [Python SDK — Async + LangChain (IP-06)](./34-python-sdk.md) — Async client, LangChain Tool, LangGraph Node, DAG builder
+- [Framework Connectors (IP-07)](./35-framework-connectors.md) — LangGraph, CrewAI, AutoGen, Semantic Kernel bidirectional adapters
+- [Budget Forecasting + Cost Allocation (IP-08)](./36-budget-forecasting.md) — Monthly caps, spend forecast, per-team chargeback, budget alerts
+- [Domain Agents — Production Ready (IP-09)](./37-domain-agents.md) — 6 agents: security-review, dependency-audit, pr-description, docs, a11y, database
+- [Visual DAG Editor (IP-10)](./38-dag-editor.md) — AI compose, template gallery, version history, simulation mode, live overlay
+- [Observability Surface (IP-11)](./39-observability-surface.md) — Flame chart, token heatmap, cost drill-down, OTLP export
+
 ---
 
 ## Feature Documentation Status
@@ -79,6 +92,18 @@ Welcome to the comprehensive feature documentation for ai-agencee/ai-kit. This d
 | Demo Mode | [25](./25-demo-mode.md) | ✅ Documented | P0 | G-21/04 |
 | JSON Schema | [26](./26-json-schema.md) | ✅ Documented | P0 | G-23 |
 | Secrets Management | [27](./27-secrets-management.md) | ✅ Documented | P1 | G-09 |
+| Codernic (E14) | [28](./28-code-assistant.md) | ✅ Documented | P1 | E14 |
+| Pause/Resume Checkpoints | [29](./29-pause-resume.md) | ✅ Documented | P1 | IP-01 |
+| SSO / SAML 2.0 / OIDC | [30](./30-sso-saml-oidc.md) | ✅ Documented | P1 | IP-02 |
+| Eval Pipeline & Quality Flywheel | [31](./31-eval-pipeline.md) | ✅ Documented | P1 | IP-03 |
+| GitHub Webhook Triggers + Cron | [32](./32-event-triggers-ip04.md) | ✅ Documented | P2 | IP-04 |
+| AI Run Diagnostics | [33](./33-ai-diagnostics.md) | ✅ Documented | P1 | IP-05 |
+| Python SDK (Async + LangChain) | [34](./34-python-sdk.md) | ✅ Documented | P1 | IP-06 |
+| Framework Connectors | [35](./35-framework-connectors.md) | ✅ Documented | P2 | IP-07 |
+| Budget Forecasting + Cost Alloc | [36](./36-budget-forecasting.md) | ✅ Documented | P1 | IP-08 |
+| Domain Agents (6 production) | [37](./37-domain-agents.md) | ✅ Documented | P1 | IP-09 |
+| Visual DAG Editor | [38](./38-dag-editor.md) | ✅ Documented | P1 | IP-10 |
+| Observability Surface | [39](./39-observability-surface.md) | ✅ Documented | P1 | IP-11 |
 
 ---
 

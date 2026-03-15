@@ -1,6 +1,6 @@
 # AI Agencee — Single Source of Truth Roadmap
 
-> **Verified against source code** on 2026-03-08.
+> **Verified against source code** on 2026-03-16.
 > Each entry links to the authoritative implementation file(s) and records the real status from a codebase scan, not from documentation alone.
 > "Implemented" means production code exists with real logic — stubs and no-op fall-throughs are called out explicitly.
 
@@ -101,6 +101,26 @@
 | E12 | Slack/Teams notifications | `lib/notification-sink.ts` | ✅ | Incoming webhook (Slack + Teams); `failuresOnly`, `notifyLaneEnd`, `notifyBudget` options; zero SDK dependencies |
 | E13 | Run advisor (auto-tune) | `lib/run-advisor.ts` → integrated in `dag-orchestrator.ts` | ✅ | 6 recommendation types; configurable thresholds; `ai-kit advise` CLI |
 | E14 | Codernic | `code-assistant/indexer/codebase-indexer.ts` + `storage/codebase-index-store.ts` + `parsers/typescript-parser.ts` | ✅ | Codebase-aware coding agent: 449 files in 1.03s; symbol extraction (classes, functions, interfaces); dependency graph analysis; SQLite + FTS5 full-text search; incremental indexing; cross-platform path normalization; 581 tests (575 unit + 6 integration) |
+
+---
+
+## IP Series (Enterprise Cloud — `_private/`)
+
+> Implemented in the `_private/` workspace (cloud-api + ai-agencee-cloud). See `_private/docs/implementation/MASTER.md` for the full plan sequence.
+
+| ID    | Feature | Source | Status | Notes |
+|-------|---------|--------|--------|-------|
+| IP-01 | Pause / Resume + Checkpoint Timeline | `cloud-api/src/routes/runs.ts` + `run_checkpoints` table + `ai-agencee-cloud/src/entities/run/ui/CheckpointTimeline.tsx` | ✅ | Full lane state serialized per supervisor phase; `PATCH /runs/:id/pause` + `/resume`; optimistic Redux state with rollback |
+| IP-02 | SSO / SAML 2.0 / OIDC | `cloud-api/src/plugins/saml.ts` + `oidc.ts` + `sso.sql` | ✅ | passport-saml; OIDC PKCE; Okta/Azure AD/Google Workspace; `/settings/sso` UI; JIT provisioning |
+| IP-03 | Eval Pipeline & Quality Flywheel | `cloud-api/src/lib/eval-harness.ts` + `lane_evals` table + `EvalReport` | ✅ | LLM-as-judge scoring (clarity/completeness/accuracy); golden output store; CI eval gate; fine-tuning JSONL export |
+| IP-04 | GitHub Webhook Triggers + Cron | `cloud-api/src/routes/triggers.ts` + `webhook_triggers` + `cron_triggers` tables | ✅ | HMAC-SHA256 verification; `push`/`pull_request`/`issues`/`workflow_run` routing; cron scheduler |
+| IP-05 | AI Run Diagnostics | `ai-agencee-cloud/src/entities/run/ui/DiagnosticCard.tsx` + streaming SSE diagnosis | ✅ | Root-cause analysis card; `root_cause` + `affected_lanes[]` + `fix_suggestions[]`; run comparison diff; DAG lint panel |
+| IP-06 | Python SDK — Async + LangChain | `packages/python-sdk/` | ✅ | `AiAgenceeClient` (async httpx); `LangChainDagTool`; `LangGraphDagNode`; type-safe DAG builder; pytest fixtures |
+| IP-07 | Framework Connectors | `packages/connectors/` | ✅ | Bidirectional: LangGraph, CrewAI, AutoGen, Semantic Kernel; preserves supervisor checkpoints + barrier semantics |
+| IP-08 | Budget Forecasting + Cost Allocation | `cloud-api/src/routes/billing.ts` + `cost_allocation` + `budget_alerts` tables + `ForecastCard` / `SpendBarChart` | ✅ | Monthly cap per tenant; linear regression forecast; warn at 80% / suspend at 100%; per-team chargeback |
+| IP-09 | Domain Agents (6 production) | `agents/security-review.agent.json`, `dependency-audit.agent.json`, `pr-description.agent.json`, `documentation.agent.json`, `accessibility.agent.json`, `database.agent.json` | ✅ | OWASP CVSS scoring; CVE triage; structured PR summaries; WCAG 2.2 AA; schema migration adviser |
+| IP-10 | Visual DAG Editor | `_private/dag-editor/src/` | ✅ | AI compose (NL → DAG); 12 templates; version history with diff; simulation mode; live SSE execution overlay; `dag_versions` table |
+| IP-11 | Observability Surface | `ai-agencee-cloud/src/entities/observability/` + `spans` table | ✅ | `SpanFlamechart`; token efficiency heatmap; `CostDrilldownTable`; OTLP export to Datadog/Grafana Tempo/New Relic/Honeycomb |
 
 ---
 
