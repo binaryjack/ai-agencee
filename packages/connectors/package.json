@@ -1,0 +1,53 @@
+{
+  "name": "@ai-agencee/connectors",
+  "version": "0.1.0",
+  "description": "Bidirectional adapters between ai-agencee DAG format and LangGraph, CrewAI, AutoGen, and Semantic Kernel",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./langgraph": {
+      "types": "./dist/langgraph/index.d.ts",
+      "default": "./dist/langgraph/index.js"
+    },
+    "./crewai": {
+      "types": "./dist/crewai/index.d.ts",
+      "default": "./dist/crewai/index.js"
+    },
+    "./autogen": {
+      "types": "./dist/autogen/index.d.ts",
+      "default": "./dist/autogen/index.js"
+    },
+    "./semantic-kernel": {
+      "types": "./dist/semantic-kernel/index.d.ts",
+      "default": "./dist/semantic-kernel/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@langchain/langgraph": ">=0.2"
+  },
+  "peerDependenciesMeta": {
+    "@langchain/langgraph": { "optional": true }
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,5 +1,6 @@
 ﻿import * as path from 'path'
 import type { IChatRenderer } from '../chat-renderer/index.js'
+import { PLAN_STATE_DIR } from '../path-constants.js'
 import type { ActorId, BacklogItem, BacklogItemStatus } from '../plan-types.js'
 import './prototype/index.js'
 
@@ -39,7 +40,7 @@ export const BacklogBoard = function(
   projectRoot: string,
 ) {
   this._renderer = renderer;
-  this._stateDir = path.join(projectRoot, '.agents', 'plan-state');
+  this._stateDir = path.join(projectRoot, PLAN_STATE_DIR);
   this._items = new Map<string, BacklogItem>();
   this._seq = 0;
 } as unknown as {

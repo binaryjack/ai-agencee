@@ -5,6 +5,11 @@
     "outDir": "dist",
     "types": ["node", "jest"],
     "paths": {
+      "@ai-agencee/connectors": ["../connectors/dist/index.d.ts"],
+      "@ai-agencee/connectors/langgraph": ["../connectors/dist/langgraph/index.d.ts"],
+      "@ai-agencee/connectors/crewai": ["../connectors/dist/crewai/index.d.ts"],
+      "@ai-agencee/connectors/autogen": ["../connectors/dist/autogen/index.d.ts"],
+      "@ai-agencee/connectors/semantic-kernel": ["../connectors/dist/semantic-kernel/index.d.ts"],
       "@ai-agencee/engine": ["../agent-executor/dist/index.d.ts"],
       "@ai-agencee/engine/code-assistant": ["../agent-executor/dist/code-assistant/index.d.ts"],
       "@ai-agencee/engine/code-assistant/storage": ["../agent-executor/dist/code-assistant/storage/index.d.ts"],

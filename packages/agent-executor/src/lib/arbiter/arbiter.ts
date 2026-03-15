@@ -2,6 +2,7 @@
 import type { IBacklogBoard } from '../backlog/index.js'
 import type { IChatRenderer } from '../chat-renderer/index.js'
 import type { IModelRouter } from '../model-router/index.js'
+import { PLAN_STATE_DIR } from '../path-constants.js'
 import type { ActorId, DecisionOption, PlanDefinition } from '../plan-types.js'
 import { ArchResolutionTier } from '../resolution-tiers/arch-resolution-tier/index.js'
 import { BAResolutionTier } from '../resolution-tiers/ba-resolution-tier/index.js'
@@ -50,7 +51,7 @@ export const Arbiter = function(
   tiers?: ResolutionTier[],
 ) {
   this._renderer    = renderer;
-  this._stateDir    = path.join(projectRoot, '.agents', 'plan-state');
+  this._stateDir    = path.join(projectRoot, PLAN_STATE_DIR);
   this._modelRouter = modelRouter;
   this._decisions   = [];
   this._tiers = tiers ?? [

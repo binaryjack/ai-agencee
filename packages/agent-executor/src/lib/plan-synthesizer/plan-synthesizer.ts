@@ -1,12 +1,13 @@
 import * as path from 'path'
 import type { IChatRenderer } from '../chat-renderer/index.js'
 import type { IModelRouter } from '../model-router/index.js'
+import { PLAN_STATE_DIR } from '../path-constants.js'
 import type {
-  ActorId,
-  DiscoveryResult,
-  PlanDefinition,
-  PlanItemStatus,
-  StepDefinition,
+    ActorId,
+    DiscoveryResult,
+    PlanDefinition,
+    PlanItemStatus,
+    StepDefinition,
 } from '../plan-types.js'
 import type { IPromptRegistry } from '../prompt-registry/index.js'
 
@@ -203,7 +204,7 @@ export const PlanSynthesizer = function PlanSynthesizer(
   promptsDir?:  string,
 ) {
   this._renderer       = renderer;
-  this._stateDir       = path.join(projectRoot, '.agents', 'plan-state');
+  this._stateDir       = path.join(projectRoot, PLAN_STATE_DIR);
   this._modelRouter    = modelRouter;
   this._promptsDir     = promptsDir ?? path.join(projectRoot, 'agents', 'prompts');
   this._promptRegistry = undefined;

@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ai-agencee/schemas/pr-description.schema.json",
+  "title": "PR Description Output",
+  "description": "Structured output schema for the PR Description agent",
+  "type": "object",
+  "required": ["title", "description", "testPlan"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Concise PR title",
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "description": "Markdown body describing the change, motivation, and approach"
+    },
+    "testPlan": {
+      "type": "string",
+      "description": "Steps to verify the change manually or via automated tests"
+    },
+    "breakingChanges": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of any breaking API or behavior changes"
+    },
+    "linkedIssues": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Related issue or ticket references (e.g. '#123', 'JIRA-456')"
+    },
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item", "done"],
+        "properties": {
+          "item": { "type": "string" },
+          "done": { "type": "boolean" }
+        }
+      }
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

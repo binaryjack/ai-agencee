@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ai-agencee/schemas/database-report.schema.json",
+  "title": "Database Review Report",
+  "description": "Structured output schema for the Database Review agent",
+  "type": "object",
+  "required": ["verdict", "checks"],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "escalate"],
+      "description": "Overall database review verdict; escalate if irreversible migration detected"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rule", "passed", "message"],
+        "properties": {
+          "rule":      { "type": "string", "description": "Rule name (e.g. 'no-select-star', 'irreversible-migration', 'missing-index')" },
+          "passed":    { "type": "boolean" },
+          "message":   { "type": "string" },
+          "severity":  { "type": "string", "enum": ["info", "warning", "error", "critical"] },
+          "locations": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "File paths or line references where the violation was found"
+          }
+        }
+      }
+    },
+    "irreversibleOperations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "SQL operations that cannot be rolled back (e.g. DROP TABLE, TRUNCATE)"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

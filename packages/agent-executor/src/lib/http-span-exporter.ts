@@ -13,7 +13,7 @@
  *   await exporter.flush();   // optional: drain remaining spans on exit
  */
 
-import type { SpanExporter, SpanInput } from './otel.js';
+import type { SpanExporter, SpanInput } from './otel.js'
 
 const BATCH_SIZE       = 20;
 const FLUSH_INTERVAL   = 1_000; // ms

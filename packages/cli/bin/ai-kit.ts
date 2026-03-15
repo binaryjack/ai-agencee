@@ -6,6 +6,7 @@ import { runCheck } from '../src/commands/check/index.js'
 import { runCodeIndex } from '../src/commands/code/index.js'
 import { runDag } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
+import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } from '../src/commands/import/index.js'
 import { runInit } from '../src/commands/init/index.js'
 import { runMcp } from '../src/commands/mcp/index.js'
 import { runPlan } from '../src/commands/plan/index.js'
@@ -182,5 +183,30 @@ program
   .command('data:list-tenants')
   .description('List all tenant IDs stored under .agents/tenants/')
   .action(runDataListTenants);
+
+// Framework import commands (IP-07)
+program
+  .command('import langgraph <file>')
+  .description('Convert a LangGraph StateGraph JSON → ai-agencee DAG JSON')
+  .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
+  .action((file, options) => runImportLangGraph(file, { out: options.out }))
+
+program
+  .command('import crew <file>')
+  .description('Convert a CrewAI Crew JSON definition → ai-agencee DAG JSON')
+  .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
+  .action((file, options) => runImportCrew(file, { out: options.out }))
+
+program
+  .command('import autogen <file>')
+  .description('Convert an AutoGen GroupChat config JSON → ai-agencee DAG JSON')
+  .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
+  .action((file, options) => runImportAutogen(file, { out: options.out }))
+
+program
+  .command('import sk-plan <file>')
+  .description('Convert a Semantic Kernel Planner JSON output → ai-agencee DAG JSON')
+  .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
+  .action((file, options) => runImportSkPlan(file, { out: options.out }))
 
 program.parse(process.argv);

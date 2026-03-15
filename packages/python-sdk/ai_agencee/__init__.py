@@ -22,13 +22,34 @@ import sys
 from pathlib import Path
 from typing import Any
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
+    # CLI shortcuts
     "run_dag",
     "list_agents",
     "AiAgenceeError",
     "CliNotFoundError",
+    # HTTP client
+    "AiAgenceeClient",
+    # Models
+    "Run",
+    "RunEvent",
+    "RunOutcome",
+    "RunStatus",
+    # DAG builder
+    "DagBuilder",
+    "LaneBuilder",
+    # Framework integrations
+    "AiAgenceeRunTool",
+    "create_dag_node",
+    "AiAgenceeSubgraph",
 ]
+
+from .client import AiAgenceeClient
+from .models import Run, RunEvent, RunOutcome, RunStatus
+from .dag_builder import DagBuilder, LaneBuilder
+from .langchain_tool import AiAgenceeRunTool
+from .langgraph_node import AiAgenceeSubgraph, create_dag_node
 
 
 # ─── Exceptions ───────────────────────────────────────────────────────────────

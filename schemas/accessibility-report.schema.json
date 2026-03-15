@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ai-agencee/schemas/accessibility-report.schema.json",
+  "title": "Accessibility Report",
+  "description": "Structured output schema for the Accessibility Review agent",
+  "type": "object",
+  "required": ["verdict", "issues"],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "retry"],
+      "description": "Overall accessibility verdict"
+    },
+    "wcagLevel": {
+      "type": "string",
+      "enum": ["A", "AA", "AAA"],
+      "description": "Highest WCAG conformance level tested"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["rule", "impact", "description"],
+        "properties": {
+          "rule":        { "type": "string", "description": "WCAG rule ID or aria rule name (e.g. 'aria-label', 'color-contrast')" },
+          "impact":      { "type": "string", "enum": ["minor", "moderate", "serious", "critical"] },
+          "description": { "type": "string" },
+          "element":     { "type": "string", "description": "HTML selector or code snippet" },
+          "fix":         { "type": "string", "description": "Suggested remediation" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total":    { "type": "integer" },
+        "critical": { "type": "integer" },
+        "serious":  { "type": "integer" },
+        "moderate": { "type": "integer" },
+        "minor":    { "type": "integer" }
+      }
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

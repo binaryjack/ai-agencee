@@ -1,5 +1,5 @@
-import { execute } from './prototype/index.js'
-import type { IGithubCommentHandler } from './github-comment-handler.types.js'
+import type { IGithubCommentHandler } from './github-comment-handler.types.js';
+import { execute } from './prototype/index.js';
 
 export const GithubCommentHandler = function(this: IGithubCommentHandler) {
   // no-op constructor

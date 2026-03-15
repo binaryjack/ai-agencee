@@ -1,4 +1,4 @@
-import type { ICheckHandler, RawCheckResult } from '../check-handler.types.js'
+import type { ICheckHandler, RawCheckResult } from '../check-handler.types.js';
 
 export interface IGithubCommentHandler extends ICheckHandler {
   new(): IGithubCommentHandler;

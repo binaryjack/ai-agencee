@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ai-agencee/schemas/documentation-output.schema.json",
+  "title": "Documentation Output",
+  "description": "Structured output schema for the Documentation agent",
+  "type": "object",
+  "required": ["verdict", "checks"],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail", "retry"],
+      "description": "Overall documentation completeness verdict"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["artifact", "present", "status"],
+        "properties": {
+          "artifact": {
+            "type": "string",
+            "description": "Name of the documentation artifact checked (e.g. README, CHANGELOG, openapi)"
+          },
+          "present": { "type": "boolean" },
+          "status":  { "type": "string", "enum": ["ok", "missing", "incomplete", "outdated"] },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "suggestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "LLM-generated documentation improvement suggestions"
+    },
+    "generatedDocs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "content"],
+        "properties": {
+          "path":    { "type": "string" },
+          "content": { "type": "string" }
+        }
+      },
+      "description": "Documentation files generated or updated by the agent"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
