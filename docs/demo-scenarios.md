@@ -404,3 +404,24 @@ scripts/
 - `metadata.costCenter`, `teamName`, and `projectTag` on the DAG — shows run attribution
 - Budget gate logic: MTD=$320, cap=$500, warn at 80%=$400; strategy cost determines the decision
 - Structured `budget_decision` output shows `utilization_pct` and `alert_message`
+
+---
+
+### 22 — Observability Surface Deep-Dive
+
+**IP:** IP-11  
+**Run:** `node scripts/demo.js agents/demos/22-observability-surface/observability.dag.json`  
+**DAG:** `agents/demos/22-observability-surface/observability.dag.json`
+
+| Lane | Depends on | What it does |
+|------|-----------|-------------|
+| `generate-load` | — | Simulates 50 DAG runs across 3 DAGs and 4 model tiers (Mock provider) |
+| `spans-analysis` | `generate-load` | Queries the `spans` table — identifies slowest lanes and highest-cost models |
+| `heatmap-report` | `spans-analysis` | Generates token-efficiency heatmap summary (output/input ratios per model) |
+| `export-otlp` | `heatmap-report` | Validates OTLP export payload structure for Datadog + Grafana Tempo |
+
+**Key concepts demonstrated:**
+- How spans are stored (`spans` table, `attributes` JSONB) and queried
+- Token efficiency metric: `output_tokens ÷ input_tokens` ratio per model tier
+- OTLP export payload format — trace ID, span ID, parent span, resource attributes
+- CostDrilldownTable drill-down pattern: KPI total → per-run breakdown

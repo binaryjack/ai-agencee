@@ -135,4 +135,4 @@ The Observability page filter bar supports:
 
 ## Demo
 
-→ See [Demo 21 — Observability Surface](../demo-scenarios.md#demo-21--observability-surface-ip-11)
+→ See [Demo 22 — Observability Surface Deep-Dive](../demo-scenarios.md#22--observability-surface-deep-dive)
