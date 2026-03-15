@@ -28,11 +28,15 @@
  *   rootSpan.end();
  */
 
+// ─── Shared primitive type ────────────────────────────────────────────────────
+
+type SpanAttrValue = string | number | boolean;
+
 // ─── Public span handle (wraps real or no-op span) ───────────────────────────
 
 export interface OtelSpanHandle {
   /** Set an attribute on the span. */
-  setAttribute(key: string, value: string | number | boolean): this;
+  setAttribute(key: string, value: SpanAttrValue): this;
   /** Record an exception event on the span. */
   recordException(err: Error): this;
   /** Set span status: 'ok' | 'error'. */
@@ -54,6 +58,28 @@ export interface DagTracer {
   startLlmCall(laneId: string, model: string, parentSpan?: OtelSpanHandle): OtelSpanHandle;
   /** Start a child tool.call span; call `.end()` when the tool returns. */
   startToolCall(laneId: string, toolName: string, parentSpan?: OtelSpanHandle): OtelSpanHandle;
+}
+
+// ─── Span export types (mirrors cloud-api SpanInput schema) ──────────────────
+
+export interface SpanInput {
+  spanId:           string;
+  parentSpanId:     string | null;
+  traceId:          string;
+  /** e.g. 'dag.run' | 'dag.lane' | 'llm.call' | 'tool.call' */
+  operation:        string;
+  laneId:           string | null;
+  startMs:          number;
+  endMs:            number;
+  model:            string | null;
+  promptTokens:     number;
+  completionTokens: number;
+  costUsd:          number;
+  errorMsg:         string | null;
+}
+
+export interface SpanExporter {
+  export(spans: SpanInput[]): Promise<void>;
 }
 
 // ─── No-op implementation (used when @opentelemetry/api is absent) ───────────
@@ -98,6 +124,63 @@ function wrapSpan(span: OtelApiSpan): OtelSpanHandle {
   return handle;
 }
 
+// ─── Exporter-aware span wrapper ─────────────────────────────────────────────
+
+const _rndHex = (len: number): string =>
+  Array.from({ length: len }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
+interface CapturedSpanHandle extends OtelSpanHandle {
+  readonly spanId:  string;
+  readonly traceId: string;
+}
+
+function captureSpan(
+  otelSpan:  OtelApiSpan,
+  meta:      { spanId: string; parentSpanId: string | null; traceId: string; operation: string; laneId: string | null },
+  exporter?: SpanExporter,
+): CapturedSpanHandle {
+  const startMs = Date.now();
+  const extraAttrs: Record<string, SpanAttrValue> = {};
+  let errorMsg: string | null = null;
+
+  const handle: CapturedSpanHandle = {
+    spanId:  meta.spanId,
+    traceId: meta.traceId,
+    setAttribute(key, value) {
+      otelSpan.setAttribute(key, value);
+      extraAttrs[key] = value;
+      return handle;
+    },
+    recordException(err) {
+      otelSpan.recordException(err);
+      errorMsg = err.message;
+      return handle;
+    },
+    setStatus(status, message) {
+      otelSpan.setStatus({ code: status === 'ok' ? 1 : 2, message: message ?? '' });
+      if (status !== 'ok') errorMsg = message ?? errorMsg ?? 'error';
+      return handle;
+    },
+    end() {
+      otelSpan.end();
+      if (exporter) {
+        void exporter.export([{
+          ...meta,
+          startMs,
+          endMs:            Date.now(),
+          model:            (extraAttrs['ai.llm.model'] as string) ?? null,
+          promptTokens:     Number(extraAttrs['ai.tokens.prompt']    ?? 0),
+          completionTokens: Number(extraAttrs['ai.tokens.completion'] ?? 0),
+          costUsd:          Number(extraAttrs['ai.cost.usd']          ?? 0),
+          errorMsg,
+        }]);
+      }
+    },
+    active: true,
+  };
+  return handle;
+}
+
 // ─── Lazy OTEL API loader ─────────────────────────────────────────────────────
 
 /**
@@ -105,7 +188,7 @@ function wrapSpan(span: OtelApiSpan): OtelSpanHandle {
  * Typed here so we don't require the package at build time.
  */
 interface OtelApiSpan {
-  setAttribute(key: string, value: string | number | boolean): void;
+  setAttribute(key: string, value: SpanAttrValue): void;
   recordException(err: Error): void;
   setStatus(status: { code: number; message?: string }): void;
   end(): void;
@@ -116,7 +199,7 @@ interface OtelApiTracer {
     name: string,
     fn: F,
   ): ReturnType<F>;
-  startSpan(name: string, options?: { attributes?: Record<string, string | number | boolean> }): OtelApiSpan;
+  startSpan(name: string, options?: { attributes?: Record<string, SpanAttrValue> }): OtelApiSpan;
 }
 
 interface OtelApi {
@@ -142,17 +225,26 @@ function tryLoadOtel(): OtelApi | null {
 // ─── Real OTEL tracer implementation ─────────────────────────────────────────
 
 interface IRealDagTracer extends DagTracer {
-  _tracer: OtelApiTracer;
+  _tracer:    OtelApiTracer;
+  _exporter?: SpanExporter;
 }
 
-const RealDagTracer = function(this: IRealDagTracer, api: OtelApi): void {
+const RealDagTracer = function(this: IRealDagTracer, api: OtelApi, exporter?: SpanExporter): void {
   Object.defineProperty(this, '_tracer', {
     value: api.trace.getTracer('ai-kit-agent-executor', '1.0.0'),
     enumerable: false,
     writable: false,
     configurable: false,
   });
-} as unknown as new(api: OtelApi) => IRealDagTracer;
+  if (exporter) {
+    Object.defineProperty(this, '_exporter', {
+      value: exporter,
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+  }
+} as unknown as new(api: OtelApi, exporter?: SpanExporter) => IRealDagTracer;
 
 RealDagTracer.prototype.startDagRun = function(this: IRealDagTracer, runId: string, dagName: string): OtelSpanHandle {
   const span = this._tracer.startSpan('dag.run', {
@@ -161,7 +253,13 @@ RealDagTracer.prototype.startDagRun = function(this: IRealDagTracer, runId: stri
       'ai.dag.name': dagName,
     },
   });
-  return wrapSpan(span);
+  return captureSpan(span, {
+    spanId:       _rndHex(16),
+    parentSpanId: null,
+    traceId:      runId,
+    operation:    'dag.run',
+    laneId:       null,
+  }, this._exporter);
 };
 
 RealDagTracer.prototype.startLane = function(this: IRealDagTracer, runId: string, laneId: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
@@ -171,17 +269,29 @@ RealDagTracer.prototype.startLane = function(this: IRealDagTracer, runId: string
       'ai.lane.id': laneId,
     },
   });
-  return wrapSpan(span);
+  return captureSpan(span, {
+    spanId:       _rndHex(16),
+    parentSpanId: (_parentSpan as CapturedSpanHandle | undefined)?.spanId  ?? null,
+    traceId:      runId,
+    operation:    'dag.lane',
+    laneId:       laneId,
+  }, this._exporter);
 };
 
 RealDagTracer.prototype.startLlmCall = function(this: IRealDagTracer, laneId: string, model: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
   const span = this._tracer.startSpan('llm.call', {
     attributes: {
-      'ai.lane.id': laneId,
+      'ai.lane.id':   laneId,
       'ai.llm.model': model,
     },
   });
-  return wrapSpan(span);
+  return captureSpan(span, {
+    spanId:       _rndHex(16),
+    parentSpanId: (_parentSpan as CapturedSpanHandle | undefined)?.spanId  ?? null,
+    traceId:      (_parentSpan as CapturedSpanHandle | undefined)?.traceId ?? laneId,
+    operation:    'llm.call',
+    laneId:       laneId,
+  }, this._exporter);
 };
 
 RealDagTracer.prototype.startToolCall = function(this: IRealDagTracer, laneId: string, toolName: string, _parentSpan?: OtelSpanHandle): OtelSpanHandle {
@@ -191,7 +301,13 @@ RealDagTracer.prototype.startToolCall = function(this: IRealDagTracer, laneId: s
       'ai.tool.name': toolName,
     },
   });
-  return wrapSpan(span);
+  return captureSpan(span, {
+    spanId:       _rndHex(16),
+    parentSpanId: (_parentSpan as CapturedSpanHandle | undefined)?.spanId  ?? null,
+    traceId:      (_parentSpan as CapturedSpanHandle | undefined)?.traceId ?? laneId,
+    operation:    'tool.call',
+    laneId:       laneId,
+  }, this._exporter);
 };
 
 // ─── Public factory ───────────────────────────────────────────────────────────
@@ -209,11 +325,11 @@ RealDagTracer.prototype.startToolCall = function(this: IRealDagTracer, laneId: s
  * root.setStatus('ok').end();
  * ```
  */
-export function createDagTracer(): DagTracer {
+export function createDagTracer(options?: { spanExporter?: SpanExporter }): DagTracer {
   const api = tryLoadOtel();
   if (!api) return NO_OP_TRACER;
   try {
-    return new RealDagTracer(api);
+    return new RealDagTracer(api, options?.spanExporter);
   } catch {
     return NO_OP_TRACER;
   }
@@ -226,9 +342,7 @@ export function createDagTracer(): DagTracer {
 let _globalTracer: DagTracer | null = null;
 
 export function getGlobalTracer(): DagTracer {
-  if (!_globalTracer) {
-    _globalTracer = createDagTracer();
-  }
+  _globalTracer ??= createDagTracer();
   return _globalTracer;
 }
 

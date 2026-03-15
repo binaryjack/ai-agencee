@@ -3,10 +3,10 @@ import type { IBarrierCoordinator } from '../barrier-coordinator/index.js'
 import type { IContractRegistry } from '../contract-registry/index.js'
 import type { ICostTracker } from '../cost-tracker/index.js'
 import type {
-  CheckpointRecord,
-  LaneDefinition,
-  LaneResult,
-  SupervisorVerdict,
+    CheckpointRecord,
+    LaneDefinition,
+    LaneResult,
+    SupervisorVerdict,
 } from '../dag-types.js'
 import type { IHumanReviewGate } from '../human-review-gate/index.js'
 import type { IModelRouter } from '../model-router/index.js'
@@ -25,6 +25,8 @@ export interface LaneExecutorOptions {
   humanReviewGate?:    IHumanReviewGate;
   auditLog?:           IAuditLog;
   runId?:              string;
+  /** Fire-and-forget callback invoked after each lane completes (e.g. for eval recording) */
+  evalReporter?:       (laneId: string, result: LaneResult) => Promise<void>;
 }
 
 export interface ILaneExecutor {
@@ -40,6 +42,7 @@ export interface ILaneExecutor {
   _humanReviewGate:    IHumanReviewGate;
   _auditLog:           IAuditLog | undefined;
   _runId:              string;
+  _evalReporter:       ((laneId: string, result: LaneResult) => Promise<void>) | undefined;
 
   runLane(lane: LaneDefinition):                                         Promise<LaneResult>;
   driveLane(
@@ -80,4 +83,5 @@ export const LaneExecutor = function LaneExecutor(
     ?? (options.interactive ? new InteractiveHumanReviewGate() : new AutoApproveHumanReviewGate());
   this._auditLog           = options.auditLog;
   this._runId              = options.runId ?? 'unknown';
+  this._evalReporter       = options.evalReporter;
 } as unknown as new (options: LaneExecutorOptions) => ILaneExecutor;

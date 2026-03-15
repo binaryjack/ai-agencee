@@ -7,14 +7,14 @@ import type { IContractRegistry } from '../../contract-registry/index.js'
 import type { ICostTracker } from '../../cost-tracker/index.js'
 import { getGlobalEventBus } from '../../dag-events/index.js'
 import type {
-  BarrierResolution,
-  CheckpointPayload,
-  CheckpointRecord,
-  ContractExports,
-  ContractSnapshot,
-  LaneDefinition,
-  LaneResult,
-  SupervisorVerdict,
+    BarrierResolution,
+    CheckpointPayload,
+    CheckpointRecord,
+    ContractExports,
+    ContractSnapshot,
+    LaneDefinition,
+    LaneResult,
+    SupervisorVerdict,
 } from '../../dag-types.js'
 import { VERDICT } from '../../dag-types.js'
 import type { IIntraSupervisor } from '../../intra-supervisor/index.js'
@@ -98,6 +98,7 @@ export async function runLane(this: ILaneExecutor, lane: LaneDefinition): Promis
   };
 
   await this.saveCheckpoints(lane.id, checkpoints);
+  void this._evalReporter?.(lane.id, laneResult).catch(() => {});
   return laneResult;
 }
 

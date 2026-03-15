@@ -58,6 +58,8 @@ export interface RunEvalOptions {
   passThreshold?: number;
   /** Run cases with this concurrency. Default: 3 */
   concurrency?: number;
+  /** Optional callback invoked after each case result is scored (fire-and-forget; errors are swallowed) */
+  reporter?: (result: EvalCaseResult) => Promise<void>;
 }
 
 // ─── Judge Prompt ─────────────────────────────────────────────────────────────
@@ -103,6 +105,9 @@ export async function runEval(options: RunEvalOptions): Promise<EvalReport> {
   for (let i = 0; i < cases.length; i += concurrency) {
     const chunk = cases.slice(i, i + concurrency);
     const chunkResults = await Promise.all(chunk.map((c) => runSingleCase(c, taskFn, judgeProvider, judgeModelId, passThreshold)));
+    for (const r of chunkResults) {
+      void options.reporter?.(r).catch(() => {});
+    }
     results.push(...chunkResults);
   }
 
