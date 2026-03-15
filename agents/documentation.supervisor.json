@@ -1,0 +1,32 @@
+{
+  "laneId": "documentation",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-check all file-exists and grep checks. Ensure README.md was found and its content was read."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "minFindings": 3
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Ensure all 7 checks ran and produced findings. Re-run the LLM review if it was skipped."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Full Code Review Pipeline",
+  "description": "Parallel security and dependency audit lanes followed by a PR description generation. Suitable for CI pre-merge checks.",
+  "lanes": [
+    {
+      "id": "security",
+      "agentFile": "security-review.agent.json",
+      "supervisorFile": "security-review.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["security-review"]
+    },
+    {
+      "id": "dependencies",
+      "agentFile": "dependency-audit.agent.json",
+      "supervisorFile": "dependency-audit.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["dependency-audit"]
+    },
+    {
+      "id": "accessibility",
+      "agentFile": "accessibility.agent.json",
+      "supervisorFile": "accessibility.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["accessibility-review"]
+    },
+    {
+      "id": "pr-description",
+      "agentFile": "pr-description.agent.json",
+      "supervisorFile": "pr-description.supervisor.json",
+      "dependsOn": ["security", "dependencies", "accessibility"],
+      "capabilities": ["pr-description"]
+    }
+  ],
+  "globalBarriers": [
+    {
+      "name": "review-lanes-sync",
+      "participants": ["security", "dependencies", "accessibility"],
+      "timeoutMs": 120000
+    }
+  ],
+  "capabilityRegistry": {
+    "security-review":     ["security"],
+    "dependency-audit":    ["dependencies"],
+    "accessibility-review": ["accessibility"],
+    "pr-description":      ["pr-description"]
+  }
+}

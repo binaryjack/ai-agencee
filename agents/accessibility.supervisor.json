@@ -1,0 +1,32 @@
+{
+  "laneId": "accessibility",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-check that src/ was found and all shell checks executed. Ensure the LLM review consumed the directory listing."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "minFindings": 4
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-run all 7 checks. Ensure grep-based checks ran against .tsx and .jsx files."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "needs-human-review",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "Documentation Auditor",
+  "icon": "📚",
+  "description": "Audits project documentation for completeness, accuracy, and freshness",
+  "checks": [
+    {
+      "type": "file-exists",
+      "path": "README.md",
+      "pass": "✅ README.md present",
+      "fail": "❌ No README.md — add a project overview",
+      "failSeverity": "error",
+      "failRecommendations": ["Create a README.md with installation, usage, and contribution sections"]
+    },
+    {
+      "type": "file-exists",
+      "path": "CONTRIBUTING.md",
+      "pass": "✅ CONTRIBUTING.md present",
+      "fail": "⚠️  No CONTRIBUTING.md — contributors have no guidance",
+      "failSeverity": "warning",
+      "failRecommendations": ["Add CONTRIBUTING.md with code style, PR, and issue guidelines"]
+    },
+    {
+      "type": "file-exists",
+      "path": "CHANGELOG.md",
+      "pass": "✅ CHANGELOG.md present",
+      "fail": "ℹ️  No CHANGELOG.md — consider adding release notes",
+      "failSeverity": "info"
+    },
+    {
+      "type": "grep",
+      "path": "README.md",
+      "pattern": "npm install|pnpm install|yarn install|bun install",
+      "pass": "✅ Installation instructions found in README",
+      "fail": "⚠️  README lacks installation instructions",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "grep",
+      "path": "README.md",
+      "pattern": "## Usage|## Getting Started|## Quick Start",
+      "pass": "✅ Usage section found in README",
+      "fail": "⚠️  README missing Usage / Getting Started section",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "count-files",
+      "path": "src",
+      "glob": "**/*.ts",
+      "pass": "✅ Source files present ({count} TypeScript files)",
+      "fail": "ℹ️  No TypeScript source files found"
+    },
+    {
+      "type": "llm-review",
+      "path": "README.md",
+      "taskType": "validation",
+      "prompt": "Review the README.md below for documentation quality.\n\nEvaluate:\n1. Is there a clear project description in the first paragraph?\n2. Are prerequisites listed?\n3. Are environment variables or configuration documented?\n4. Are API endpoints or exports documented?\n5. Are there code examples?\n\nSource:\n{content}\n\nList any gaps as WARN: or INFO: items. If the README is thorough, confirm with PASS: docs quality is good.",
+      "pass": "✅ README quality review passed",
+      "fail": "⚠️  README has documentation gaps",
+      "failSeverity": "warning"
+    }
+  ]
+}

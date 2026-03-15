@@ -11,6 +11,7 @@ import { FileExistsHandler } from '../file-exists-handler/index.js'
 import { GrepHandler } from '../grep-handler/index.js'
 import { JsonFieldHandler } from '../json-field-handler/index.js'
 import { JsonHasKeyHandler } from '../json-has-key-handler/index.js'
+import { GithubCommentHandler } from '../github-comment-handler/index.js'
 import { LlmGenerateHandler } from '../llm-generate-handler/index.js'
 import { LlmReviewHandler } from '../llm-review-handler/index.js'
 import { RunCommandHandler } from '../run-command-handler/index.js'
@@ -52,7 +53,8 @@ Object.assign(CheckHandlerRegistry.prototype, { register, discover, run });
     .register(new GrepHandler())
     .register(new RunCommandHandler())
     .register(new LlmGenerateHandler())
-    .register(new LlmReviewHandler());
+    .register(new LlmReviewHandler())
+    .register(new GithubCommentHandler());
   return registry;
 };
 

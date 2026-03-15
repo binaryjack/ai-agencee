@@ -1,0 +1,70 @@
+{
+  "name": "Accessibility Auditor",
+  "icon": "♿",
+  "description": "Reviews React/HTML source for WCAG 2.1 accessibility violations and common a11y anti-patterns",
+  "checks": [
+    {
+      "type": "dir-exists",
+      "path": "src",
+      "pass": "✅ src/ directory found",
+      "fail": "❌ No src/ directory — cannot perform accessibility audit",
+      "failSeverity": "error"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"<img[^>]+(?!alt=)[^>]*>\" src --include=\"*.tsx\" --include=\"*.jsx\" -l 2>/dev/null | head -10 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No <img> elements missing alt attribute detected",
+      "fail": "🔴 <img> elements may be missing alt attributes",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Add descriptive alt text to all informative images",
+        "Use alt=\"\" (empty string) for decorative images",
+        "Install eslint-plugin-jsx-a11y for automated enforcement"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"onClick[^=]*=[^{]*\\{\" src --include=\"*.tsx\" --include=\"*.jsx\" -l 2>/dev/null | xargs grep -L \"onKeyDown\\|onKeyUp\\|onKeyPress\\|role=\" 2>/dev/null | head -10 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ Interactive elements appear to have keyboard event handlers",
+      "fail": "⚠️  Elements with onClick may lack keyboard equivalents (onKeyDown/role)",
+      "failSeverity": "warning",
+      "failRecommendations": [
+        "Add onKeyDown handler or use a semantic interactive element (<button>, <a>)",
+        "Ensure all click targets are keyboard-reachable"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rn \"tabIndex={-1}\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null | wc -l || echo 0",
+      "pass": "✅ tabIndex={-1} usage count collected",
+      "fail": "ℹ️  Could not count tabIndex={-1} usages"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"aria-label|aria-labelledby|aria-describedby\" src --include=\"*.tsx\" --include=\"*.jsx\" -l 2>/dev/null | wc -l || echo 0",
+      "pass": "✅ ARIA label usage found ({value} files)",
+      "fail": "ℹ️  No ARIA label attributes found in source"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"role=\\\"(none|presentation)\\\"\" src --include=\"*.tsx\" --include=\"*.jsx\" -l 2>/dev/null | head -5 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No role=\"none/presentation\" misuse detected",
+      "fail": "⚠️  role=\"none\" / role=\"presentation\" found — verify these are genuinely decorative",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "llm-review",
+      "path": "src",
+      "taskType": "validation",
+      "enableTools": true,
+      "toolNames": ["list_dir", "read_file"],
+      "prompt": "Perform a WCAG 2.1 Level AA accessibility review of the React components in the src/ directory.\n\nFocus on:\n1. Missing or incorrect alt text on images\n2. Form inputs missing associated <label> elements\n3. Insufficient colour contrast (flag use of hard-coded low-contrast colours)\n4. Keyboard traps or focus management issues\n5. Missing ARIA roles on custom interactive widgets\n6. Use of `tabIndex` > 0 (anti-pattern)\n7. Text content that conveys meaning only through colour\n\nDirectory listing:\n{content}\n\nPrefix critical WCAG A violations with CRITICAL:, AA violations with WARN:, best-practice notes with INFO:.",
+      "pass": "✅ Accessibility review complete",
+      "fail": "🔴 Accessibility violations found",
+      "failSeverity": "error"
+    }
+  ]
+}

@@ -68,6 +68,64 @@
       "pass": "✅ LLM dependency security review passed",
       "fail": "🔴 LLM flagged dependency security concerns",
       "failSeverity": "error"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"\\bexec\\b.*req\\.|\\bexec\\b.*body\\.|\\bexec\\b.*query\\.\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -10 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No obvious command injection patterns (exec + user input) detected",
+      "fail": "🔴 Possible command injection: exec() called with apparent user-controlled input",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Never pass user input directly to exec/execSync",
+        "Use execFile with an argument array, or a purpose-built shell-quoting library",
+        "Validate and allowlist all user-supplied command arguments"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"SQL|query|knex|prisma\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | xargs grep -lE \"\\$\\{|` [^`]*\\+\" 2>/dev/null | head -10 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No obvious SQL string-interpolation patterns detected",
+      "fail": "🔴 Possible SQL injection: string interpolation near database query keywords",
+      "failSeverity": "error",
+      "failRecommendations": [
+        "Use parameterised queries or an ORM (never string-interpolate user input)",
+        "Audit all query() calls for unescaped template literals"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"cors\\(\\)|Access-Control-Allow-Origin.*\\*\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -10 || true",
+      "pass": "✅ CORS configuration found — verify origin is not wildcard in production",
+      "fail": "ℹ️  No explicit CORS configuration detected",
+      "failSeverity": "info",
+      "failRecommendations": ["Ensure CORS origin is restricted to known domains in production"]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rE \"jwt\\.sign\\(|new SignJWT\" src --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -10 || true",
+      "pass": "✅ JWT signing usage scanned",
+      "fail": "ℹ️  No JWT signing calls found in src/",
+      "failSeverity": "info"
+    },
+    {
+      "type": "llm-review",
+      "path": "src",
+      "taskType": "security-review",
+      "enableTools": true,
+      "toolNames": ["list_dir", "read_file"],
+      "prompt": "Perform a deep security review of the TypeScript source in src/.\n\nOWASP Top-10 focus areas:\n1. A01 Broken Access Control — missing auth middleware, horizontal privilege escalation\n2. A02 Cryptographic Failures — weak algorithms, missing TLS enforcement, plaintext secrets\n3. A03 Injection — SQL, command, path traversal, SSTI\n4. A05 Security Misconfiguration — debug flags left on, overly permissive CORS\n5. A07 Identification & Authentication — JWT algorithm confusion, missing expiry\n6. A10 SSRF — user-supplied URLs passed to fetch/http without validation\n\nDirectory listing:\n{content}\n\nPrefix critical exploitable issues with CRITICAL:, serious concerns with WARN:, best-practice notes with INFO:.",
+      "outputKey": "security_findings",
+      "pass": "✅ Deep LLM security review complete",
+      "fail": "🔴 Security issues identified in LLM review",
+      "failSeverity": "error"
+    },
+    {
+      "type": "github-comment",
+      "body": "## 🔐 Security Review\n\nThe automated security review has completed. Check the run findings for details.",
+      "pass": "✅ GitHub comment posted with security review results",
+      "fail": "⚠️  Could not post GitHub comment (GITHUB_TOKEN / PR number not set)"
     }
   ]
 }

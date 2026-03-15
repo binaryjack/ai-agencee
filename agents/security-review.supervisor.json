@@ -9,19 +9,28 @@
         "noErrorFindings": false
       },
       "onFail": "RETRY",
-      "retryInstructions": "Re-run all checks and verify that eval(), dangerouslySetInnerHTML, and hardcoded secrets scans completed. Ensure each check has an explicit pass/fail finding."
+      "retryInstructions": "Re-run all checks and verify that eval(), dangerouslySetInnerHTML, hardcoded secrets, command injection, and SQL injection scans completed. Ensure each check has an explicit pass/fail finding."
     },
     {
       "checkpointId": "step-1",
       "mode": "self",
       "expect": {
-        "minFindings": 1
+        "minFindings": 3
       },
       "onFail": "RETRY",
-      "retryInstructions": "Re-scan the src/ directory. Ensure file-existence check ran and produced at least one finding."
+      "retryInstructions": "Re-scan the src/ directory. Ensure file-existence check ran and all shell-based checks produced findings."
     },
     {
       "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-run the deep LLM security review and the dependency review. Both must produce at least one finding."
+    },
+    {
+      "checkpointId": "step-3",
       "mode": "needs-human-review",
       "expect": {
         "noErrorFindings": true

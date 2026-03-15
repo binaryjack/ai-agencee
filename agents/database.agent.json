@@ -1,0 +1,64 @@
+{
+  "name": "Database Schema Reviewer",
+  "icon": "🗄️",
+  "description": "Reviews database migrations and schema for safety, performance, and compliance",
+  "checks": [
+    {
+      "type": "dir-exists",
+      "path": "migrations",
+      "pass": "✅ migrations/ directory found",
+      "fail": "ℹ️  No migrations/ directory — using inline schema or non-relational database",
+      "failSeverity": "info"
+    },
+    {
+      "type": "count-files",
+      "path": "migrations",
+      "glob": "*.sql",
+      "pass": "✅ {count} SQL migration file(s) found",
+      "fail": "ℹ️  No .sql migration files found in migrations/"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rn \"DROP TABLE\\|DROP COLUMN\\|DELETE FROM\" migrations/ 2>/dev/null | head -20 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No destructive DDL statements found in migrations",
+      "fail": "⚠️  Destructive DDL (DROP TABLE / DROP COLUMN / DELETE FROM) found in migrations",
+      "failSeverity": "warning",
+      "failRecommendations": [
+        "Ensure destructive migrations are reversible or have a backup plan",
+        "Add a corresponding down migration",
+        "Test against a staging/clone database before running in production"
+      ]
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rn \"NOT NULL\" migrations/ 2>/dev/null | wc -l || echo 0",
+      "pass": "✅ NOT NULL constraint usage found ({value} occurrences)",
+      "fail": "ℹ️  No NOT NULL constraints found — verify nullability is intentional"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rn \"CREATE INDEX\\|CREATE UNIQUE INDEX\\|ADD INDEX\" migrations/ 2>/dev/null | head -20 || true",
+      "pass": "✅ Index definitions found in migrations",
+      "fail": "⚠️  No indexes defined in migrations — verify foreign keys and query columns are indexed",
+      "failSeverity": "info"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rn \"REFERENCES\\|FOREIGN KEY\" migrations/ 2>/dev/null | head -20 || true",
+      "pass": "✅ Foreign key relationships found",
+      "fail": "ℹ️  No FOREIGN KEY / REFERENCES constraints — verify referential integrity is handled in application code"
+    },
+    {
+      "type": "llm-review",
+      "path": "migrations",
+      "taskType": "validation",
+      "enableTools": true,
+      "toolNames": ["list_dir", "read_file"],
+      "prompt": "Review the database migration files in the migrations/ directory.\n\nEvaluate:\n1. Are migrations atomic and idempotent where possible?\n2. Are indexes created on foreign key columns and common filter columns?\n3. Do large table alterations use online DDL / CONCURRENTLY variants where available?\n4. Are there missing NOT NULL constraints that could cause data quality issues?\n5. Do timestamps use timezone-aware types (TIMESTAMPTZ vs TIMESTAMP)?\n6. Are ENUM types preferred over unconstrained TEXT where appropriate?\n7. Any potential locking hazards on high-traffic tables?\n\nDirectory listing:\n{content}\n\nPrefix blocking/data-loss risks with CRITICAL:, best-practice violations with WARN:, suggestions with INFO:.",
+      "pass": "✅ Database schema review complete",
+      "fail": "🔴 Database schema concerns found",
+      "failSeverity": "warning"
+    }
+  ]
+}

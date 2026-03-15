@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ai-agencee/schemas/security-findings.schema.json",
+  "title": "Security Findings",
+  "description": "Structured output schema for the Security Review agent",
+  "type": "object",
+  "required": ["runId", "severity", "findings"],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "description": "Unique run identifier"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["pass", "info", "warning", "error", "critical"],
+      "description": "Highest severity level found across all checks"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check", "passed", "message"],
+        "properties": {
+          "check":           { "type": "string" },
+          "passed":          { "type": "boolean" },
+          "message":         { "type": "string" },
+          "severity":        { "type": "string", "enum": ["info", "warning", "error", "critical"] },
+          "recommendations": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

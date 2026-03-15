@@ -15,6 +15,7 @@ export type CheckType =
   | 'llm-generate'     // Generate content via LLM; stores result under outputKey
   | 'llm-review'       // Review a file or directory via LLM and report findings
   | 'llm-tool'         // LLM generation with full tool-use loop (read_file, list_dir, etc.)
+  | 'github-comment'   // Post a comment to a GitHub PR or issue via the REST API
 
 export interface CheckDefinition {
   /** The type of check to perform */
@@ -100,6 +101,26 @@ export interface CheckDefinition {
    * Values: 'read_file' | 'list_dir' | 'run_shell' | 'grep_project' | 'write_file'
    */
   toolNames?: string[];
+
+  // ─── github-comment ─────────────────────────────────────────────────────────
+
+  /**
+   * GitHub repository in owner/repo format.
+   * Falls back to the GITHUB_REPOSITORY environment variable when omitted.
+   */
+  repo?: string;
+
+  /**
+   * Pull-request or issue number to comment on.
+   * Falls back to GITHUB_PR_NUMBER environment variable when omitted.
+   */
+  prNumber?: number;
+
+  /**
+   * Markdown body of the comment to post.
+   * Falls back to a generic run-complete message when omitted.
+   */
+  body?: string;
 }
 
 export interface AgentDefinition {

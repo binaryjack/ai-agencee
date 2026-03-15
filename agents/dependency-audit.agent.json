@@ -52,6 +52,20 @@
       "pass": "✅ LLM dependency health review passed",
       "fail": "🔴 LLM flagged dependency health concerns",
       "failSeverity": "warning"
+    },
+    {
+      "type": "run-command",
+      "command": "npx license-checker --summary 2>/dev/null | head -30 || pnpm licenses list 2>/dev/null | head -30 || echo 'license-check-unavailable'",
+      "passPattern": ".",
+      "pass": "✅ Licence summary collected",
+      "fail": "ℹ️  licence-checker not available — install with: npm i -D license-checker",
+      "failSeverity": "info"
+    },
+    {
+      "type": "github-comment",
+      "body": "## 📦 Dependency Audit\n\nThe automated dependency audit has completed. No action required unless findings are marked 🔴.",
+      "pass": "✅ GitHub comment posted with dependency audit results",
+      "fail": "⚠️  Could not post GitHub comment (GITHUB_TOKEN / PR number not set)"
     }
   ]
 }

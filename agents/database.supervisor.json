@@ -1,0 +1,32 @@
+{
+  "laneId": "database",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-check that migrations/ directory was found. Ensure all grep checks ran. Some checks return info-level findings even when no issues are found."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "minFindings": 3
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-run all 7 checks. Ensure the LLM review ran and produced at least one finding."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}

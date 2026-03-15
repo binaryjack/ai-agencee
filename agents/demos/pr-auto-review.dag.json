@@ -1,0 +1,44 @@
+{
+  "name": "PR Auto-Review",
+  "description": "End-to-end automated PR review: security + dependency audit in parallel → PR description generation → GitHub comment with findings. Designed for GitHub Actions CI triggers.",
+  "lanes": [
+    {
+      "id": "security",
+      "agentFile": "security-review.agent.json",
+      "supervisorFile": "security-review.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["security-review"]
+    },
+    {
+      "id": "dependencies",
+      "agentFile": "dependency-audit.agent.json",
+      "supervisorFile": "dependency-audit.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["dependency-audit"]
+    },
+    {
+      "id": "pr-description",
+      "agentFile": "pr-description.agent.json",
+      "supervisorFile": "pr-description.supervisor.json",
+      "dependsOn": ["security", "dependencies"],
+      "capabilities": ["pr-description"]
+    }
+  ],
+  "globalBarriers": [
+    {
+      "name": "security-dep-sync",
+      "participants": ["security", "dependencies"],
+      "timeoutMs": 90000
+    }
+  ],
+  "capabilityRegistry": {
+    "security-review":  ["security"],
+    "dependency-audit": ["dependencies"],
+    "pr-description":   ["pr-description"]
+  },
+  "metadata": {
+    "trigger":     "pull_request",
+    "ciIntegration": "github-actions",
+    "requiredEnv": ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "GITHUB_PR_NUMBER"]
+  }
+}
