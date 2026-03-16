@@ -5,6 +5,7 @@ import type { ActorId, BacklogItem, BacklogItemStatus } from '../plan-types.js'
 import './prototype/index.js'
 
 export interface IBacklogBoard {
+  new(renderer: IChatRenderer, projectRoot: string): IBacklogBoard;
   _renderer: IChatRenderer;
   _stateDir: string;
   _items: Map<string, BacklogItem>;
@@ -43,6 +44,4 @@ export const BacklogBoard = function(
   this._stateDir = path.join(projectRoot, PLAN_STATE_DIR);
   this._items = new Map<string, BacklogItem>();
   this._seq = 0;
-} as unknown as {
-  new(renderer: IChatRenderer, projectRoot: string): IBacklogBoard;
-};
+} as unknown as IBacklogBoard;

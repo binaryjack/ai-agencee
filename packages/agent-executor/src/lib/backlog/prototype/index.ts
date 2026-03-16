@@ -5,7 +5,7 @@ import { add, resolve, skip } from './mutation.js'
 import { load, save } from './persist.js'
 import { getAll, getBlocked, getByOwner, getByStory, getOpen, isReadyToExecute, progress } from './query.js'
 
-Object.assign((BacklogBoard as unknown as { prototype: object }).prototype, {
+Object.assign((BacklogBoard as Function).prototype, {
   add,
   resolve,
   skip,

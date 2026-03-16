@@ -1,15 +1,13 @@
 import { LaneExecutor } from '../lane-executor.js';
-import {
-    buildRecord,
-    driveLane,
-    findHandoffLane,
-    resolveHandoffTarget,
-    runLane,
-    saveCheckpoints,
-} from './methods.js';
+import { buildRecord }          from './buildRecord.js';
+import { driveLane }            from './driveLane.js';
+import { findHandoffLane }      from './findHandoffLane.js';
+import { resolveHandoffTarget } from './resolveHandoffTarget.js';
+import { runLane }              from './runLane.js';
+import { saveCheckpoints }      from './saveCheckpoints.js';
 
 Object.assign(
-  (LaneExecutor as unknown as { prototype: object }).prototype,
+  (LaneExecutor as Function).prototype,
   {
     runLane,
     driveLane,

@@ -1,7 +1,14 @@
-import { StateStore } from '../state-store.js'
-import { clear, clearSync, exists, existsSync, load, loadSync, save, saveSync } from './methods.js'
+import { StateStore } from '../state-store.js';
+import { clear }      from './clear.js';
+import { clearSync }  from './clearSync.js';
+import { exists }     from './exists.js';
+import { existsSync } from './existsSync.js';
+import { load }       from './load.js';
+import { loadSync }   from './loadSync.js';
+import { save }       from './save.js';
+import { saveSync }   from './saveSync.js';
 
-Object.assign((StateStore as unknown as { prototype: object }).prototype, {
+Object.assign((StateStore as Function).prototype, {
   save,
   load,
   exists,

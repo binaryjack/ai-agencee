@@ -36,7 +36,7 @@ export const RunRegistry = function(
 } as unknown as IRunRegistry;
 
 // Attach prototype methods after RunRegistry is defined (avoids circular-import race)
-Object.assign((RunRegistry as unknown as { prototype: object }).prototype, {
+Object.assign((RunRegistry as Function).prototype, {
   create,
   complete,
   delete: deleteRun,

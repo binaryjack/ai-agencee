@@ -1,1 +1,2 @@
-export { get, has } from './methods.js';
+export { get } from './get.js';
+export { has } from './has.js';

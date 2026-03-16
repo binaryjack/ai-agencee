@@ -18,7 +18,7 @@ import { _openStore } from './open-store.js';
 import { _parsePatches } from './parse-patches.js';
 
 Object.assign(
-  (CodeAssistantOrchestrator as unknown as { prototype: object }).prototype,
+  (CodeAssistantOrchestrator as Function).prototype,
   {
     execute,
     _buildRouter,

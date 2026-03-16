@@ -155,6 +155,8 @@ export function buildModelRecommendation(
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface IDiscoverySession {
+  new(renderer: IChatRenderer, projectRoot: string, modelRouter?: IModelRouter): IDiscoverySession;
+  load(projectRoot: string): DiscoveryResult | null;
   _renderer:    IChatRenderer;
   _stateDir:    string;
   _modelRouter: IModelRouter | undefined;
@@ -181,7 +183,4 @@ export const DiscoverySession = function DiscoverySession(
   this._stateDir    = path.join(projectRoot, PLAN_STATE_DIR);
   this._modelRouter = modelRouter;
   this._questions   = QUESTION_BANK.map((q) => ({ ...q, answered: false }));
-} as unknown as {
-  new (renderer: IChatRenderer, projectRoot: string, modelRouter?: IModelRouter): IDiscoverySession;
-  load(projectRoot: string): DiscoveryResult | null;
-};
+} as unknown as IDiscoverySession;

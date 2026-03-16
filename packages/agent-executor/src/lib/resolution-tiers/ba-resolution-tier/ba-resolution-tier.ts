@@ -1,6 +1,6 @@
-import type { IModelRouter } from '../../model-router/index.js'
-import type { DecisionOption, PendingDecision, ResolutionTier } from '../resolution-tiers.types.js'
-import './prototype/index.js'
+import type { IModelRouter } from '../../model-router/index.js';
+import type { DecisionOption, PendingDecision, ResolutionTier } from '../resolution-tiers.types.js';
+import { canHandle, resolve } from './prototype/methods.js';
 
 export interface IBAResolutionTier extends ResolutionTier {
   _modelRouter?: IModelRouter;
@@ -16,3 +16,8 @@ export const BAResolutionTier = function(
 } as unknown as {
   new(modelRouter?: IModelRouter): IBAResolutionTier;
 };
+
+Object.assign((BAResolutionTier as Function).prototype, {
+  canHandle,
+  resolve,
+});

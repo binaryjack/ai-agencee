@@ -1,2 +1,2 @@
-export { prompt } from './methods.js';
+export { prompt } from './prompt.js';
 

@@ -1,6 +1,6 @@
 import type { IModelRouter } from '../../model-router/index.js';
 import type { DecisionOption, PendingDecision, ResolutionTier } from '../resolution-tiers.types.js';
-import './prototype/index.js';
+import { canHandle, resolve } from './prototype/methods.js';
 
 export interface IArchResolutionTier extends ResolutionTier {
   _modelRouter?: IModelRouter;
@@ -16,3 +16,8 @@ export const ArchResolutionTier = function(
 } as unknown as {
   new(modelRouter?: IModelRouter): IArchResolutionTier;
 };
+
+Object.assign((ArchResolutionTier as Function).prototype, {
+  canHandle,
+  resolve,
+});

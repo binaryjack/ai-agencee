@@ -15,4 +15,4 @@ export const AutoApproveHumanReviewGate = function(
 };
 
 // Attach prototype methods after AutoApproveHumanReviewGate is defined (avoids circular-import race)
-Object.assign((AutoApproveHumanReviewGate as unknown as { prototype: object }).prototype, { prompt });
+Object.assign((AutoApproveHumanReviewGate as Function).prototype, { prompt });

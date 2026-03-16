@@ -34,6 +34,8 @@ export interface CreatedIssue {
 }
 
 export interface IIssueSync {
+  new(opts: IssueSyncOptions): IIssueSync;
+  fromEnv(extra?: Partial<IssueSyncOptions>): IIssueSync | undefined;
   _opts:      IssueSyncOptions;
   _onDagEnd:  (event: DagEndEvent) => void;
 
@@ -56,7 +58,4 @@ export const IssueSync = function IssueSync(
   this._onDagEnd = (event: DagEndEvent): void => {
     this.createIssueForRun(event).catch(() => undefined);
   };
-} as unknown as {
-  new (opts: IssueSyncOptions): IIssueSync;
-  fromEnv(extra?: Partial<IssueSyncOptions>): IIssueSync | undefined;
-};
+} as unknown as IIssueSync;

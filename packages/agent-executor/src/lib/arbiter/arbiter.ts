@@ -10,6 +10,7 @@ import { POEscalationTier } from '../resolution-tiers/po-escalation-tier/index.j
 import type { ResolutionTier } from '../resolution-tiers/resolution-tiers.types.js'
 import './prototype/index.js'
 
+
 export interface ArbiterDecision {
   id: string;
   question: string;
@@ -23,6 +24,12 @@ export interface ArbiterDecision {
 }
 
 export interface IArbiter {
+  new(
+    renderer: IChatRenderer,
+    projectRoot: string,
+    modelRouter?: IModelRouter,
+    tiers?: ResolutionTier[],
+  ): IArbiter;
   _renderer: IChatRenderer;
   _stateDir: string;
   _modelRouter?: IModelRouter;
@@ -59,11 +66,4 @@ export const Arbiter = function(
     new ArchResolutionTier(modelRouter),
     new POEscalationTier(renderer, modelRouter),
   ];
-} as unknown as {
-  new(
-    renderer: IChatRenderer,
-    projectRoot: string,
-    modelRouter?: IModelRouter,
-    tiers?: ResolutionTier[],
-  ): IArbiter;
-};
+} as unknown as IArbiter;

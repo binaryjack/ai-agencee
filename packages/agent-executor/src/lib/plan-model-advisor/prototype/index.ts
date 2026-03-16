@@ -1,6 +1,8 @@
 import { PlanModelAdvisor } from '../plan-model-advisor.js';
-import { _estimateTotal, _render, display } from './methods.js';
+import { _estimateTotal } from './_estimateTotal.js';
+import { _render }        from './_render.js';
+import { display }        from './display.js';
 
-Object.assign((PlanModelAdvisor as unknown as { prototype: object }).prototype, {
+Object.assign((PlanModelAdvisor as Function).prototype, {
   display, _render, _estimateTotal,
 });

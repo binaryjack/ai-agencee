@@ -1,10 +1,9 @@
-import { Arbiter } from '../arbiter.js';
-import { _save, getDecisions, microAlign, raise, runStandardDecisions } from './methods.js';
+import { Arbiter } from '../arbiter.js'
+import { raise } from './raise.js'
+import { microAlign } from './microAlign.js'
+import { getDecisions } from './getDecisions.js'
+import { runStandardDecisions } from './runStandardDecisions.js'
+import { _save } from './_save.js'
 
-Object.assign((Arbiter as unknown as { prototype: object }).prototype, {
-  raise,
-  microAlign,
-  getDecisions,
-  runStandardDecisions,
-  _save,
-});
+Object.assign((Arbiter as Function).prototype, { raise, microAlign, getDecisions, runStandardDecisions, _save });
+

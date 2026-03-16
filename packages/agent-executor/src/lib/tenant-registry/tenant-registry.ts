@@ -62,7 +62,7 @@ export const TenantRunRegistry = function(
 };
 
 // Attach prototype methods after TenantRunRegistry is defined (avoids circular-import race)
-Object.assign((TenantRunRegistry as unknown as { prototype: object }).prototype, {
+Object.assign((TenantRunRegistry as Function).prototype, {
   create,
   complete,
   appendEvent,

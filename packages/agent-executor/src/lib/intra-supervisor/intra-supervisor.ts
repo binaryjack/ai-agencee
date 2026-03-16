@@ -9,6 +9,9 @@ import type {
 import { evaluate, getRuleFor, incrementRetry, isExhausted, retryCount } from './prototype/methods.js';
 
 export interface IIntraSupervisor {
+  new(config: SupervisorConfig): IIntraSupervisor;
+  fromFile(filePath: string): Promise<IIntraSupervisor>;
+  noOp(laneId: string): IIntraSupervisor;
   _config: SupervisorConfig;
   _retryCounters: Map<string, number>;
   evaluate(
@@ -32,11 +35,7 @@ export const IntraSupervisor = function(
   this._retryCounters = new Map<string, number>();
   this.laneId = config.laneId;
   this.retryBudget = config.retryBudget;
-} as unknown as {
-  new(config: SupervisorConfig): IIntraSupervisor;
-  fromFile(filePath: string): Promise<IIntraSupervisor>;
-  noOp(laneId: string): IIntraSupervisor;
-};
+} as unknown as IIntraSupervisor;
 
 (IntraSupervisor as unknown as Record<string, unknown>).fromFile = async function(filePath: string): Promise<IIntraSupervisor> {
   const raw = await fs.readFile(filePath, 'utf-8');
@@ -49,7 +48,7 @@ export const IntraSupervisor = function(
 };
 
 // Attach prototype methods after IntraSupervisor is defined (avoids circular-import race)
-Object.assign((IntraSupervisor as unknown as { prototype: object }).prototype, {
+Object.assign((IntraSupervisor as Function).prototype, {
   evaluate,
   isExhausted,
   incrementRetry,

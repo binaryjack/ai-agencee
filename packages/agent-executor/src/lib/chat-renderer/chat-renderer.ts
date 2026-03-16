@@ -72,6 +72,7 @@ export const PHASE_META: Record<PlanPhase, { label: string; color: (t: string) =
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface IChatRenderer {
+  new(width?: number): IChatRenderer;
   _width: number;
   phaseHeader(phase: PlanPhase): void;
   say(actor: ActorId, text: string): void;
@@ -102,9 +103,7 @@ export const ChatRenderer = function(
   width = 68,
 ) {
   this._width = width;
-} as unknown as {
-  new(width?: number): IChatRenderer;
-};
+} as unknown as IChatRenderer;
 
 // ─── Interactive prompt helpers ────────────────────────────────────────────────
 

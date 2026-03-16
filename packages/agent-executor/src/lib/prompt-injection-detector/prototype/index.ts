@@ -1,6 +1,7 @@
 import { PromptInjectionDetector } from '../prompt-injection-detector.js';
-import { enforce, scan } from './methods.js';
+import { enforce } from './enforce.js';
+import { scan }    from './scan.js';
 
-Object.assign((PromptInjectionDetector as unknown as { prototype: object }).prototype, {
+Object.assign((PromptInjectionDetector as Function).prototype, {
   scan, enforce,
 });

@@ -37,7 +37,7 @@ export const SupervisedAgent = function(
 };
 
 // Attach prototype methods after SupervisedAgent is defined (avoids circular-import race)
-Object.assign((SupervisedAgent as unknown as { prototype: object }).prototype, { run });
+Object.assign((SupervisedAgent as Function).prototype, { run });
 
 // ─── Error Types ────────────────────────────────────────────────────────────────
 

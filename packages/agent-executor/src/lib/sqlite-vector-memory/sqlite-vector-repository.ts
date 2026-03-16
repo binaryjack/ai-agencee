@@ -8,7 +8,7 @@ export const SqliteVectorRepository = function(
   this._db = db;
 } as unknown as new (db: Database.Database) => ISqliteVectorRepository;
 
-Object.assign((SqliteVectorRepository as unknown as { prototype: object }).prototype, {
+Object.assign((SqliteVectorRepository as Function).prototype, {
 
   createSchema(this: ISqliteVectorRepository): void {
     this._db.pragma('journal_mode = WAL');

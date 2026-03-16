@@ -22,4 +22,4 @@ export const DotenvSecretsProvider = function(
 } as unknown as IDotenvSecretsProvider;
 
 // Attach prototype methods after DotenvSecretsProvider is defined (avoids circular-import race)
-Object.assign((DotenvSecretsProvider as unknown as { prototype: object }).prototype, { get, has, invalidate, _load });
+Object.assign((DotenvSecretsProvider as Function).prototype, { get, has, invalidate, _load });

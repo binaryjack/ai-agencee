@@ -1,7 +1,1 @@
-import { POEscalationTier } from '../po-escalation-tier.js';
-import { canHandle, resolve } from './methods.js';
-
-Object.assign((POEscalationTier as unknown as { prototype: object }).prototype, {
-  canHandle,
-  resolve,
-});
+// Methods are applied in po-escalation-tier.ts to avoid a runtime circular import.

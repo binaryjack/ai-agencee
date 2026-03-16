@@ -15,4 +15,4 @@ export const InteractiveHumanReviewGate = function(
 };
 
 // Attach prototype methods after InteractiveHumanReviewGate is defined (avoids circular-import race)
-Object.assign((InteractiveHumanReviewGate as unknown as { prototype: object }).prototype, { prompt });
+Object.assign((InteractiveHumanReviewGate as Function).prototype, { prompt });

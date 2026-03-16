@@ -48,6 +48,8 @@ export interface SerializedMemory {
 }
 
 export interface IVectorMemory {
+  new(options?: VectorMemoryOptions): IVectorMemory;
+  fromSnapshot(snapshot: SerializedMemory, options?: VectorMemoryOptions): IVectorMemory;
   _namespace:  string;
   _maxEntries: number;
   _entries:    MemoryEntry[];
@@ -69,7 +71,4 @@ export const VectorMemory = function (
   this._namespace  = options.namespace  ?? 'default';
   this._maxEntries = options.maxEntries ?? 10_000;
   this._entries    = [];
-} as unknown as {
-  new (options?: VectorMemoryOptions): IVectorMemory;
-  fromSnapshot(snapshot: SerializedMemory, options?: VectorMemoryOptions): IVectorMemory;
-};
+} as unknown as IVectorMemory;

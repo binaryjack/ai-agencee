@@ -82,7 +82,7 @@ export const RbacPolicy = function(
 };
 
 // Attach prototype methods after RbacPolicy is defined (avoids circular-import race)
-Object.assign((RbacPolicy as unknown as { prototype: object }).prototype, {
+Object.assign((RbacPolicy as Function).prototype, {
   can,
   canRunLane,
   assertCan,

@@ -1,7 +1,1 @@
-import { ArchResolutionTier } from '../arch-resolution-tier.js'
-import { canHandle, resolve } from './methods.js'
-
-Object.assign((ArchResolutionTier as unknown as { prototype: object }).prototype, {
-  canHandle,
-  resolve,
-});
+// Methods are applied in arch-resolution-tier.ts to avoid a runtime circular import.
