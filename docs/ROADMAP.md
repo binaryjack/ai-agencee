@@ -121,6 +121,7 @@
 | IP-09 | Domain Agents (6 production) | `agents/security-review.agent.json`, `dependency-audit.agent.json`, `pr-description.agent.json`, `documentation.agent.json`, `accessibility.agent.json`, `database.agent.json` | ✅ | OWASP CVSS scoring; CVE triage; structured PR summaries; WCAG 2.2 AA; schema migration adviser |
 | IP-10 | Visual DAG Editor | `_private/dag-editor/src/` | ✅ | AI compose (NL → DAG); 12 templates; version history with diff; simulation mode; live SSE execution overlay; `dag_versions` table |
 | IP-11 | Observability Surface | `ai-agencee-cloud/src/entities/observability/` + `spans` table | ✅ | `SpanFlamechart`; token efficiency heatmap; `CostDrilldownTable`; OTLP export to Datadog/Grafana Tempo/New Relic/Honeycomb |
+| IP-12 | Skills & Rules Pipeline | `cloud-api/migrations/012_skills.sql` + `013_rules.sql` + `cloud-api/src/lib/skills/` + `cloud-api/src/lib/rules/` + `cloud-api/src/routes/skills.ts` + `cloud-api/src/routes/rules.ts` + `ai-agencee-cloud/src/entities/skill/` + `ai-agencee-cloud/src/entities/rule/` | ✅ | MD → JSON → XML three-tier pipeline; tech-stack skill profiles (rationale, best practices, do/don't code examples); project/lane/agent-scoped coding rules (items + forbidden patterns); full CRUD REST API; Cloud UI with dynamic form editors |
 
 ---
 
