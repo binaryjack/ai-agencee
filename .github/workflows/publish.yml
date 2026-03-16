@@ -37,10 +37,11 @@ jobs:
       # Build in strict dependency order
       - name: Build packages
         run: |
-          pnpm --filter @ai-agencee/core    run build
-          pnpm --filter @ai-agencee/engine  run build
-          pnpm --filter @ai-agencee/mcp     run build
-          pnpm --filter @ai-agencee/cli     run build
+          pnpm --filter @ai-agencee/core        run build
+          pnpm --filter @ai-agencee/connectors  run build
+          pnpm --filter @ai-agencee/engine      run build
+          pnpm --filter @ai-agencee/mcp         run build
+          pnpm --filter @ai-agencee/cli         run build
 
       # Resolve --dry-run flag: set when manually dispatched with dry_run=true
       - name: Set publish flags
