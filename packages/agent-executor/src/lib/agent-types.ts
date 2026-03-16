@@ -121,6 +121,18 @@ export interface CheckDefinition {
    * Falls back to a generic run-complete message when omitted.
    */
   body?: string;
+
+  /**
+   * GitHub personal access token or app token.
+   * Falls back to the GITHUB_TOKEN environment variable when omitted.
+   */
+  token?: string;
+
+  /**
+   * Key from laneOutput to use as the comment body.
+   * When set, ctx.laneOutput[bodyField] is used instead of `body`.
+   */
+  bodyField?: string;
 }
 
 export interface AgentDefinition {

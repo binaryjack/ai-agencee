@@ -4,10 +4,12 @@ import type { RawCheckResult } from '../../check-handler.types.js'
 export async function execute(this: unknown, ctx: CheckContext): Promise<RawCheckResult> {
   const { check } = ctx
 
-  const token    = process.env['GITHUB_TOKEN'] ?? ''
+  const token    = check.token ?? process.env['GITHUB_TOKEN'] ?? ''
   const repo     = check.repo ?? process.env['GITHUB_REPOSITORY'] ?? ''
   const prNumber = check.prNumber ?? Number(process.env['GITHUB_PR_NUMBER'] ?? '0')
-  const body     = check.body ?? '_AI Agencee automated review complete._'
+  const body     = (check.bodyField && ctx.laneOutput?.[check.bodyField] as string | undefined)
+                ?? check.body
+                ?? '_AI Agencee automated review complete._'
 
   if (!token) {
     return {

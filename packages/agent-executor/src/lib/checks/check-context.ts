@@ -44,4 +44,7 @@ export interface CheckContext {
 
   /** Optional tool executor for llm-tool checks that call built-in tools. */
   toolExecutor?: ToolExecutorFn;
+
+  /** Output produced by a preceding lane step, passed into post-processing checks. */
+  laneOutput?: Record<string, unknown>;
 }

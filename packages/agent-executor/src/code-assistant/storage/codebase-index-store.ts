@@ -170,10 +170,10 @@ CodebaseIndexStore.prototype.semanticSearch = async function(
   const rows: Row[] = ftsQuery
     ? this._db!.prepare(`
         SELECT s.id, s.name, s.kind, s.signature, s.docstring, f.file_path, s.embedding
-        FROM codebase_symbols_fts fts
-        JOIN codebase_symbols s ON fts.rowid = s.id
+        FROM codebase_symbols_fts
+        JOIN codebase_symbols s ON codebase_symbols_fts.rowid = s.id
         JOIN codebase_files f ON s.file_id = f.id
-        WHERE f.project_id = ? AND fts MATCH ? AND s.embedding IS NOT NULL
+        WHERE f.project_id = ? AND codebase_symbols_fts MATCH ? AND s.embedding IS NOT NULL
         LIMIT 200
       `).all(this._projectId, ftsQuery) as Row[]
     : this._db!.prepare(`

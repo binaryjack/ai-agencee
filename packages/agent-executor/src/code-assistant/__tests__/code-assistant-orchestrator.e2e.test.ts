@@ -136,9 +136,9 @@ describeIf('E2E journey 1 â€” generate a new file from an indexed codebase'
     await cleanup();
   });
 
-  it('prompt sent to LLM contains the indexed symbol (add)', async () => {
+  it('prompt sent to LLM contains the indexed symbol (multiply)', async () => {
     const { dir, dbPath, cleanup } = await createProject({
-      'src/calculator.ts': 'export function add(a: number, b: number) { return a + b; }\n',
+      'src/calculator.ts': 'export function multiply(a: number, b: number) { return a * b; }\n',
     });
 
     const store  = await buildIndex(dir, dbPath);
@@ -467,7 +467,7 @@ describeIf('E2E journey 10 â€” files longer than MAX_FILE_LINES are truncat
       indexStore:  store,
     });
 
-    const result = await orch.execute({ task: 'review big file' });
+    const result = await orch.execute({ task: 'optimize fn100 performance' });
     await store.close();
 
     expect(result.success).toBe(true);

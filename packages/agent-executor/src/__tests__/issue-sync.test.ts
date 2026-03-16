@@ -91,7 +91,7 @@ describe('IssueSync.fromEnv()', () => {
     const sync = IssueSync.fromEnv() as NonNullable<ReturnType<typeof IssueSync.fromEnv>>;
 
     // Cast to access internal opts for verification
-    const opts = (sync as unknown as { opts: { provider: string } }).opts;
+    const opts = (sync as unknown as { _opts: { provider: string } })._opts;
     expect(opts.provider).toBe('jira');
   });
 });

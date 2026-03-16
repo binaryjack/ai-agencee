@@ -12,7 +12,7 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
       if (typeof entry !== 'string') continue;
       try {
         const content = await fs.readFile(path.join(ctx.fullPath, entry), 'utf-8');
-        if (content.includes(pattern)) {
+        if (new RegExp(pattern).test(content)) {
           return { passed: true, value: entry };
         }
       } catch {

@@ -106,7 +106,7 @@ describe('PiiScrubber', () => {
   })
 
   it('patternNames returns all active pattern names', () => {
-    const names = scrubber.patternNames
+    const names = scrubber.patternNames()
     expect(names).toContain('AWS_ACCESS_KEY')
     expect(names).toContain('GITHUB_TOKEN')
   })

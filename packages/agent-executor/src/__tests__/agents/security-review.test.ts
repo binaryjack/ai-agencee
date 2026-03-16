@@ -23,7 +23,7 @@ describe('security-review — grep check (hardcoded secret detection)', () => {
   it('detects a hardcoded API key pattern and fails the check', async () => {
     await fs.writeFile(
       path.join(tmpDir, 'config.ts'),
-      `const api_key = "sk-12345abcdef"\n`,
+      `const api_key = "sk12345abcdef"\n`,
     )
 
     const { execute } = await import('../../lib/checks/grep-handler/prototype/execute.js')

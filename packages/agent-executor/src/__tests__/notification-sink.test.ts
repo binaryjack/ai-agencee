@@ -125,7 +125,7 @@ describe('NotificationSink.fromEnv()', () => {
     process.env['TEAMS_WEBHOOK_URL'] = 'https://outlook.office.com/test';
     const { NotificationSink } = await import('../lib/notification-sink/index.js');
     const sink = NotificationSink.fromEnv()!;
-    const opts = (sink as unknown as { opts: { slack?: object; teams?: object } }).opts;
+    const opts = (sink as unknown as { _opts: { slack?: object; teams?: object } })._opts;
     expect(opts.slack).toBeDefined();
     expect(opts.teams).toBeDefined();
   });

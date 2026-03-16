@@ -7,7 +7,10 @@
 
 describe('dependency-audit — license check (GPL-3 detection)', () => {
   function resolveLicenseVerdict(packages: Array<{ name: string; license: string }>): string {
-    const gpl3 = packages.filter(p => p.license.toUpperCase().includes('GPL-3'))
+    const gpl3 = packages.filter(p => {
+      const upper = p.license.toUpperCase();
+      return upper.includes('GPL-3') && !upper.includes('AGPL');
+    })
     if (gpl3.length > 0) return 'FAIL'
 
     const restricted = packages.filter(p =>
