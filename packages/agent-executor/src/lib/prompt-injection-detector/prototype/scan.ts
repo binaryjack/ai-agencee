@@ -1,7 +1,7 @@
 import type { LLMPrompt } from '../../llm-provider.js';
 import {
-  InjectionScanResult,
-  IPromptInjectionDetector,
+    InjectionScanResult,
+    IPromptInjectionDetector,
 } from '../prompt-injection-detector.js';
 
 export function scan(this: IPromptInjectionDetector, prompt: LLMPrompt): InjectionScanResult {

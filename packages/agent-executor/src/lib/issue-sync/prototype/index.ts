@@ -1,12 +1,12 @@
 import { IssueSync } from '../issue-sync.js';
-import { _body }             from './_body.js';
-import { _createJiraIssue }  from './_createJiraIssue.js';
+import { _body } from './_body.js';
+import { _createJiraIssue } from './_createJiraIssue.js';
 import { _createLinearIssue } from './_createLinearIssue.js';
-import { _extraJiraFields }  from './_extraJiraFields.js';
-import { _title }            from './_title.js';
-import { attach }            from './attach.js';
+import { _extraJiraFields } from './_extraJiraFields.js';
+import { _title } from './_title.js';
+import { attach } from './attach.js';
 import { createIssueForRun } from './createIssueForRun.js';
-import { detach }            from './detach.js';
+import { detach } from './detach.js';
 
 Object.assign((IssueSync as Function).prototype, {
   attach,

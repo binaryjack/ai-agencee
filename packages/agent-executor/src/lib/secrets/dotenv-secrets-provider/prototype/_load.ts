@@ -1,6 +1,6 @@
-import * as fs from 'fs/promises'
-import * as path from 'path'
-import type { IDotenvSecretsProvider } from '../dotenv-secrets-provider.js'
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import type { IDotenvSecretsProvider } from '../dotenv-secrets-provider.js';
 
 export async function _load(this: IDotenvSecretsProvider): Promise<Map<string, string>> {
   if (this._cache) return this._cache;

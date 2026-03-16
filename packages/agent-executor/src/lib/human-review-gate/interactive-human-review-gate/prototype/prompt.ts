@@ -1,7 +1,7 @@
-import * as readline from 'readline'
-import type { CheckpointPayload, SupervisorVerdict } from '../../../dag-types.js'
-import { VERDICT } from '../../../dag-types.js'
-import type { IInteractiveHumanReviewGate } from '../interactive-human-review-gate.js'
+import * as readline from 'readline';
+import type { CheckpointPayload, SupervisorVerdict } from '../../../dag-types.js';
+import { VERDICT } from '../../../dag-types.js';
+import type { IInteractiveHumanReviewGate } from '../interactive-human-review-gate.js';
 
 export async function prompt(
   this: IInteractiveHumanReviewGate,

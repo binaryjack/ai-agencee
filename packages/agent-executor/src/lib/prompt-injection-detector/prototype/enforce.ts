@@ -1,9 +1,9 @@
 import type { LLMPrompt } from '../../llm-provider.js';
 import {
-  InjectionDetectionMode,
-  InjectionScanResult,
-  IPromptInjectionDetector,
-  PromptInjectionError,
+    InjectionDetectionMode,
+    InjectionScanResult,
+    IPromptInjectionDetector,
+    PromptInjectionError,
 } from '../prompt-injection-detector.js';
 
 export function enforce(

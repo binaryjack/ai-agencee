@@ -1,4 +1,4 @@
-import type { IDotenvSecretsProvider } from '../dotenv-secrets-provider.js'
+import type { IDotenvSecretsProvider } from '../dotenv-secrets-provider.js';
 
 export async function get(
   this: IDotenvSecretsProvider,

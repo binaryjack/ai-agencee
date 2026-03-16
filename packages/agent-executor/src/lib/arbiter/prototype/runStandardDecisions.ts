@@ -1,6 +1,6 @@
-import type { IBacklogBoard } from '../../backlog/index.js'
-import type { ActorId, DecisionOption, PendingDecision, PlanDefinition } from '../../plan-types.js'
-import type { IArbiter } from '../arbiter.js'
+import type { IBacklogBoard } from '../../backlog/index.js';
+import type { ActorId, PendingDecision, PlanDefinition } from '../../plan-types.js';
+import type { IArbiter } from '../arbiter.js';
 
 const COMMON_DECISIONS: Record<string, Omit<PendingDecision, 'id' | 'raisedAt' | 'blockedItemIds'>> = {
   'api-style': {

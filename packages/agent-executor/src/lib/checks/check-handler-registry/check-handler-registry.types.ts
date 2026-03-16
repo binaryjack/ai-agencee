@@ -1,9 +1,8 @@
-import type { CheckDefinition } from '../../agent-types.js';
+import type { CheckDefinition, CheckType } from '../../agent-types.js';
+import type { StepResult } from '../../check-runner.js';
 import type { ToolExecutorFn } from '../../llm-provider.js';
 import type { RoutedResponse } from '../../model-router/index.js';
 import type { IModelRouter } from '../../model-router/model-router.js';
-import type { CheckType } from '../../agent-types.js';
-import type { StepResult } from '../../check-runner.js';
 import type { CheckContext } from '../check-context.js';
 import type { ICheckHandler } from '../check-handler.types.js';
 

@@ -3,12 +3,12 @@ import type { IChatRenderer } from '../chat-renderer/index.js'
 import type { IModelRouter } from '../model-router/index.js'
 import { PLAN_STATE_DIR } from '../path-constants.js'
 import type {
-  DiscoveryQuestion,
-  DiscoveryResult,
-  ModelRecommendation,
-  ProjectLayer,
-  QualityGrade,
-  StoryType
+    DiscoveryQuestion,
+    DiscoveryResult,
+    ModelRecommendation,
+    ProjectLayer,
+    QualityGrade,
+    StoryType
 } from '../plan-types.js'
 
 export type { DiscoveryQuestion, DiscoveryResult }

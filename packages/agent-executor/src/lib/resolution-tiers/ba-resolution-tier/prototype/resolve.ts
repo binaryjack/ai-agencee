@@ -1,5 +1,5 @@
-import type { DecisionOption, PendingDecision } from '../../resolution-tiers.types.js'
-import type { IBAResolutionTier } from '../ba-resolution-tier.js'
+import type { DecisionOption, PendingDecision } from '../../resolution-tiers.types.js';
+import type { IBAResolutionTier } from '../ba-resolution-tier.js';
 
 export async function resolve(this: IBAResolutionTier, pending: PendingDecision): Promise<DecisionOption | null> {
   const opts = pending.options;

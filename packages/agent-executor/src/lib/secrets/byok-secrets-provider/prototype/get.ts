@@ -1,4 +1,4 @@
-import type { IByokSecretsProvider } from '../byok-secrets-provider.types.js'
+import type { IByokSecretsProvider } from '../byok-secrets-provider.types.js';
 
 export async function get(
   this: IByokSecretsProvider,

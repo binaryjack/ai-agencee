@@ -1,6 +1,6 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import type { IArbiter } from '../arbiter.js'
+import * as fs from 'fs';
+import * as path from 'path';
+import type { IArbiter } from '../arbiter.js';
 
 export function _save(this: IArbiter): void {
   fs.mkdirSync(this._stateDir, { recursive: true });

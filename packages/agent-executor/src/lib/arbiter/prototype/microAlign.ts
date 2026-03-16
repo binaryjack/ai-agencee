@@ -1,5 +1,5 @@
-import type { ActorId } from '../../plan-types.js'
-import type { IArbiter } from '../arbiter.js'
+import type { ActorId } from '../../plan-types.js';
+import type { IArbiter } from '../arbiter.js';
 
 export async function microAlign(
   this: IArbiter,
