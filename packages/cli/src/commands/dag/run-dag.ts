@@ -1,5 +1,6 @@
 import { DagOrchestrator, DagResult } from '@ai-agencee/engine';
 import * as path from 'path';
+import { findProjectRoot, validateProjectRoot } from './find-project-root.js';
 import { printDagSummary } from './print-dag-summary.js';
 
 export const runDag = async (
@@ -14,7 +15,11 @@ export const runDag = async (
     json?: boolean;
   },
 ): Promise<void> => {
-  const projectRoot = options.project ? path.resolve(options.project) : process.cwd();
+  const explicitProject = Boolean(options.project);
+  const projectRoot = options.project
+    ? path.resolve(options.project)
+    : findProjectRoot();
+  validateProjectRoot(projectRoot, explicitProject);
   const dagFilePath = path.isAbsolute(dagFile) ? dagFile : path.resolve(projectRoot, dagFile);
 
   if (!options.json) {

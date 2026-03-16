@@ -1,26 +1,25 @@
-const fs = require('fs');
-const path = require('path');
-
-const src = path.resolve(__dirname, '../../../agents');
-const dest = path.resolve(__dirname, '../dist/agents');
-
-function copyDir(from, to) {
-  if (!fs.existsSync(from)) {
-    console.log(`[copy-agents] Source not found: ${from} — skipping`);
-    return;
-  }
-  fs.mkdirSync(to, { recursive: true });
-  for (const entry of fs.readdirSync(from)) {
-    const fromPath = path.join(from, entry);
-    const toPath = path.join(to, entry);
-    const stat = fs.statSync(fromPath);
-    if (stat.isDirectory()) {
-      copyDir(fromPath, toPath);
-    } else {
-      fs.copyFileSync(fromPath, toPath);
-    }
-  }
-}
-
-copyDir(src, dest);
-console.log(`[copy-agents] Copied ${src} → ${dest}`);
+/**
+ * copy-agents.js
+ *
+ * INTENTIONALLY INERT — shadow copy removed (Fix A, 2026-03-16).
+ *
+ * Previously this script copied <repo-root>/agents/ → dist/agents/ on every
+ * build.  That created a phantom copy of all demo DAGs inside the compiled
+ * output directory.  On Windows, pnpm NTFS junctions meant that
+ * process.cwd() could resolve to packages/agent-executor/dist/ (through
+ * the junction at packages/cli/node_modules/@ai-agencee/engine → packages/
+ * agent-executor).  When that happened, relative DAG paths were resolved
+ * against dist/ instead of the repo root, producing ENOENT errors.
+ *
+ * The correct behaviour is:
+ *   • Demo DAGs live ONLY in <repo-root>/agents/demos/
+ *   • All callers (run-scenarios.js, CLI scripts, cloud-api) must pass
+ *     absolute paths derived from their own __dirname or an explicit
+ *     --project flag.
+ *   • The engine never searches dist/ for DAG files.
+ *
+ * This script is kept as a no-op placeholder so the "build" script entry
+ * in package.json does not need to change.
+ */
+'use strict';
+console.log('[copy-agents] shadow copy disabled — agents/ live at repo root only');

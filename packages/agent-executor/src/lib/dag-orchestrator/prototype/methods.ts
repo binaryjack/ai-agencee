@@ -14,14 +14,14 @@ import { ModelRouterFactory } from '../../model-router-factory/index.js'
 import type { IModelRouter } from '../../model-router/index.js'
 import { getGlobalTracer } from '../../otel.js'
 import {
-  createInjectionSafeProvider,
+    createInjectionSafeProvider,
 } from '../../prompt-injection-detector/index.js'
 import { RateLimiter } from '../../rate-limiter/index.js'
 import { RbacPolicy } from '../../rbac/index.js'
 import { RunRegistry } from '../../run-registry/index.js'
 import {
-  createDefaultSecretsProvider,
-  injectSecretsToEnv,
+    createDefaultSecretsProvider,
+    injectSecretsToEnv,
 } from '../../secrets/index.js'
 import type { IDagOrchestrator } from '../dag-orchestrator.js'
 
@@ -31,6 +31,19 @@ export async function run(this: IDagOrchestrator, dagFile: string): Promise<DagR
   const dagPath = path.isAbsolute(dagFile)
     ? dagFile
     : path.resolve(this._projectRoot, dagFile);
+
+  // Guard: produce a human-readable error before Node's raw ENOENT surfaces
+  try {
+    await fs.access(dagPath);
+  } catch {
+    throw new Error(
+      `DAG file not found: ${dagPath}\n` +
+      `  projectRoot : ${this._projectRoot}\n` +
+      `  dagFile arg : ${dagFile}\n` +
+      `  Tip: pass --project <repo-root> to set the correct project root.`,
+    );
+  }
+
   const dagDir = path.dirname(dagPath);
   const dag    = await this.loadDag(dagPath);
   return this.execute(dag, dagDir);

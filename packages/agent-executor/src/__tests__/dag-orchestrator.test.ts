@@ -1,5 +1,5 @@
-import { DagOrchestrator } from '../lib/dag-orchestrator'
-import { DagDefinition, LaneResult } from '../lib/dag-types'
+import { DagOrchestrator } from '../lib/dag-orchestrator';
+import { DagDefinition, LaneResult } from '../lib/dag-types';
 
 // ─── mocks ────────────────────────────────────────────────────────────────────
 
@@ -100,8 +100,8 @@ jest.mock('../lib/model-router-factory', () => ({
   },
 }));
 
-import * as fsMod from 'fs/promises'
-import { runLane } from '../lib/lane-executor'
+import * as fsMod from 'fs/promises';
+import { runLane } from '../lib/lane-executor';
 
 const mockFs = fsMod as jest.Mocked<typeof fsMod>;
 const mockRunLane = runLane as jest.MockedFunction<typeof runLane>;
@@ -333,6 +333,54 @@ describe('DagOrchestrator', () => {
       });
 
       expect(result.status).toBe('success');
+    });
+  });
+
+  // ─── run() — actionable ENOENT guard (Fix C) ──────────────────────────────
+
+  describe('run — DAG file not found', () => {
+    it('throws a descriptive error when the DAG path does not exist', async () => {
+      await expect(
+        makeOrchestrator().run('agents/demos/09-security-audit/security-audit.dag.json'),
+      ).rejects.toThrow(/DAG file not found/);
+    });
+
+    it('includes the resolved absolute path in the error message', async () => {
+      try {
+        await makeOrchestrator().run('agents/does-not-exist.dag.json');
+      } catch (err) {
+        expect(String(err)).toContain('/project/agents/does-not-exist.dag.json');
+      }
+    });
+
+    it('includes projectRoot in the error message', async () => {
+      try {
+        await makeOrchestrator().run('missing.dag.json');
+      } catch (err) {
+        expect(String(err)).toContain('/project');
+      }
+    });
+
+    it('includes --project tip in the error message', async () => {
+      try {
+        await makeOrchestrator().run('missing.dag.json');
+      } catch (err) {
+        expect(String(err)).toContain('--project');
+      }
+    });
+
+    it('does NOT throw ENOENT when the file exists', async () => {
+      // Simulate fs.access succeeding, then readFile returning valid JSON
+      const { access } = jest.requireMock('fs/promises') as jest.Mocked<typeof import('fs/promises')>;
+      (access as jest.MockedFunction<typeof access>).mockResolvedValueOnce(undefined);
+      mockFs.readFile.mockResolvedValueOnce(JSON.stringify(dag2Parallel));
+      mockRunLane
+        .mockResolvedValueOnce(makeLaneResult('sql'))
+        .mockResolvedValueOnce(makeLaneResult('react'));
+
+      await expect(
+        makeOrchestrator().run('/absolute/agents/dag.json'),
+      ).resolves.toBeDefined();
     });
   });
 });

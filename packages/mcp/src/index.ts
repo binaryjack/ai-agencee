@@ -3,17 +3,18 @@ import { AuditLog, DagOrchestrator } from '@ai-agencee/engine'
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
-  CallToolRequest,
-  CallToolRequestSchema,
-  ListResourcesRequestSchema,
-  ListToolsRequestSchema,
-  ReadResourceRequest,
-  ReadResourceRequestSchema,
-  Tool,
+    CallToolRequest,
+    CallToolRequestSchema,
+    ListResourcesRequestSchema,
+    ListToolsRequestSchema,
+    ReadResourceRequest,
+    ReadResourceRequestSchema,
+    Tool,
 } from '@modelcontextprotocol/sdk/types.js'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { buildDashboard } from './dashboard/index.js'
+import { findProjectRoot } from './find-project-root.js'
 import { startSseServer } from './sse/index.js'
 import { createVSCodeSamplingBridge } from './vscode-lm/index.js'
 
@@ -31,7 +32,7 @@ const server = new Server(
 
 // Helper to read project files
 async function readProjectFile(relativePath: string): Promise<string> {
-  const projectRoot = process.cwd();
+  const projectRoot = findProjectRoot();
   const filePath = path.join(projectRoot, relativePath);
   try {
     return await fs.readFile(filePath, 'utf-8');
@@ -326,7 +327,7 @@ Status: Ready to validate
       case 'agent-dag': {
         const a = (args as Record<string, unknown> | undefined) ?? {};
         const dagFile = typeof a.dagFile === 'string' ? a.dagFile : 'agents/dag.json';
-        const projectRoot = typeof a.projectRoot === 'string' ? a.projectRoot : process.cwd();
+        const projectRoot = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot();
         const verbose = typeof a.verbose === 'boolean' ? a.verbose : false;
         const budgetCapUSD = typeof a.budgetCapUSD === 'number' ? a.budgetCapUSD : undefined;
 
@@ -441,7 +442,7 @@ Status: Ready to validate
       case 'audit-log': {
         const a2 = (args as Record<string, unknown> | undefined) ?? {};
         const runId = String(a2.runId ?? '');
-        const projectRoot = typeof a2.projectRoot === 'string' ? a2.projectRoot : process.cwd();
+        const projectRoot = typeof a2.projectRoot === 'string' ? path.resolve(a2.projectRoot) : findProjectRoot();
         const verify = a2.verify === true;
 
         if (!runId) {
@@ -508,7 +509,7 @@ Status: Ready to validate
 
 // Register Resources
 server.setRequestHandler(ListResourcesRequestSchema, async () => {
-  const projectRoot = process.cwd();
+  const projectRoot = findProjectRoot();
   const runIds = await AuditLog.listRuns(projectRoot).catch(() => [] as string[]);
   const auditResources = runIds.map((id) => ({
     uri: `audit://${id}`,
@@ -620,7 +621,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request: ReadResource
 
   if (uri.startsWith('audit://')) {
     const runId = uri.replace('audit://', '');
-    const projectRoot = process.cwd();
+    const projectRoot = findProjectRoot();
     const entries = await AuditLog.read(projectRoot, runId);
     const ndjson = entries.map((e) => JSON.stringify(e)).join('\n');
     return {
@@ -633,7 +634,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request: ReadResource
   }
 
   if (uri === 'dashboard://status') {
-    const projectRoot = process.cwd();
+    const projectRoot = findProjectRoot();
     const markdown = await buildDashboard(projectRoot);
     return {
       contents: [{
