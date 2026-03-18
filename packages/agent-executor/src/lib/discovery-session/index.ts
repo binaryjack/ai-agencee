@@ -1,4 +1,3 @@
-import './prototype/index.js';
 
 export {
     DiscoverySession, QUESTION_BANK, buildModelRecommendation,
@@ -8,3 +7,5 @@ export {
 } from './discovery-session.js';
 export type { DiscoveryResult, IDiscoverySession } from './discovery-session.js';
 
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

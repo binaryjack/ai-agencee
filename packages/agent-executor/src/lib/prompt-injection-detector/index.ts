@@ -1,4 +1,3 @@
-import './prototype/index.js';
 export {
     BUILT_IN_SIGNATURES, PromptInjectionDetector,
     PromptInjectionError
@@ -43,3 +42,6 @@ export function createInjectionSafeProvider(
       : undefined,
   };
 }
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

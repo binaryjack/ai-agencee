@@ -6,7 +6,6 @@
  * the named exports so consumers always receive a fully-wired instance.
  */
 
-import './prototype/index.js';
 
 export {
     CodeAssistantOrchestrator,
@@ -14,3 +13,6 @@ export {
 } from './code-assistant-orchestrator.js';
 
 export type { ICodeAssistantOrchestrator } from './code-assistant-orchestrator.js';
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

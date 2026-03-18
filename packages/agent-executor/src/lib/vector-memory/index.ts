@@ -1,4 +1,3 @@
-import './prototype/index.js';
 export { VectorMemory } from './vector-memory.js';
 export type {
     Embedding, IVectorMemory, MemoryEntry, SearchOptions, SearchResult, SerializedEntry,
@@ -26,3 +25,6 @@ export function clearVectorStore(namespace: string): void {
 export function listVectorStores(): string[] {
   return [..._stores.keys()];
 }
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

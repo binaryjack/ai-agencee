@@ -1,4 +1,4 @@
-ï»¿import * as path from 'path'
+import * as path from 'path'
 import type { IBacklogBoard } from '../backlog/index.js'
 import type { IChatRenderer } from '../chat-renderer/index.js'
 import type { IModelRouter } from '../model-router/index.js'
@@ -8,7 +8,6 @@ import { ArchResolutionTier } from '../resolution-tiers/arch-resolution-tier/ind
 import { BAResolutionTier } from '../resolution-tiers/ba-resolution-tier/index.js'
 import { POEscalationTier } from '../resolution-tiers/po-escalation-tier/index.js'
 import type { ResolutionTier } from '../resolution-tiers/resolution-tiers.types.js'
-import './prototype/index.js'
 
 
 export interface ArbiterDecision {
@@ -67,3 +66,13 @@ export const Arbiter = function(
     new POEscalationTier(renderer, modelRouter),
   ];
 } as unknown as IArbiter;
+
+// Imported AFTER Arbiter is exported — prototype/index.js reads Arbiter.prototype
+// at load time, so it must run only after exports.Arbiter has been assigned.
+
+// Must be imported AFTER the constructor export to avoid CJS circular-dependency crash.
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

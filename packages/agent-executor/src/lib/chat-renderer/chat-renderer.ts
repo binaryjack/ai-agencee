@@ -6,7 +6,6 @@ import type {
     PendingDecision,
     PlanPhase,
 } from '../plan-types.js';
-import './prototype/index.js';
 
 // ─── ANSI primitives ──────────────────────────────────────────────────────────
 
@@ -145,3 +144,6 @@ export async function promptChoice(
     });
   });
 }
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

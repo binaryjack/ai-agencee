@@ -1,8 +1,7 @@
-﻿import * as path from 'path'
+import * as path from 'path'
 import type { IChatRenderer } from '../chat-renderer/index.js'
 import { PLAN_STATE_DIR } from '../path-constants.js'
 import type { ActorId, BacklogItem, BacklogItemStatus } from '../plan-types.js'
-import './prototype/index.js'
 
 export interface IBacklogBoard {
   new(renderer: IChatRenderer, projectRoot: string): IBacklogBoard;
@@ -45,3 +44,10 @@ export const BacklogBoard = function(
   this._items = new Map<string, BacklogItem>();
   this._seq = 0;
 } as unknown as IBacklogBoard;
+
+// Must be imported AFTER the constructor export to avoid CJS circular-dependency crash.
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

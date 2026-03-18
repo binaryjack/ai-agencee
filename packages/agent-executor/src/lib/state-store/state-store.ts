@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as fsp from 'fs/promises'
 import * as path from 'path'
-import './prototype/index.js'
 
 export { fs, fsp, path }
 
@@ -23,3 +22,10 @@ export const StateStore = function(
 ) {
   this._filePath = filePath;
 } as unknown as new <T>(filePath: string) => IStateStore<T>;
+
+// Must be imported AFTER the constructor export to avoid CJS circular-dependency crash.
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

@@ -1,7 +1,6 @@
 import type { ModelFamily } from '../llm-provider.js';
 import type { ResolvedPrompt } from './prompt-registry.types.js';
 
-import './prototype/index.js';
 
 export interface IPromptRegistry {
   new(promptsDir: string): IPromptRegistry;
@@ -24,3 +23,6 @@ export const PromptRegistry = function(
   this._promptsDir = promptsDir;
   this._prompts    = new Map<string, ResolvedPrompt>();
 } as unknown as IPromptRegistry;
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

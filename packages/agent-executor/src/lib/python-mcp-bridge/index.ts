@@ -1,4 +1,3 @@
-import './prototype/index.js';
 
 export { PythonMcpBridge, PythonMcpProvider } from './python-mcp-bridge.js';
 export type {
@@ -9,3 +8,5 @@ export type {
     PythonMcpBridgeOptions
 } from './python-mcp-bridge.js';
 
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

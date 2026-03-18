@@ -1,4 +1,3 @@
-import './prototype/index.js';
 export { GitHubWebhookTrigger } from './webhook-trigger.js';
 export type {
     GitHubWebhookPayload, GitHubWebhookTriggerOptions, IGitHubWebhookTrigger, TriggerContext, WebhookRoute
@@ -14,3 +13,6 @@ export async function startWebhookTrigger(
   await trigger.start();
   return trigger;
 }
+
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'

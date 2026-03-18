@@ -1,4 +1,3 @@
-import './prototype/index.js';
 
 export { IssueSync } from './issue-sync.js';
 export type {
@@ -10,3 +9,5 @@ export type {
     LinearOptions
 } from './issue-sync.js';
 
+// Must import AFTER constructor export to avoid CJS circular-dep crash.
+import './prototype/index.js'
