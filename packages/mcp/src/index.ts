@@ -468,6 +468,52 @@ Status: Ready to validate
         return { content: [{ type: 'text', text: result }] }
       }
 
+      case 'tech-catalog': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : undefined
+        const { runTechCatalog } = await import('./handlers/tech-catalog/index.js')
+        const result = await runTechCatalog(pr)
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
+          }]
+        }
+      }
+
+      case 'create-tech-pack': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const { runCreateTechPack } = await import('./handlers/create-tech-pack/index.js')
+        const result = await runCreateTechPack({
+          name: typeof a.name === 'string' ? a.name : '',
+          displayName: typeof a.displayName === 'string' ? a.displayName : '',
+          category: typeof a.category === 'string' ? a.category : '',
+          description: typeof a.description === 'string' ? a.description : '',
+          version: typeof a.version === 'string' ? a.version : '1.0.0',
+          conventions: typeof a.conventions === 'string' ? a.conventions : undefined,
+          patterns: typeof a.patterns === 'string' ? a.patterns : undefined,
+          antiPatterns: typeof a.antiPatterns === 'string' ? a.antiPatterns : undefined,
+          fileNaming: typeof a.fileNaming === 'string' ? a.fileNaming : undefined,
+          organization: typeof a.organization === 'string' ? a.organization : undefined,
+          extensions: Array.isArray(a.extensions) ? a.extensions.filter((e): e is string => typeof e === 'string') : undefined,
+          relatedTechs: Array.isArray(a.relatedTechs) ? a.relatedTechs.filter((t): t is string => typeof t === 'string') : undefined,
+          ecosystem: typeof a.ecosystem === 'string' ? a.ecosystem : undefined,
+          codeExample: typeof a.codeExample === 'string' ? a.codeExample : undefined,
+          template: typeof a.template === 'string' ? a.template : undefined,
+          destination: (a.destination === 'local' || a.destination === 'package') ? a.destination : 'local',
+          projectRoot: typeof a.projectRoot === 'string' ? a.projectRoot : undefined,
+        })
+        return {
+          content: [{
+            type: 'text',
+            text: result.success
+              ? `✅ ${result.message}\n\nFile: ${result.filePath}`
+              : `❌ ${result.message}`
+          }],
+          isError: !result.success,
+        }
+      }
+
       default:
         return {
           content: [

@@ -223,6 +223,90 @@ export const creationTools: Tool[] = [
       required: ['rule', 'category'],
     },
   },
+  {
+    name: 'create-tech-pack',
+    description: 'Create a new technology pack .pack.md file with coding rules and conventions',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Tech pack name (kebab-case, e.g., "typescript", "react")',
+        },
+        displayName: {
+          type: 'string',
+          description: 'Display name (e.g., "TypeScript", "React")',
+        },
+        category: {
+          type: 'string',
+          enum: ['language', 'framework', 'library', 'tool', 'platform', 'testing', 'database'],
+          description: 'Technology category',
+        },
+        description: {
+          type: 'string',
+          description: 'Brief description of the technology',
+        },
+        version: {
+          type: 'string',
+          description: 'Version number',
+          default: '1.0.0',
+        },
+        conventions: {
+          type: 'string',
+          description: 'Coding conventions and naming rules',
+        },
+        patterns: {
+          type: 'string',
+          description: 'Recommended patterns and best practices',
+        },
+        antiPatterns: {
+          type: 'string',
+          description: 'Anti-patterns to avoid',
+        },
+        fileNaming: {
+          type: 'string',
+          description: 'File naming conventions',
+        },
+        organization: {
+          type: 'string',
+          description: 'Directory organization patterns',
+        },
+        extensions: {
+          type: 'array',
+          description: 'File extensions (e.g., [".ts", ".tsx"])',
+          items: { type: 'string' },
+        },
+        relatedTechs: {
+          type: 'array',
+          description: 'Related technology names',
+          items: { type: 'string' },
+        },
+        ecosystem: {
+          type: 'string',
+          description: 'Ecosystem notes (npm, tooling, community)',
+        },
+        codeExample: {
+          type: 'string',
+          description: 'Example code snippet',
+        },
+        template: {
+          type: 'string',
+          description: 'Template code',
+        },
+        destination: {
+          type: 'string',
+          enum: ['local', 'package'],
+          description: 'Destination: "local" (agents/technologies/) or "package" (packages/tech-registry/packs/)',
+          default: 'local',
+        },
+        projectRoot: {
+          type: 'string',
+          description: 'Project root directory',
+        },
+      },
+      required: ['name', 'displayName', 'category', 'description'],
+    },
+  },
 ]
 
 /**
@@ -345,6 +429,19 @@ export const utilityTools: Tool[] = [
           type: 'boolean',
           description: 'Include custom rules',
           default: false,
+        },
+      },
+    },
+  },
+  {
+    name: 'tech-catalog',
+    description: 'Get available technology packs from tech-registry (local + package)',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        projectRoot: {
+          type: 'string',
+          description: 'Project root directory',
         },
       },
     },
