@@ -3,20 +3,20 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { promptUser } from '../../chat-renderer/index.js'
 import type {
-  ActorId,
-  AlignmentGate,
-  DiscoveryResult,
-  PlanDefinition,
-  QualityGrade,
-  StepDefinition,
+    ActorId,
+    AlignmentGate,
+    DiscoveryResult,
+    PlanDefinition,
+    QualityGrade,
+    StepDefinition,
 } from '../../plan-types.js'
 import type { IPromptRegistry } from '../../prompt-registry/index.js'
 import { PromptRegistry } from '../../prompt-registry/index.js'
 import {
-  buildSteps,
-  IPlanSynthesizer,
-  PlanSynthesizer,
-  selectAgents,
+    buildSteps,
+    IPlanSynthesizer,
+    PlanSynthesizer,
+    selectAgents,
 } from '../plan-synthesizer.js'
 
 // ─── synthesize ───────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export async function synthesize(
     version:        '1.0',
     phase:          'synthesize',
     qualityGrade:   discovery.qualityGrade as QualityGrade,
-    discoveryRef:   path.join('.agents', 'plan-state', 'discovery.json'),
+    discoveryRef:   path.join('.agencee', 'plan-state', 'discovery.json'),
     steps,
     alignmentGates: allGates,
     artifacts:      [],
@@ -254,7 +254,7 @@ export function _save(this: IPlanSynthesizer, plan: PlanDefinition): void {
 (PlanSynthesizer as unknown as Record<string, unknown>).load = function load(
   projectRoot: string,
 ): PlanDefinition | null {
-  const file = path.join(projectRoot, '.agents', 'plan-state', 'plan.json');
+  const file = path.join(projectRoot, '.agencee', 'plan-state', 'plan.json');
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, 'utf-8')) as PlanDefinition;
 };

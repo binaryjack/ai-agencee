@@ -3,7 +3,7 @@
  * fs/promises and fs.existsSync are mocked to avoid real disk I/O.
  */
 
-import * as path from 'path'
+import * as path from 'path';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -19,8 +19,8 @@ jest.mock('fs', () => ({
   existsSync: jest.fn().mockReturnValue(false),
 }));
 
-import * as fsSync from 'fs'
-import * as fsMock from 'fs/promises'
+import * as fsSync from 'fs';
+import * as fsMock from 'fs/promises';
 
 const mockMkdir = fsMock.mkdir as jest.Mock;
 const mockWriteFile = fsMock.writeFile as jest.Mock;
@@ -30,7 +30,7 @@ const mockExistsSync = fsSync.existsSync as jest.Mock;
 
 // ─── Import module under test ─────────────────────────────────────────────────
 
-import { buildExamplesBlock, loadExamples, saveExample } from '../lib/distillation/index.js'
+import { buildExamplesBlock, loadExamples, saveExample } from '../lib/distillation/index.js';
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ describe('saveExample()', () => {
     await saveExample('code-review', 'run-1', { prompt: 'p', response: 'r' }, { projectRoot: PROJECT_ROOT });
 
     expect(mockMkdir).toHaveBeenCalledWith(
-      expect.stringContaining(path.join('.agents', 'examples', 'code-review')),
+      expect.stringContaining(path.join('.agencee', 'examples', 'code-review')),
       { recursive: true }
     );
   });

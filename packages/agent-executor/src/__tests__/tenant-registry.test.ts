@@ -48,8 +48,8 @@ describe('TenantRunRegistry', () => {
     if (old !== undefined) process.env['AIKIT_TENANT_ID'] = old
   })
 
-  it('tenant paths are under .agents/tenants/<tenantId>/', () => {
-    expect(registry.tenantRoot).toContain(path.join('.agents', 'tenants', 'tenant-a'))
+  it('tenant paths are under .agencee/tenants/<tenantId>/', () => {
+    expect(registry.tenantRoot).toContain(path.join('.agencee', 'tenants', 'tenant-a'))
   })
 
   // ─── create / get ────────────────────────────────────────────────────────

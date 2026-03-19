@@ -13,7 +13,7 @@ export async function buildDashboard(projectRoot: string): Promise<string> {
   lines.push(`> Snapshot at ${now}`);
   lines.push('');
 
-  const manifestPath = path.join(projectRoot, '.agents', 'runs', 'manifest.json');
+  const manifestPath = path.join(projectRoot, '.agencee', 'runs', 'manifest.json');
   let runs: RunEntry[] = [];
 
   try {
@@ -21,7 +21,7 @@ export async function buildDashboard(projectRoot: string): Promise<string> {
     const manifest: RunManifest = JSON.parse(raw);
     runs = manifest.runs ?? [];
   } catch {
-    lines.push('> No run history found (`.agents/runs/manifest.json` missing).');
+    lines.push('> No run history found (`.agencee/runs/manifest.json` missing).');
     lines.push('');
     lines.push('Run `pnpm demo` or execute a DAG to generate data.');
     return lines.join('\n');
@@ -66,7 +66,7 @@ export async function buildDashboard(projectRoot: string): Promise<string> {
   for (const r of recentRuns.slice(0, 5)) {
     try {
       const costFile = path.join(
-        projectRoot, '.agents', 'runs', r.runId, 'results', 'cost-summary.json',
+        projectRoot, '.agencee', 'runs', r.runId, 'results', 'cost-summary.json',
       );
       const raw: CostSummary = JSON.parse(await fs.readFile(costFile, 'utf-8'));
       const calls = Object.values(raw.byTaskType ?? {}).reduce((s, v) => s + v.calls, 0);

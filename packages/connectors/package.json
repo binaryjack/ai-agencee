@@ -44,9 +44,12 @@
     "@langchain/langgraph": ">=0.2"
   },
   "peerDependenciesMeta": {
-    "@langchain/langgraph": { "optional": true }
+    "@langchain/langgraph": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.0",
     "typescript": "^5.4.5",
     "vitest": "^3.0.0"
   }

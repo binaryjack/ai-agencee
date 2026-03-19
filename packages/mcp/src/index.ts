@@ -8,15 +8,21 @@ import {
     ListResourcesRequestSchema,
     ListToolsRequestSchema,
     ReadResourceRequest,
-    ReadResourceRequestSchema,
-    Tool,
+    ReadResourceRequestSchema
 } from '@modelcontextprotocol/sdk/types.js'
 import { spawn } from 'child_process'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { buildDashboard } from './dashboard/index.js'
 import { findProjectRoot } from './find-project-root.js'
+import { runAnalyzeProject } from './handlers/analyze-project/index.js'
+import { getAgentCapabilities } from './handlers/get-agent-capabilities/index.js'
+import { runHealthCheck } from './handlers/health-check/index.js'
+import { runPreviewPrompt } from './handlers/preview-prompt/index.js'
+import { runPullRules } from './handlers/pull-rules/index.js'
+import { runPushRules } from './handlers/push-rules/index.js'
 import { startSseServer } from './sse/index.js'
+import { allToolDefinitions } from './tools/definitions.js'
 import { createVSCodeSamplingBridge } from './vscode-lm/index.js'
 
 const server = new Server(
@@ -44,348 +50,7 @@ async function readProjectFile(relativePath: string): Promise<string> {
 
 // Register Tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    {
-      name: 'init',
-      description:
-        'Initialize AI session with ULTRA_HIGH standards and project rules',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          strict: {
-            type: 'boolean',
-            description: 'Enable STRICT_MODE',
-            default: true,
-          },
-        },
-      },
-    },
-    {
-      name: 'check',
-      description: 'Validate current project structure against rules',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {},
-      },
-    },
-    {
-      name: 'rules',
-      description: 'Get project coding rules and standards',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          format: {
-            type: 'string',
-            enum: ['markdown', 'text'],
-            description: 'Output format',
-            default: 'markdown',
-          },
-        },
-      },
-    },
-    {
-      name: 'patterns',
-      description: 'Get design patterns and architecture guidelines',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          format: {
-            type: 'string',
-            enum: ['markdown', 'text'],
-            description: 'Output format',
-            default: 'markdown',
-          },
-        },
-      },
-    },
-    {
-      name: 'bootstrap',
-      description: 'Get bootstrap configuration and setup instructions',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          format: {
-            type: 'string',
-            enum: ['markdown', 'text', 'config'],
-            description: 'Output format',
-            default: 'markdown',
-          },
-        },
-      },
-    },
-    {
-      name: 'agent-dag',
-      description:
-        'Run a multi-lane supervised DAG execution using the on-disk dag.json. ' +
-        'LLM calls are delegated back to VS Code via the MCP sampling protocol — no API keys required.',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          dagFile: {
-            type: 'string',
-            description:
-              'Path to the dag.json file, relative to projectRoot (default: agents/dag.json)',
-            default: 'agents/dag.json',
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to the project root (default: process.cwd())',
-          },
-          verbose: {
-            type: 'boolean',
-            description: 'Emit per-checkpoint log lines',
-            default: false,
-          },
-          budgetCapUSD: {
-            type: 'number',
-            description: 'Abort the run when estimated LLM spend exceeds this USD amount',
-          },
-        },
-      },
-    },
-    {
-      name: 'agent-breakdown',
-      description: 'Use Business Analyst agent to break down specifications',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          specification: {
-            type: 'string',
-            description: 'Specification or feature description to break down',
-          },
-        },
-        required: ['specification'],
-      },
-    },
-    {
-      name: 'agent-workflow',
-      description:
-        'Start full agent workflow: BA → Architecture → Backend → Frontend → Testing → E2E',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          specification: {
-            type: 'string',
-            description: 'Complete specification for the feature',
-          },
-          featureName: {
-            type: 'string',
-            description: 'Feature name/identifier',
-          },
-        },
-        required: ['specification', 'featureName'],
-      },
-    },
-    {
-      name: 'agent-validate',
-      description: 'Use Supervisor agent to validate implementation against ULTRA_HIGH standards',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          output: {
-            type: 'string',
-            description: 'Code or output to validate',
-          },
-          checkpoints: {
-            type: 'array',
-            description: 'Which standards to check (all, code-quality, architecture, testing)',
-          },
-        },
-        required: ['output'],
-      },
-    },
-    {
-      name: 'agent-status',
-      description: 'Check workflow status and progress',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          sessionId: {
-            type: 'string',
-            description: 'Workflow session ID',
-          },
-        },
-        required: ['sessionId'],
-      },
-    },
-    {
-      name: 'audit-log',
-      description:
-        'Retrieve or verify the tamper-evident audit log for a DAG run. ' +
-        'Returns the NDJSON entries or a verification report.',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          runId: {
-            type: 'string',
-            description: 'DAG run UUID to retrieve the audit log for',
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to the project root (default: process.cwd())',
-          },
-          verify: {
-            type: 'boolean',
-            description: 'When true, verify the hash-chain integrity and return a report',
-            default: false,
-          },
-        },
-        required: ['runId'],
-      },
-    },
-    {
-      name: 'create-agent',
-      description:
-        'Scaffold a new agent JSON file at agents/<name>.agent.json. ' +
-        'Accepts a natural-language description and optional check list; outputs the written file path.',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          name: {
-            type: 'string',
-            description: 'Agent name in kebab-case (e.g. "security-review")',
-          },
-          description: {
-            type: 'string',
-            description: 'What this agent does',
-          },
-          icon: {
-            type: 'string',
-            description: 'Emoji icon for the agent',
-            default: '🤖',
-          },
-          checks: {
-            type: 'array',
-            description: 'Array of check objects (type, path, pass, fail)',
-            items: { type: 'object' },
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to the project root (default: process.cwd())',
-          },
-        },
-        required: ['name', 'description'],
-      },
-    },
-    {
-      name: 'create-supervisor',
-      description:
-        'Scaffold a supervisor JSON file at agents/<name>.supervisor.json. ' +
-        'Defines retry budget and checkpoint gates for the corresponding agent lane.',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          laneId: {
-            type: 'string',
-            description: 'Lane / agent id this supervisor guards (kebab-case)',
-          },
-          retryBudget: {
-            type: 'number',
-            description: 'Max retries before ESCALATE',
-            default: 2,
-          },
-          checkpoints: {
-            type: 'array',
-            description: 'Array of checkpoint objects',
-            items: { type: 'object' },
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to the project root (default: process.cwd())',
-          },
-        },
-        required: ['laneId'],
-      },
-    },
-    {
-      name: 'create-dag',
-      description:
-        'Scaffold a DAG JSON file at agents/<name>.dag.json. ' +
-        'Wires a list of agent lanes with dependsOn edges and optional barriers.',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          dagName: {
-            type: 'string',
-            description: 'Human-readable name for the DAG',
-          },
-          fileName: {
-            type: 'string',
-            description: 'Output filename without extension (default: "dag")',
-            default: 'dag',
-          },
-          description: {
-            type: 'string',
-            description: 'What this DAG orchestrates',
-          },
-          lanes: {
-            type: 'array',
-            description: 'Array of lane objects: { id, agentFile, supervisorFile, dependsOn[], capabilities[] }',
-            items: { type: 'object' },
-          },
-          barriers: {
-            type: 'array',
-            description: 'Optional global barrier objects: { name, participants[], timeoutMs }',
-            items: { type: 'object' },
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to the project root (default: process.cwd())',
-          },
-        },
-        required: ['dagName', 'lanes'],
-      },
-    },
-    {
-      name: 'create-rule',
-      description:
-        'Append or replace a named rule block inside .ai/rules.md. ' +
-        'If the block heading already exists it is replaced; otherwise it is appended.',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          heading: {
-            type: 'string',
-            description: 'Heading text for the rule block (e.g. "No default exports")',
-          },
-          body: {
-            type: 'string',
-            description: 'Markdown body of the rule',
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to the project root (default: process.cwd())',
-          },
-        },
-        required: ['heading', 'body'],
-      },
-    },
-    {
-      name: 'cli-run',
-      description:
-        'Execute any `ai-kit` CLI command in the project and stream its stdout/stderr output. ' +
-        'Examples: "plan --spec my-spec.md", "agent:dag agents/dag.json", "visualize".',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {
-          command: {
-            type: 'string',
-            description: 'ai-kit sub-command and arguments (e.g. "plan --spec spec.md")',
-          },
-          projectRoot: {
-            type: 'string',
-            description: 'Absolute path to run the command in (default: process.cwd())',
-          },
-          timeoutMs: {
-            type: 'number',
-            description: 'Kill the process after this many ms (default: 120000)',
-            default: 120000,
-          },
-        },
-        required: ['command'],
-      },
-    },
-  ] as Tool[],
+  tools: allToolDefinitions,
 }));
 
 // Handle Tool Calls
@@ -758,6 +423,49 @@ Status: Ready to validate
           proc.on('error', (err) => { clearTimeout(timer); resolve(`Process error: ${err.message}`); });
         });
         return { content: [{ type: 'text', text: `\`\`\`\nai-kit ${command}\n\n${output}\`\`\`` }] };
+      }
+
+      case 'analyze-project': {
+        const ap = (args as Record<string, unknown> | undefined) ?? {}
+        const pr = typeof ap.projectRoot === 'string' ? path.resolve(ap.projectRoot) : findProjectRoot()
+        const intelligence = await runAnalyzeProject(pr)
+        return { content: [{ type: 'text', text: JSON.stringify(intelligence, null, 2) }] }
+      }
+
+      case 'get-agent-capabilities': {
+        const capabilities = getAgentCapabilities()
+        return { content: [{ type: 'text', text: JSON.stringify(capabilities, null, 2) }] }
+      }
+
+      case 'health-check': {
+        const hc = (args as Record<string, unknown> | undefined) ?? {}
+        const pr = typeof hc.projectRoot === 'string' ? path.resolve(hc.projectRoot) : findProjectRoot()
+        const report = await runHealthCheck(pr)
+        return { content: [{ type: 'text', text: JSON.stringify(report, null, 2) }] }
+      }
+
+      case 'pull-rules': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const result = await runPullRules(pr)
+        return { content: [{ type: 'text', text: result }] }
+      }
+
+      case 'push-rules': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const rulesJson = typeof a.rulesJson === 'string' ? a.rulesJson : '[]'
+        const result = await runPushRules(pr, rulesJson)
+        return { content: [{ type: 'text', text: result }] }
+      }
+
+      case 'preview-prompt': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const agentName = typeof a.agentName === 'string' ? a.agentName : 'backend-agent'
+        const modelFamily = (typeof a.modelFamily === 'string' ? a.modelFamily : 'sonnet') as 'haiku' | 'sonnet' | 'opus'
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const result = await runPreviewPrompt(agentName, modelFamily, pr)
+        return { content: [{ type: 'text', text: result }] }
       }
 
       default:

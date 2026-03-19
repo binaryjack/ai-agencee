@@ -6,6 +6,7 @@ import { runCheck } from '../src/commands/check/index.js'
 import { runCodeIndex } from '../src/commands/code/index.js'
 import { runDag } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
+import { runDoctor } from '../src/commands/doctor/index.js'
 import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } from '../src/commands/import/index.js'
 import { runInit } from '../src/commands/init/index.js'
 import { runMcp } from '../src/commands/mcp/index.js'
@@ -35,6 +36,15 @@ program
   .command('check')
   .description('Validate project structure against AI rules')
   .action(runCheck);
+
+program
+  .command('doctor')
+  .description('Run health checks: MCP server, model router, tech registry, .agencee/, agents, cloud API, Codernic index')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .action(async (options: { project?: string }) => {
+    const report = await runDoctor(options.project)
+    process.exit(report.allOk ? 0 : 1)
+  });
 
 program
   .command('mcp')
@@ -181,7 +191,7 @@ program
 
 program
   .command('data:list-tenants')
-  .description('List all tenant IDs stored under .agents/tenants/')
+  .description('List all tenant IDs stored under .agencee/tenants/')
   .action(runDataListTenants);
 
 // Framework import commands (IP-07)

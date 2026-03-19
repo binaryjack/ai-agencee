@@ -149,6 +149,21 @@ export interface AgentDefinition {
   checks: CheckDefinition[];
 }
 
+// ─── Agent JSON ──────────────────────────────────────────────────────────────
+
+/** Schema of an on-disk *.agent.json file. */
+export interface AgentJson {
+  name:         string
+  icon?:        string
+  description?: string
+  supervisor?:  string          // bare filename, e.g. 'backend.supervisor.json'
+  dependsOn?:   string[]        // bare filenames of other agent/supervisor files
+  modelFamily?: string
+  /** kebab names of tech packs from @ai-agencee/tech-registry or local agents/technologies/ */
+  technologies?: string[]
+  checks?:       CheckDefinition[]
+}
+
 // ─── Agent Result ─────────────────────────────────────────────────────────────
 
 /**

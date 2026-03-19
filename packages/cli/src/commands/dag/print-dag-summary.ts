@@ -59,7 +59,7 @@ export function printDagSummary(result: DagResult, projectRoot: string): void {
     }
   }
 
-  const resultFile = path.join('.agents', 'results', `dag-${result.runId}.json`);
+  const resultFile = path.join('.agencee', 'results', `dag-${result.runId}.json`);
   console.log(`\n  💾 Full result: ${resultFile}`);
   console.log(`${'\u2550'.repeat(W)}\n`);
 }

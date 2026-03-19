@@ -57,8 +57,8 @@ async function createProject(files: Record<string, string>): Promise<{
   cleanup: () => Promise<void>;
 }> {
   const dir    = path.join(os.tmpdir(), `ai-e2e-orch-${++counter}-${process.pid}`);
-  const dbPath = path.join(dir, '.agents', 'code-index.db');
-  await fs.mkdir(path.join(dir, '.agents'), { recursive: true });
+  const dbPath = path.join(dir, '.agencee', 'code-index.db');
+  await fs.mkdir(path.join(dir, '.agencee'), { recursive: true });
 
   for (const [relPath, content] of Object.entries(files)) {
     const abs = path.join(dir, relPath);

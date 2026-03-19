@@ -80,12 +80,12 @@ describe('shouldIgnore helper', () => {
       'dist/index.js',
       'build/app.js',
       '.git/COMMIT_EDITMSG',
-      '.agents/code-index.db',
+      '.agencee/code-index.db',
     ];
 
     // Reconstruct the shouldIgnore logic from watch-cmd.ts in-test
     const ALWAYS_IGNORE = new Set([
-      'node_modules', 'dist', 'build', '.git', 'coverage', '.agents', '.DS_Store',
+      'node_modules', 'dist', 'build', '.git', 'coverage', '.agencee', '.DS_Store',
     ]);
     const localShouldIgnore = (rel: string): boolean => {
       const parts = rel.replace(/\\/g, '/').split('/');
@@ -105,7 +105,7 @@ describe('shouldIgnore helper', () => {
     ];
 
     const ALWAYS_IGNORE = new Set([
-      'node_modules', 'dist', 'build', '.git', 'coverage', '.agents', '.DS_Store',
+      'node_modules', 'dist', 'build', '.git', 'coverage', '.agencee', '.DS_Store',
     ]);
     const localShouldIgnore = (rel: string): boolean => {
       const parts = rel.replace(/\\/g, '/').split('/');

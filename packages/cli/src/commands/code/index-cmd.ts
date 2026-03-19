@@ -10,7 +10,7 @@ import * as path from 'node:path';
 
 export const checkIndexStatus = async function(projectRoot: string) {
   try {
-    const dbPath = path.join(projectRoot, '.agents', 'code-index.db');
+    const dbPath = path.join(projectRoot, '.agencee', 'code-index.db');
     const store = await createCodebaseIndexStore({
       dbPath,
       projectId: path.basename(projectRoot)
@@ -48,7 +48,7 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
   } = options;
   
   const projectRoot = path.resolve(project);
-  const dbPath = path.join(projectRoot, '.agents', 'code-index.db');
+  const dbPath = path.join(projectRoot, '.agencee', 'code-index.db');
   const projectId = path.basename(projectRoot);
   
   console.log(`📇 Indexing codebase: ${projectRoot}\n`);

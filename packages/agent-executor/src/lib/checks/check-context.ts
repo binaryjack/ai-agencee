@@ -6,9 +6,12 @@
  */
 
 import type { CheckDefinition } from '../agent-types.js'
+import type { ICostAccumulator } from '../cost-accumulator/index.js'
 import type { ToolExecutorFn } from '../llm-provider.js'
 import type { RoutedResponse } from '../model-router/index.js'
 import type { IModelRouter } from '../model-router/model-router.js'
+import type { IPromptCompiler } from '../prompt-compiler/prompt-compiler.types.js'
+import type { LlmFinding } from './llm-review-handler/finding-parser.js'
 
 export interface CheckContext {
   /** The check definition from the agent JSON. */
@@ -35,13 +38,23 @@ export interface CheckContext {
   /** Optional callback fired after every LLM completion (cost tracking). */
   onLlmResponse?: (response: RoutedResponse) => void;
 
+  /** Optional cost accumulator for aggregating token usage and costs across checks. */
+  costAccumulator?: ICostAccumulator;
+
+  /** Optional prompt compiler for model-aware, cached system prompt injection. */
+  promptCompiler?: IPromptCompiler;
+
+  /** Agent name used by promptCompiler to resolve the correct compiled prompt. */
+  agentName?: string;
+
   /**
    * Optional callback fired for each streamed token from an LLM call.
    * When provided, tokens are printed live to stdout during llm-generate
    * and llm-review checks instead of waiting for the full response.
    */
   onLlmStream?: (token: string) => void;
-
+  /** Optional callback fired when LLM review produces structured findings. */
+  onLlmFindings?: (findings: LlmFinding[]) => void;
   /** Optional tool executor for llm-tool checks that call built-in tools. */
   toolExecutor?: ToolExecutorFn;
 

@@ -1,7 +1,7 @@
-import type { TaskType } from '../../../llm-provider.js'
-import type { RoutedResponse } from '../../../model-router/index.js'
-import type { CheckContext } from '../../check-context.js'
-import type { RawCheckResult } from '../../check-handler.types.js'
+import type { TaskType } from '../../../llm-provider.js';
+import type { RoutedResponse } from '../../../model-router/index.js';
+import type { CheckContext } from '../../check-context.js';
+import type { RawCheckResult } from '../../check-handler.types.js';
 
 export async function execute(this: unknown, ctx: CheckContext): Promise<RawCheckResult> {
   if (!ctx.modelRouter) {
@@ -17,16 +17,23 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
       .replace('{retryContext}', ctx.retryInstructions ?? 'N/A')
       .replace('{path}',        ctx.check.path        ?? '');
 
+    let systemPrompt = 'You are an expert software engineer. Be concise and specific. Output plain text findings only.';
+    let routedResponse: RoutedResponse | undefined;
+
+    if (ctx.promptCompiler && ctx.agentName) {
+      const compiled = await ctx.promptCompiler.compile(ctx.agentName, ctx.projectRoot, 'sonnet');
+      systemPrompt = compiled.text;
+    }
+
     const messages = [
       {
         role:    'system' as const,
-        content: 'You are an expert software engineer. Be concise and specific. Output plain text findings only.',
+        content: systemPrompt,
       },
       { role: 'user' as const, content: promptText },
     ];
 
     let fullContent = '';
-    let routedResponse: RoutedResponse | undefined;
 
     if (ctx.onLlmStream) {
       await (async () => {

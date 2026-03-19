@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LLM Finding",
+  "description": "Structured diagnostic extracted from LLM review output",
+  "type": "object",
+  "properties": {
+    "severity": {
+      "type": "string",
+      "enum": ["ERROR", "WARNING", "INFO"],
+      "description": "Severity level of the finding"
+    },
+    "file": {
+      "type": "string",
+      "description": "Relative file path containing the issue"
+    },
+    "line": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "1-based line number"
+    },
+    "column": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "1-based column number (optional)"
+    },
+    "message": {
+      "type": "string",
+      "description": "Diagnostic message text"
+    },
+    "agentName": {
+      "type": "string",
+      "description": "Name of agent that produced this finding"
+    }
+  },
+  "required": ["severity", "file", "line", "message"]
+}

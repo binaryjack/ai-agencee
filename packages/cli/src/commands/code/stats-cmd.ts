@@ -16,7 +16,7 @@ export const runCodeStats = async function(options: StatsOptions = {}): Promise<
   const { project = process.cwd(), json = false } = options;
 
   const projectRoot = path.resolve(project);
-  const dbPath = path.join(projectRoot, '.agents', 'code-index.db');
+  const dbPath = path.join(projectRoot, '.agencee', 'code-index.db');
 
   const status = await checkIndexStatus(projectRoot);
 

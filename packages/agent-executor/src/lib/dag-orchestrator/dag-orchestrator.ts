@@ -17,6 +17,11 @@ export interface IDagOrchestrator {
   ): Promise<import('../dag-types.js').DagResult>;
   loadDag(dagFilePath: string): Promise<import('../dag-types.js').DagDefinition>;
   _log(msg: string): void;
+  dryRun(
+    dag: import('../dag-types.js').DagDefinition,
+    agentsBaseDir: string,
+    projectRoot?: string,
+  ): Promise<import('./dry-run-report.types.js').DryRunReport>;
 }
 
 // ─── DagOrchestrator constructor ─────────────────────────────────────────────

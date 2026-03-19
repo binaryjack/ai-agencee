@@ -3,7 +3,7 @@
  *
  * fs/promises is mocked to avoid real disk I/O.
  */
-import * as path from 'path'
+import * as path from 'path';
 
 // ─── Mock fs/promises ─────────────────────────────────────────────────────────
 
@@ -11,15 +11,15 @@ jest.mock('fs/promises', () => ({
   readFile: jest.fn(),
 }));
 
-import * as fsMod from 'fs/promises'
+import * as fsMod from 'fs/promises';
 const mockReadFile = fsMod.readFile as jest.Mock;
 
-import type { DagResult } from '../lib/dag-types.js'
-import type { AdviceReport, Recommendation } from '../lib/run-advisor/index.js'
-import { RunAdvisor } from '../lib/run-advisor/index.js'
+import type { DagResult } from '../lib/dag-types.js';
+import type { AdviceReport, Recommendation } from '../lib/run-advisor/index.js';
+import { RunAdvisor } from '../lib/run-advisor/index.js';
 
 const PROJECT_ROOT = '/fake/project';
-const RUNS_DIR     = path.join(PROJECT_ROOT, '.agents', 'runs');
+const RUNS_DIR     = path.join(PROJECT_ROOT, '.agencee', 'runs');
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

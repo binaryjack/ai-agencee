@@ -2,14 +2,14 @@ import { randomUUID } from 'crypto';
 import * as path from 'path';
 import { promptUser } from '../../chat-renderer/index.js';
 import type {
-  ActorId,
-  AlignmentGate,
-  DiscoveryResult,
-  PlanDefinition,
-  QualityGrade,
+    ActorId,
+    AlignmentGate,
+    DiscoveryResult,
+    PlanDefinition,
+    QualityGrade,
 } from '../../plan-types.js';
-import { selectAgents } from '../plan-synthesizer.js';
 import type { IPlanSynthesizer } from '../plan-synthesizer.js';
+import { selectAgents } from '../plan-synthesizer.js';
 
 export async function synthesize(
   this:      IPlanSynthesizer,
@@ -73,7 +73,7 @@ export async function synthesize(
     version:        '1.0',
     phase:          'synthesize',
     qualityGrade:   discovery.qualityGrade as QualityGrade,
-    discoveryRef:   path.join('.agents', 'plan-state', 'discovery.json'),
+    discoveryRef:   path.join('.agencee', 'plan-state', 'discovery.json'),
     steps,
     alignmentGates: allGates,
     artifacts:      [],

@@ -33,7 +33,7 @@ export const runCodeSearch = async function(term: string, options: SearchOptions
   const { project = process.cwd(), kind, limit = 20, json = false, semantic = false } = options;
 
   const projectRoot = path.resolve(project);
-  const dbPath = path.join(projectRoot, '.agents', 'code-index.db');
+  const dbPath = path.join(projectRoot, '.agencee', 'code-index.db');
   const projectId = path.basename(projectRoot);
 
   let store: Awaited<ReturnType<typeof createCodebaseIndexStore>>;

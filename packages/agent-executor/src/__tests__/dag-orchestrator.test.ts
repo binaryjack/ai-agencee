@@ -57,11 +57,11 @@ jest.mock('../lib/prompt-injection-detector', () => ({
 jest.mock('../lib/run-registry', () => ({
   RunRegistry: jest.fn().mockImplementation(() => ({
     create: jest.fn().mockResolvedValue({
-      runRoot:        '/project/.agents/runs/test-run',
-      auditDir:       '/project/.agents/runs/test-run/audit',
-      checkpointsDir: '/project/.agents/runs/test-run/checkpoints',
-      resultsDir:     '/project/.agents/runs/test-run/results',
-      planStateDir:   '/project/.agents/runs/test-run/plan-state',
+      runRoot:        '/project/.agencee/runs/test-run',
+      auditDir:       '/project/.agencee/runs/test-run/audit',
+      checkpointsDir: '/project/.agencee/runs/test-run/checkpoints',
+      resultsDir:     '/project/.agencee/runs/test-run/results',
+      planStateDir:   '/project/.agencee/runs/test-run/plan-state',
     }),
     complete: jest.fn().mockResolvedValue(undefined),
   })),
@@ -149,7 +149,7 @@ const dag2Sequential: DagDefinition = {
 };
 
 const makeOrchestrator = (verbose = false) =>
-  new DagOrchestrator('/project', { verbose, resultsDir: '/project/.agents/results' });
+  new DagOrchestrator('/project', { verbose, resultsDir: '/project/.agencee/results' });
 
 // ─── tests ────────────────────────────────────────────────────────────────────
 

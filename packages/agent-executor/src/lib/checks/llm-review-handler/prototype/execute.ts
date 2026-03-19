@@ -3,6 +3,7 @@ import type { TaskType } from '../../../llm-provider.js'
 import type { RoutedResponse } from '../../../model-router/index.js'
 import type { CheckContext } from '../../check-context.js'
 import type { RawCheckResult } from '../../check-handler.types.js'
+import { parseFindingsFromLlmOutput } from '../finding-parser.js'
 
 export async function execute(this: unknown, ctx: CheckContext): Promise<RawCheckResult> {
   if (!ctx.modelRouter) {
@@ -25,7 +26,7 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
           entries.slice(0, 50).join('\n');
       }
     } catch {
-      // path not found — run the review with empty context
+      // path not found ï¿½ run the review with empty context
     }
 
     const taskType        = (ctx.check.taskType as TaskType | undefined) ?? 'validation';
@@ -37,16 +38,23 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
       .replace('{retryContext}', ctx.retryInstructions ?? 'N/A')
       .replace('{path}',         ctx.check.path        ?? '');
 
+    let systemPrompt = 'You are a code reviewer. Reply with findings as a bullet list. Be specific and actionable.';
+    let routedResponse: RoutedResponse | undefined;
+
+    if (ctx.promptCompiler && ctx.agentName) {
+      const compiled = await ctx.promptCompiler.compile(ctx.agentName, ctx.projectRoot, 'sonnet');
+      systemPrompt = compiled.text;
+    }
+
     const messages = [
       {
         role:    'system' as const,
-        content: 'You are a code reviewer. Reply with findings as a bullet list. Be specific and actionable.',
+        content: systemPrompt,
       },
       { role: 'user' as const, content: promptText },
     ];
 
     let reviewText = '';
-    let routedResponse: RoutedResponse | undefined;
 
     if (ctx.onLlmStream) {
       await (async () => {
@@ -67,6 +75,12 @@ export async function execute(this: unknown, ctx: CheckContext): Promise<RawChec
     }
 
     if (routedResponse) ctx.onLlmResponse?.(routedResponse);
+
+    // Parse structured findings from LLM output and emit via callback
+    const findings = parseFindingsFromLlmOutput(reviewText, ctx.agentName)
+    if (findings.length > 0 && ctx.onLlmFindings) {
+      ctx.onLlmFindings(findings)
+    }
 
     const passed =
       !reviewText.includes('CRITICAL:') &&

@@ -111,7 +111,7 @@ beforeAll(async () => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-kit-dag-integration-'));
 
   const agentsDir = path.join(tmpDir, 'agents');
-  const resultsDir = path.join(tmpDir, '.agents', 'results');
+  const resultsDir = path.join(tmpDir, '.agencee', 'results');
   fs.mkdirSync(agentsDir, { recursive: true });
   fs.mkdirSync(resultsDir, { recursive: true });
 
@@ -189,7 +189,7 @@ describe('DAG result', () => {
   });
 
   it('produces a result file on disk', async () => {
-    const resultsDir = path.join(tmpDir, '.agents', 'results');
+    const resultsDir = path.join(tmpDir, '.agencee', 'results');
     const files = await fsPromises.readdir(resultsDir);
     const dagFile = files.find((f) => f.startsWith(`dag-${result.runId}`));
     expect(dagFile).toBeDefined();
@@ -300,13 +300,13 @@ describe('Retry audit trail (lane-c)', () => {
   });
 
   it('checkpoint file written to disk for lane-c', async () => {
-    const cpDir = path.join(tmpDir, '.agents', 'runs', result.runId, 'checkpoints', 'lane-c');
+    const cpDir = path.join(tmpDir, '.agencee', 'runs', result.runId, 'checkpoints', 'lane-c');
     const files = await fsPromises.readdir(cpDir);
     expect(files).toContain('step-0.json');
   });
 
   it('checkpoint file contains valid JSON with expected fields', async () => {
-    const cpFile = path.join(tmpDir, '.agents', 'runs', result.runId, 'checkpoints', 'lane-c', 'step-0.json');
+    const cpFile = path.join(tmpDir, '.agencee', 'runs', result.runId, 'checkpoints', 'lane-c', 'step-0.json');
     const raw = await fsPromises.readFile(cpFile, 'utf-8');
     const record = JSON.parse(raw);
 

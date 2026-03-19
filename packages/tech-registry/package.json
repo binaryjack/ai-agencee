@@ -1,0 +1,36 @@
+{
+  "name": "@ai-agencee/tech-registry",
+  "version": "1.0.0",
+  "description": "Technology pack registry for AI Agencee — coding rules per tech stack",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "packs",
+    "index.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --no-coverage",
+    "test:coverage": "jest --coverage",
+    "lint": "tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.3.5",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.4.5"
+  }
+}

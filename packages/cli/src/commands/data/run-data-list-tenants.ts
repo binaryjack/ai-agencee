@@ -1,5 +1,5 @@
-import { TenantRunRegistry } from '@ai-agencee/engine'
-import { findProjectRoot } from './find-project-root.js'
+import { TenantRunRegistry } from '@ai-agencee/engine';
+import { findProjectRoot } from './find-project-root.js';
 
 export async function runDataListTenants(): Promise<void> {
   const projectRoot = await findProjectRoot(process.cwd());
@@ -9,7 +9,7 @@ export async function runDataListTenants(): Promise<void> {
     const tenants = await registry.listTenants();
 
     if (tenants.length === 0) {
-      console.log('No tenants found in .agents/tenants/');
+      console.log('No tenants found in .agencee/tenants/');
       return;
     }
 

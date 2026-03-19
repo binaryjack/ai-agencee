@@ -19,7 +19,7 @@ export async function _openStore(
   if (this._options.indexStore) return this._options.indexStore;
 
   const { projectRoot } = this._options;
-  const dbPath    = path.join(projectRoot, '.agents', 'code-index.db');
+  const dbPath    = path.join(projectRoot, '.agencee', 'code-index.db');
   const projectId = path.basename(projectRoot);
 
   return createCodebaseIndexStore({ dbPath, projectId }) as Promise<CodebaseIndexStoreInstance>;

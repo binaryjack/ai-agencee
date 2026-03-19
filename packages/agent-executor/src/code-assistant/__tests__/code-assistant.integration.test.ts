@@ -19,7 +19,7 @@ describe('E14 Code Assistant Integration', () => {
     // Create unique test project directory for each test
     testCounter++;
     testProjectRoot = path.join(__dirname, `__test_project_${testCounter}__`);
-    dbPath = path.join(testProjectRoot, '.agents', 'code-index.db');
+    dbPath = path.join(testProjectRoot, '.agencee', 'code-index.db');
     
     await fs.mkdir(testProjectRoot, { recursive: true });
   });

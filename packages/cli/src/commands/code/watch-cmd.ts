@@ -21,7 +21,7 @@ const ALWAYS_IGNORE = new Set([
   'build',
   '.git',
   'coverage',
-  '.agents', // the db itself
+  '.agencee', // the db itself
   '.DS_Store',
 ]);
 
