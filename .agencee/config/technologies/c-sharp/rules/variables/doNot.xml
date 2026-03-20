@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules category="doNot">
+  <rule>Don't use single-letter variable names except for loop counters (i, j, k)</rule>
+  <rule>Don't use Hungarian notation (strName, intCount)</rule>
+  <rule>Don't declare multiple variables on a single line</rule>
+  <rule>Don't use abbreviations or cryptic names</rule>
+  <rule>Don't shadow variables from outer scopes</rule>
+</rules>
