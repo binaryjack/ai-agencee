@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { AuditLog, DagOrchestrator } from '@ai-agencee/engine'
+import { AuditLog, DagOrchestrator, AGENTS_DIR } from '@ai-agencee/engine'
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
@@ -144,7 +144,7 @@ Status: Ready to validate
 
       case 'agent-dag': {
         const a = (args as Record<string, unknown> | undefined) ?? {};
-        const dagFile = typeof a.dagFile === 'string' ? a.dagFile : 'agents/dag.json';
+        const dagFile = typeof a.dagFile === 'string' ? a.dagFile : path.join(AGENTS_DIR, 'dag.json');
         const projectRoot = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot();
         const verbose = typeof a.verbose === 'boolean' ? a.verbose : false;
         const budgetCapUSD = typeof a.budgetCapUSD === 'number' ? a.budgetCapUSD : undefined;
@@ -306,7 +306,7 @@ Status: Ready to validate
         const agentName = String(ca.name ?? '');
         if (!agentName) return { content: [{ type: 'text', text: 'Error: name required' }], isError: true };
         const pr = typeof ca.projectRoot === 'string' ? path.resolve(ca.projectRoot) : findProjectRoot();
-        const agentsDir = path.join(pr, 'agents');
+        const agentsDir = path.join(pr, AGENTS_DIR);
         await fs.mkdir(agentsDir, { recursive: true });
         const filePath = path.join(agentsDir, `${agentName}.agent.json`);
         const agentJson = {
@@ -324,7 +324,7 @@ Status: Ready to validate
         const laneId = String(cs.laneId ?? '');
         if (!laneId) return { content: [{ type: 'text', text: 'Error: laneId required' }], isError: true };
         const pr = typeof cs.projectRoot === 'string' ? path.resolve(cs.projectRoot) : findProjectRoot();
-        const agentsDir = path.join(pr, 'agents');
+        const agentsDir = path.join(pr, AGENTS_DIR);
         await fs.mkdir(agentsDir, { recursive: true });
         const filePath = path.join(agentsDir, `${laneId}.supervisor.json`);
         const defaultCheckpoints = [
@@ -347,7 +347,7 @@ Status: Ready to validate
         if (!dagName) return { content: [{ type: 'text', text: 'Error: dagName required' }], isError: true };
         if (!Array.isArray(cd.lanes) || cd.lanes.length === 0) return { content: [{ type: 'text', text: 'Error: lanes array required' }], isError: true };
         const pr = typeof cd.projectRoot === 'string' ? path.resolve(cd.projectRoot) : findProjectRoot();
-        const agentsDir = path.join(pr, 'agents');
+        const agentsDir = path.join(pr, AGENTS_DIR);
         await fs.mkdir(agentsDir, { recursive: true });
         const fileName = typeof cd.fileName === 'string' && cd.fileName ? cd.fileName : 'dag';
         const filePath = path.join(agentsDir, `${fileName}.dag.json`);

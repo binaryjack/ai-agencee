@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { AGENTS_DIR } from '@ai-agencee/engine'
 import type { HealthCheckResult } from './health-check.types.js'
 
 export const checkMcpServer = async (_projectRoot: string): Promise<HealthCheckResult> => {
@@ -56,7 +57,7 @@ export const checkAgenceeInit = async (projectRoot: string): Promise<HealthCheck
 
 export const checkAgentFiles = async (projectRoot: string): Promise<HealthCheckResult> => {
   const name = 'agent-files'
-  const agentsDir = path.join(projectRoot, 'agents')
+  const agentsDir = path.join(projectRoot, AGENTS_DIR)
   if (!fs.existsSync(agentsDir)) {
     return { name, status: 'warn', message: 'No agent files found', fix: 'ai-kit agent:create' }
   }

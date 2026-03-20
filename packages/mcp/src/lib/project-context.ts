@@ -2,6 +2,7 @@ import { execSync } from 'child_process'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
+import { AGENTS_DIR } from '@ai-agencee/engine'
 import type { ProjectContext } from './project-context.types.js'
 
 const HEURISTIC_MAP: Record<string, (deps: Set<string>) => boolean> = {
@@ -43,7 +44,7 @@ const computeFingerprint = (projectRoot: string): string => {
 }
 
 const getAgentFiles = (projectRoot: string): string[] => {
-  const agentsDir = path.join(projectRoot, 'agents')
+  const agentsDir = path.join(projectRoot, AGENTS_DIR)
   if (!fs.existsSync(agentsDir)) return []
   return fs.readdirSync(agentsDir)
     .filter(f => f.endsWith('.agent.json'))

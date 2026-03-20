@@ -3,11 +3,12 @@ import * as path from 'path';
 
 /**
  * Walk up the directory tree from `startDir` until a directory containing
- * an `agents/` sub-directory is found.  Returns the absolute path to that
+ * a `.agencee/` sub-directory is found.  Returns the absolute path to that
  * directory.
  *
- * `agents/` is the only reliable repo-root marker: it is unique to the
- * workspace root and is not present in intermediate packages, dist
+ * `.agencee/` is the reliable workspace root marker: it contains all AI Agencee
+ * configuration and runtime data (.agencee/config/agents/, etc.) and is unique
+ * to the workspace root. It is not present in intermediate packages, dist
  * directories, or private sub-workspaces — so using generic markers like
  * `package.json` would cause the walk-up to stop prematurely at the first
  * nested package.
@@ -23,12 +24,12 @@ export const findProjectRoot = (startDir?: string): string => {
   let current = path.resolve(startDir ?? process.cwd());
 
   while (true) {
-    if (fsSync.existsSync(path.join(current, 'agents'))) {
+    if (fsSync.existsSync(path.join(current, '.agencee'))) {
       return current;
     }
     const parent = path.dirname(current);
     if (parent === current) {
-      // Hit the filesystem root without finding the agents/ directory.
+      // Hit the filesystem root without finding the .agencee/ directory.
       // Return the original startDir — callers can validate and emit a clear error.
       break;
     }

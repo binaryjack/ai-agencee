@@ -1,5 +1,10 @@
-import type { TechPack } from '@ai-agencee/tech-registry'
-export type { TechPack }
+export interface TechPack {
+  name: string
+  version: string
+  description: string
+  frameworks?: string[]
+  rules: string
+}
 
 export interface ITechRegistryResolver {
   resolve(name: string, projectRoot: string): Promise<TechPack>
@@ -16,7 +21,7 @@ export interface CatalogEntry {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class PackNotFoundError extends Error {
   constructor(public readonly packName: string, projectRoot: string) {
-    super(`Tech pack '${packName}' not found locally (agents/technologies/${packName}.pack.md) or in @ai-agencee/tech-registry`)
+    super(`Tech pack '${packName}' not found locally (.agencee/config/technologies/${packName}.pack.md) or in @ai-agencee/tech-registry`)
     this.name = 'PackNotFoundError'
     // @ts-expect-error assigned after super to avoid useDefineForClassFields shadowing
     this.projectRoot = projectRoot

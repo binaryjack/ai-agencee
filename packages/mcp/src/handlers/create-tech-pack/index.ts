@@ -1,11 +1,12 @@
 /**
  * @file handlers/create-tech-pack/index.ts
  * @description MCP handler to create new tech pack .pack.md files
- * Supports both local overrides (agents/technologies/) and package registry (packages/tech-registry/packs/)
+ * Supports both local overrides (.agencee/config/technologies/) and package registry (packages/tech-registry/packs/)
  */
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { TECHNOLOGIES_DIR } from '@ai-agencee/engine'
 import { findProjectRoot } from '../../find-project-root.js'
 import type { PackTemplateInput } from './pack-template.js'
 import { generatePackTemplate } from './pack-template.js'
@@ -89,7 +90,7 @@ export const runCreateTechPack = async (
     const destination = input.destination || 'local'
     
     const baseDir = destination === 'local'
-      ? path.join(pr, 'agents', 'technologies')
+      ? path.join(pr, TECHNOLOGIES_DIR)
       : path.join(pr, 'packages', 'tech-registry', 'packs')
     
     const fileName = `${input.name}.pack.md`

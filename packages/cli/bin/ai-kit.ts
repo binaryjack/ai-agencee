@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { AGENTS_DIR } from '@ai-agencee/engine'
 import { Command } from 'commander'
 import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
@@ -77,7 +78,7 @@ program
   .option('--provider <name>', 'Override the LLM provider for all lanes (e.g. anthropic, openai, mock)')
   .option('--json', 'Output machine-readable JSON (suppresses human-friendly progress text)')
   .action((dagFile, options) =>
-    runDag(dagFile ?? 'agents/dag.json', {
+    runDag(dagFile ?? `${AGENTS_DIR}/dag.json`, {
       project: options.project,
       verbose: options.verbose,
       dryRun: options.dryRun,
@@ -112,7 +113,7 @@ program
   .command('agent:plan')
   .description('Run the interactive 5-phase Plan System (Discovery → Synthesize → Decompose → Wire → Execute)')
   .option('-p, --project <path>',           'Project root directory (default: cwd)')
-  .option('-a, --agents-dir <path>',        'Directory containing agent/supervisor JSON files (default: <project>/agents)')
+  .option('-a, --agents-dir <path>',        `Directory containing agent/supervisor JSON files (default: <project>/${AGENTS_DIR})`)
   .option('--start-from <phase>',           'Resume from a specific phase: discover · synthesize · decompose · wire · execute')
   .option('--skip-approval',                'Skip user approval gates (non-interactive / CI mode)')
   .option('-v, --verbose',                  'Enable verbose DAG output during execution phase')

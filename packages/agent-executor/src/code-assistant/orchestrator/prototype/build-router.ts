@@ -15,6 +15,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { AGENTS_DIR } from '../../../lib/path-constants.js';
 import type { IModelRouter } from '../../../lib/model-router/index.js';
 import { ModelRouter } from '../../../lib/model-router/index.js';
 
@@ -30,7 +31,7 @@ export async function _buildRouter(
 
   try {
     const configPath = dagPath
-      ?? path.join(projectRoot, 'agents', 'model-router.json');
+      ?? path.join(projectRoot, AGENTS_DIR, 'model-router.json');
 
     const exists = await fs.access(configPath).then(() => true, () => false);
 

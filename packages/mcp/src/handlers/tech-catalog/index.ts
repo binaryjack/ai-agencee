@@ -1,11 +1,12 @@
 /**
  * @file handlers/tech-catalog/index.ts
  * @description MCP handler to retrieve tech-registry catalog
- * Resolution order: local agents/technologies/*.pack.md → @ai-agencee/tech-registry package
+ * Resolution order: local .agencee/config/technologies/*.pack.md → @ai-agencee/tech-registry package
  */
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { TECHNOLOGIES_DIR } from '@ai-agencee/engine'
 import { findProjectRoot } from '../../find-project-root.js'
 
 export interface TechCatalogEntry {
@@ -52,8 +53,8 @@ export const runTechCatalog = async (projectRoot?: string): Promise<TechCatalogR
   const pr = projectRoot ? path.resolve(projectRoot) : findProjectRoot()
   const entries: TechCatalogEntry[] = []
   
-  // 1. Load local overrides from agents/technologies/
-  const localDir = path.join(pr, 'agents', 'technologies')
+  // 1. Load local overrides from .agencee/config/technologies/
+  const localDir = path.join(pr, TECHNOLOGIES_DIR)
   let localCount = 0
   try {
     const files = await fs.readdir(localDir)

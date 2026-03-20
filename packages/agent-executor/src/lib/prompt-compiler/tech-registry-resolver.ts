@@ -1,7 +1,7 @@
-import type { TechPack } from '@ai-agencee/tech-registry'
 import * as fs from 'fs'
 import * as path from 'path'
-import type { CatalogEntry, ITechRegistryResolver } from './tech-registry-resolver.types.js'
+import { TECHNOLOGIES_DIR } from '../path-constants.js'
+import type { CatalogEntry, ITechRegistryResolver, TechPack } from './tech-registry-resolver.types.js'
 import { PackNotFoundError } from './tech-registry-resolver.types.js'
 
 const parsePack = (content: string): TechPack => {
@@ -29,7 +29,7 @@ const parsePack = (content: string): TechPack => {
 
 export const TechRegistryResolver: ITechRegistryResolver = {
   resolve: async (name: string, projectRoot: string): Promise<TechPack> => {
-    const localPath = path.join(projectRoot, 'agents', 'technologies', `${name}.pack.md`)
+    const localPath = path.join(projectRoot, TECHNOLOGIES_DIR, `${name}.pack.md`)
     if (fs.existsSync(localPath)) {
       return parsePack(fs.readFileSync(localPath, 'utf8'))
     }
@@ -46,7 +46,7 @@ export const TechRegistryResolver: ITechRegistryResolver = {
 
   catalog: async (projectRoot: string): Promise<CatalogEntry[]> => {
     const entries: CatalogEntry[] = []
-    const localDir = path.join(projectRoot, 'agents', 'technologies')
+    const localDir = path.join(projectRoot, TECHNOLOGIES_DIR)
     if (fs.existsSync(localDir)) {
       const localEntries = fs.readdirSync(localDir)
         .filter(f => f.endsWith('.pack.md'))

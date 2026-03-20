@@ -149,5 +149,7 @@ _private/
 # Secret key files — never commit these
 *.key
 
-# Agent executor runtime data (generated checkpoints, runs, results - not source)
-.agencee/
+# AI Agencee runtime, memory, and user data (git-ignored - not source)
+.agencee/runtime/
+.agencee/memory/
+.agencee/user/
