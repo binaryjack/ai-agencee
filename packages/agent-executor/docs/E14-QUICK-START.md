@@ -17,7 +17,7 @@ import { createCodebaseIndexer, createCodebaseIndexStore, createParserRegistry, 
 
 // Create index store
 const indexStore = await createCodebaseIndexStore({
-  dbPath: '.agents/code-index.db',
+  dbPath: '.agencee/code-index.db',
   projectId: 'my-project'
 });
 

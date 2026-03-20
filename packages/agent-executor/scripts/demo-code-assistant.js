@@ -20,7 +20,7 @@ async function demo() {
   
   // Configuration
   const projectRoot = path.join(__dirname, '..');
-  const dbPath = path.join(projectRoot, '.agents', 'demo-code-index.db');
+  const dbPath = path.join(projectRoot, '.agencee', 'demo-code-index.db');
   const projectId = 'agent-executor-demo';
 
   try {

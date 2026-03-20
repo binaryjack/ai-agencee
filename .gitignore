@@ -150,4 +150,4 @@ _private/
 *.key
 
 # Agent executor runtime data (generated checkpoints, runs, results - not source)
-.agents/
+.agencee/

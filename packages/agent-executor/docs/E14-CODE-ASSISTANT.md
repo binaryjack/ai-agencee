@@ -68,7 +68,7 @@ const { createCodebaseIndexer } = require('@ai-agencee/engine');
 const indexer = await createCodebaseIndexer({
   projectRoot: '/path/to/project',
   indexStore: await createCodebaseIndexStore({
-    dbPath: '.agents/code-index.db',
+    dbPath: '.agencee/code-index.db',
     projectId: 'my-project'
   }),
   parserRegistry: createParserRegistry()
