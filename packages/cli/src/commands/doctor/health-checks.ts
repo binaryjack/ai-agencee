@@ -1,6 +1,6 @@
+import { AGENTS_DIR } from '@ai-agencee/engine'
 import * as fs from 'fs'
 import * as path from 'path'
-import { AGENTS_DIR } from '@ai-agencee/engine'
 import type { HealthCheckResult } from './health-check.types.js'
 
 export const checkMcpServer = async (_projectRoot: string): Promise<HealthCheckResult> => {

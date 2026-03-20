@@ -4,9 +4,9 @@
  * Resolution order: local .agencee/config/technologies/*.pack.md → @ai-agencee/tech-registry package
  */
 
+import { TECHNOLOGIES_DIR } from '@ai-agencee/engine'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { TECHNOLOGIES_DIR } from '@ai-agencee/engine'
 import { findProjectRoot } from '../../find-project-root.js'
 
 export interface TechCatalogEntry {

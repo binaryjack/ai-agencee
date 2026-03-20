@@ -1,8 +1,8 @@
+import { AGENTS_DIR } from '@ai-agencee/engine'
 import { execSync } from 'child_process'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
-import { AGENTS_DIR } from '@ai-agencee/engine'
 import type { ProjectContext } from './project-context.types.js'
 
 const HEURISTIC_MAP: Record<string, (deps: Set<string>) => boolean> = {

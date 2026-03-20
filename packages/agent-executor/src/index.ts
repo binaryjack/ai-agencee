@@ -63,7 +63,7 @@ export * from './lib/eval-harness/index.js'
 // Enterprise readiness (E1-E3, E6, E8-E13)
 export * from './lib/issue-sync/index.js'
 export * from './lib/notification-sink/index.js'
-export { AGENCEE_DIR, AGENTS_DIR, AUDIT_DIR, CHECKPOINTS_DIR, CONFIG_DIR, EXAMPLES_DIR, MEMORY_DB_FILE, MEMORY_DIR, PLAN_STATE_DIR, RATE_LIMITS_FILE, RBAC_FILE, RESULTS_DIR, RUNTIME_DIR, RUNS_DIR, TECHNOLOGIES_DIR, TENANTS_DIR, USER_DIR, agenceePaths } from './lib/path-constants.js'
+export { AGENCEE_DIR, AGENTS_DIR, AUDIT_DIR, CHECKPOINTS_DIR, CONFIG_DIR, EXAMPLES_DIR, MEMORY_DB_FILE, MEMORY_DIR, PLAN_STATE_DIR, RATE_LIMITS_FILE, RBAC_FILE, RESULTS_DIR, RUNS_DIR, RUNTIME_DIR, TECHNOLOGIES_DIR, TENANTS_DIR, USER_DIR, agenceePaths } from './lib/path-constants.js'
 export * from './lib/pii-scrubber/index.js'
 export * from './lib/prompt-injection-detector/index.js'
 export * from './lib/python-mcp-bridge/index.js'

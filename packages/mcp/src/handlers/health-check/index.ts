@@ -1,6 +1,6 @@
+import { AGENTS_DIR } from '@ai-agencee/engine'
 import * as fs from 'fs'
 import * as path from 'path'
-import { AGENTS_DIR } from '@ai-agencee/engine'
 
 type CheckStatus = 'ok' | 'warn' | 'error'
 

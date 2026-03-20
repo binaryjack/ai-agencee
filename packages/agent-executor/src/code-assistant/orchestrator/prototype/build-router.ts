@@ -15,9 +15,9 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { AGENTS_DIR } from '../../../lib/path-constants.js';
 import type { IModelRouter } from '../../../lib/model-router/index.js';
 import { ModelRouter } from '../../../lib/model-router/index.js';
+import { AGENTS_DIR } from '../../../lib/path-constants.js';
 
 import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js';
 

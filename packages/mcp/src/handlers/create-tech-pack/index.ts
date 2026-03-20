@@ -1,24 +1,62 @@
 /**
  * @file handlers/create-tech-pack/index.ts
- * @description MCP handler to create new tech pack .pack.md files
- * Supports both local overrides (.agencee/config/technologies/) and package registry (packages/tech-registry/packs/)
+ * @description MCP handler to create new technology packs with XML structure (PLAN-24)
+ * Generates per-technology directories with XML-based rules
  */
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
 import { TECHNOLOGIES_DIR } from '@ai-agencee/engine'
+import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
 import { findProjectRoot } from '../../find-project-root.js'
-import type { PackTemplateInput } from './pack-template.js'
-import { generatePackTemplate } from './pack-template.js'
+import { escapeXml } from '../../lib/xml-utils.js'
 
-export interface CreateTechPackInput extends PackTemplateInput {
-  destination?: 'local' | 'package'  // default: 'local'
+export interface RuleTopic {
+  name: string
+  displayName?: string
+  doRules: Array<{
+    text: string
+    priority?: 'high' | 'medium' | 'low'
+    enforcement?: 'error' | 'warning' | 'info'
+    examples?: string[]
+  }>
+  doNotRules: Array<{
+    text: string
+    priority?: 'high' | 'medium' | 'low'
+    enforcement?: 'error' | 'warning' | 'info'
+    examples?: string[]
+  }>
+  rationale: string
+  sources?: string[]
+}
+
+export interface CreateTechPackInput {
+  // Basic metadata
+  name: string // kebab-case, e.g. 'c-sharp'
+  displayName: string // e.g. 'C#'
+  version?: string // default: '1.0.0'
+  releaseDate?: string
+  category: 'language' | 'framework' | 'library' | 'tool' | 'platform' | 'database'
+  description: string
+
+  // Documentation
+  officialDocs?: string
+  styleGuide?: string
+
+  // Frameworks & ecosystem
+  frameworks?: string[]
+
+  // Rules (per topic)
+  ruleTopics?: RuleTopic[]
+
+  // Destination
+  destination?: 'workspace' | 'package' // default: 'workspace'
   projectRoot?: string
 }
 
 export interface CreateTechPackResult {
   success: boolean
-  filePath: string
+  path: string // Directory path
+  files: string[] // All created files
   message: string
   error?: string
 }
@@ -31,9 +69,121 @@ const validatePackName = (name: string): boolean => {
 }
 
 /**
- * Create a new tech pack .pack.md file
- * @param input - Tech pack configuration
- * @returns Result with file path and status
+ * Generate technology description XML
+ */
+const generateTechnologyXml = (input: CreateTechPackInput): string => {
+  const lines: string[] = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<technology>',
+    `  <name>${escapeXml(input.displayName)}</name>`,
+    `  <version>${escapeXml(input.version || '1.0.0')}</version>`,
+  ]
+
+  if (input.releaseDate) {
+    lines.push(`  <releaseDate>${escapeXml(input.releaseDate)}</releaseDate>`)
+  }
+
+  lines.push(
+    `  <category>${input.category}</category>`,
+    `  <description>${escapeXml(input.description)}</description>`,
+  )
+
+  if (input.frameworks && input.frameworks.length > 0) {
+    lines.push('  <frameworks>')
+    for (const framework of input.frameworks) {
+      lines.push(`    <framework>${escapeXml(framework)}</framework>`)
+    }
+    lines.push('  </frameworks>')
+  }
+
+  if (input.officialDocs) {
+    lines.push(`  <officialDocs>${escapeXml(input.officialDocs)}</officialDocs>`)
+  }
+
+  if (input.styleGuide) {
+    lines.push(`  <styleGuide>${escapeXml(input.styleGuide)}</styleGuide>`)
+  }
+
+  lines.push('</technology>', '')
+
+  return lines.join('\n')
+}
+
+/**
+ * Generate do.xml
+ */
+const generateDoRulesXml = (topicName: string, rules: RuleTopic['doRules']): string => {
+  const lines: string[] = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<rules category="do" topic="${escapeXml(topicName)}">`,
+  ]
+
+  for (const rule of rules) {
+    const attrs: string[] = []
+    if (rule.priority) attrs.push(`priority="${rule.priority}"`)
+    if (rule.enforcement) attrs.push(`enforcement="${rule.enforcement}"`)
+
+    const attrString = attrs.length > 0 ? ' ' + attrs.join(' ') : ''
+    lines.push(`  <rule${attrString}>${escapeXml(rule.text)}</rule>`)
+  }
+
+  lines.push('</rules>', '')
+
+  return lines.join('\n')
+}
+
+/**
+ * Generate doNot.xml
+ */
+const generateDoNotRulesXml = (topicName: string, rules: RuleTopic['doNotRules']): string => {
+  const lines: string[] = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<rules category="doNot" topic="${escapeXml(topicName)}">`,
+  ]
+
+  for (const rule of rules) {
+    const attrs: string[] = []
+    if (rule.priority) attrs.push(`priority="${rule.priority}"`)
+    if (rule.enforcement) attrs.push(`enforcement="${rule.enforcement}"`)
+
+    const attrString = attrs.length > 0 ? ' ' + attrs.join(' ') : ''
+    lines.push(`  <rule${attrString}>${escapeXml(rule.text)}</rule>`)
+  }
+
+  lines.push('</rules>', '')
+
+  return lines.join('\n')
+}
+
+/**
+ * Generate rationale.xml
+ */
+const generateRationaleXml = (topicName: string, rationale: string, sources?: string[]): string => {
+  const lines: string[] = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<rationale topic="${escapeXml(topicName)}">`,
+    '  <explanation>',
+    `    ${escapeXml(rationale)}`,
+    '  </explanation>',
+  ]
+
+  if (sources && sources.length > 0) {
+    lines.push('  <sources>')
+    for (const source of sources) {
+      lines.push(`    <source>${escapeXml(source)}</source>`)
+    }
+    lines.push('  </sources>')
+  }
+
+  lines.push('</rationale>', '')
+
+  return lines.join('\n')
+}
+
+/**
+ * Create a new technology pack with XML structure
+ * @param input - Technology configuration
+ * @returns Result with directory path and created files
  */
 export const runCreateTechPack = async (
   input: CreateTechPackInput
@@ -43,8 +193,9 @@ export const runCreateTechPack = async (
     if (!input.name) {
       return {
         success: false,
-        filePath: '',
-        message: 'Tech pack name is required',
+        path: '',
+        files: [],
+        message: 'Technology name is required',
         error: 'MISSING_NAME',
       }
     }
@@ -52,8 +203,9 @@ export const runCreateTechPack = async (
     if (!validatePackName(input.name)) {
       return {
         success: false,
-        filePath: '',
-        message: 'Tech pack name must be kebab-case (lowercase letters, numbers, and hyphens only)',
+        path: '',
+        files: [],
+        message: 'Technology name must be kebab-case (lowercase letters, numbers, and hyphens only)',
         error: 'INVALID_NAME',
       }
     }
@@ -61,7 +213,8 @@ export const runCreateTechPack = async (
     if (!input.displayName) {
       return {
         success: false,
-        filePath: '',
+        path: '',
+        files: [],
         message: 'Display name is required',
         error: 'MISSING_DISPLAY_NAME',
       }
@@ -70,7 +223,8 @@ export const runCreateTechPack = async (
     if (!input.description) {
       return {
         success: false,
-        filePath: '',
+        path: '',
+        files: [],
         message: 'Description is required',
         error: 'MISSING_DESCRIPTION',
       }
@@ -79,7 +233,8 @@ export const runCreateTechPack = async (
     if (!input.category) {
       return {
         success: false,
-        filePath: '',
+        path: '',
+        files: [],
         message: 'Category is required',
         error: 'MISSING_CATEGORY',
       }
@@ -87,53 +242,94 @@ export const runCreateTechPack = async (
 
     // Determine destination directory
     const pr = input.projectRoot ? path.resolve(input.projectRoot) : findProjectRoot()
-    const destination = input.destination || 'local'
+    const destination = input.destination || 'workspace'
     
-    const baseDir = destination === 'local'
+    const baseDir = destination === 'workspace'
       ? path.join(pr, TECHNOLOGIES_DIR)
-      : path.join(pr, 'packages', 'tech-registry', 'packs')
+      : path.join(pr, 'packages', 'tech-registry', 'technologies')
     
-    const fileName = `${input.name}.pack.md`
-    const filePath = path.join(baseDir, fileName)
+    const techDir = path.join(baseDir, input.name)
+    const rulesDir = path.join(techDir, 'rules')
 
-    // Check if file already exists
+    // Check if technology already exists
     try {
-      await fs.access(filePath)
+      await fs.access(techDir)
       return {
         success: false,
-        filePath,
-        message: `Tech pack "${input.name}" already exists at ${filePath}`,
-        error: 'FILE_EXISTS',
+        path: techDir,
+        files: [],
+        message: `Technology "${input.name}" already exists at ${techDir}`,
+        error: 'DIR_EXISTS',
       }
     } catch {
-      // File doesn't exist - this is what we want
+      // Directory doesn't exist - this is what we want
     }
 
-    // Ensure directory exists
-    await fs.mkdir(baseDir, { recursive: true })
+    // Ensure directories exist
+    await fs.mkdir(rulesDir, { recursive: true })
 
-    // Generate content
-    const content = generatePackTemplate(input)
+    const createdFiles: string[] = []
 
-    // Write file
-    await fs.writeFile(filePath, content, 'utf-8')
+    // Generate and write technology description XML
+    const techXml = generateTechnologyXml(input)
+    const techXmlPath = path.join(techDir, `${input.name}.xml`)
+    await fs.writeFile(techXmlPath, techXml, 'utf-8')
+    createdFiles.push(techXmlPath)
 
-    // Update catalog index if writing to package
+    // Generate and write rule files for each topic
+    if (input.ruleTopics && input.ruleTopics.length > 0) {
+      for (const topic of input.ruleTopics) {
+        const topicDir = path.join(rulesDir, topic.name)
+        await fs.mkdir(topicDir, { recursive: true })
+
+        // do.xml
+        const doXml = generateDoRulesXml(topic.name, topic.doRules)
+        const doPath = path.join(topicDir, 'do.xml')
+        await fs.writeFile(doPath, doXml, 'utf-8')
+        createdFiles.push(doPath)
+
+        // doNot.xml
+        const doNotXml = generateDoNotRulesXml(topic.name, topic.doNotRules)
+        const doNotPath = path.join(topicDir, 'doNot.xml')
+        await fs.writeFile(doNotPath, doNotXml, 'utf-8')
+        createdFiles.push(doNotPath)
+
+        // rationale.xml
+        const rationaleXml = generateRationaleXml(topic.name, topic.rationale, topic.sources)
+        const rationalePath = path.join(topicDir, 'rationale.xml')
+        await fs.writeFile(rationalePath, rationaleXml, 'utf-8')
+        createdFiles.push(rationalePath)
+      }
+    }
+
+    // Update catalog if writing to package
     if (destination === 'package') {
-      await updatePackageIndex(pr, input.name, input.displayName, input.category, input.description, input.version || '1.0.0')
+      await updateTechnologyCatalog(
+        pr,
+        input.name,
+        input.displayName,
+        input.category,
+        input.description,
+        input.version || '1.0.0'
+      )
     }
+
+    const fileCount = createdFiles.length
+    const topicCount = input.ruleTopics?.length || 0
 
     return {
       success: true,
-      filePath,
-      message: `Tech pack "${input.displayName}" created successfully at ${filePath}`,
+      path: techDir,
+      files: createdFiles,
+      message: `Technology "${input.displayName}" created successfully with ${topicCount} rule topics (${fileCount} files)`,
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return {
       success: false,
-      filePath: '',
-      message: `Failed to create tech pack: ${errorMessage}`,
+      path: '',
+      files: [],
+      message: `Failed to create technology: ${errorMessage}`,
       error: 'WRITE_ERROR',
     }
   }
@@ -142,7 +338,7 @@ export const runCreateTechPack = async (
 /**
  * Update packages/tech-registry/catalog.json when adding to package
  */
-const updatePackageIndex = async (
+const updateTechnologyCatalog = async (
   projectRoot: string,
   name: string,
   displayName: string,
@@ -153,13 +349,13 @@ const updatePackageIndex = async (
   const catalogPath = path.join(projectRoot, 'packages', 'tech-registry', 'catalog.json')
   
   let catalog: {
-    packs: Array<{
+    technologies: Array<{
       name: string
       displayName: string
       category: string
       description: string
       version: string
-      file: string
+      path: string
     }>
   }
   
@@ -168,28 +364,28 @@ const updatePackageIndex = async (
     catalog = JSON.parse(content)
   } catch {
     // Catalog doesn't exist, create new one
-    catalog = { packs: [] }
+    catalog = { technologies: [] }
   }
   
-  // Add new pack to catalog (avoid duplicates)
-  const existingIndex = catalog.packs.findIndex(p => p.name === name)
+  // Add new technology to catalog (avoid duplicates)
+  const existingIndex = catalog.technologies.findIndex(t => t.name === name)
   const newEntry = {
     name,
     displayName,
     category,
     description,
     version,
-    file: `packs/${name}.pack.md`,
+    path: `technologies/${name}`,
   }
   
   if (existingIndex >= 0) {
-    catalog.packs[existingIndex] = newEntry
+    catalog.technologies[existingIndex] = newEntry
   } else {
-    catalog.packs.push(newEntry)
+    catalog.technologies.push(newEntry)
   }
   
   // Sort by name
-  catalog.packs.sort((a, b) => a.name.localeCompare(b.name))
+  catalog.technologies.sort((a, b) => a.name.localeCompare(b.name))
   
   // Write back
   await fs.writeFile(catalogPath, JSON.stringify(catalog, null, 2) + '\n', 'utf-8')
