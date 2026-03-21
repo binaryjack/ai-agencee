@@ -1,0 +1,116 @@
+{
+  "id": "create-dag",
+  "version": "1.0.0",
+  "type": "dag",
+  "theme": "yellow",
+  "label": "Create DAG",
+  "welcomeMessage": "🟡 **DAG Creation** — Let's design a workflow orchestration DAG together.",
+  "completionMessage": "Your DAG has been created successfully!",
+  "phases": [
+    {
+      "id": "identity",
+      "label": "Identity",
+      "title": "DAG Identity",
+      "steps": [
+        {
+          "id": "dag-name",
+          "type": "text-input",
+          "label": "DAG Name",
+          "prompt": "What should this DAG be called?",
+          "field": "name",
+          "placeholder": "e.g. code-review-pipeline",
+          "validation": {
+            "required": true,
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "message": "Use lowercase kebab-case (e.g. my-pipeline)"
+          },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. code-review-pipeline"
+          }
+        },
+        {
+          "id": "dag-description",
+          "type": "text-input",
+          "label": "Description",
+          "prompt": "What does this DAG orchestrate?",
+          "field": "description",
+          "placeholder": "e.g. Runs security scan then linting in parallel",
+          "validation": { "required": true },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. Runs security scan then linting in parallel"
+          }
+        }
+      ]
+    },
+    {
+      "id": "topology",
+      "label": "Topology",
+      "title": "Node Configuration",
+      "steps": [
+        {
+          "id": "trigger",
+          "type": "radio-group",
+          "label": "Trigger Type",
+          "prompt": "How should this DAG be triggered?",
+          "field": "trigger",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "manual", "label": "Manual", "description": "Triggered explicitly by user or command", "preselected": true },
+                { "id": "on-commit", "label": "On Commit", "description": "Runs when code is committed" },
+                { "id": "on-pr", "label": "On Pull Request", "description": "Runs on pull request open/update" },
+                { "id": "scheduled", "label": "Scheduled", "description": "Cron-based schedule" }
+              ]
+            }
+          }
+        },
+        {
+          "id": "agents",
+          "type": "agent-picker",
+          "label": "Agents",
+          "prompt": "Which agents should participate in this DAG?",
+          "field": "agents",
+          "optional": true,
+          "interactionModel": {
+            "controlType": "agent-picker",
+            "dataSource": { "type": "dynamic", "value": "list-agents" }
+          }
+        },
+        {
+          "id": "execution-mode",
+          "type": "radio-group",
+          "label": "Execution Mode",
+          "prompt": "How should nodes execute relative to each other?",
+          "field": "executionMode",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "sequential", "label": "Sequential", "description": "One after another", "preselected": true },
+                { "id": "parallel", "label": "Parallel", "description": "All at once" },
+                { "id": "mixed", "label": "Mixed", "description": "Define dependencies per node" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "output": {
+    "toolName": "create-dag",
+    "args": {
+      "name": "{{dag-name}}",
+      "description": "{{dag-description}}",
+      "trigger": "{{trigger}}",
+      "agents": "{{agents}}",
+      "executionMode": "{{executionMode}}"
+    }
+  }
+}

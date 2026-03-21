@@ -1,0 +1,106 @@
+{
+  "id": "codebase-analysis",
+  "version": "1.0.0",
+  "type": "analysis",
+  "theme": "violet",
+  "label": "Codebase Analysis",
+  "welcomeMessage": "🟣 **Codebase Analysis** — Let's analyse your project for technologies, intelligence, and security.",
+  "completionMessage": "Codebase analysis complete!",
+  "phases": [
+    {
+      "id": "scope",
+      "label": "Scope",
+      "title": "Analysis Scope",
+      "steps": [
+        {
+          "id": "analysis-types",
+          "type": "checkbox-group",
+          "label": "Analysis Types",
+          "prompt": "What would you like to analyse?",
+          "field": "analysisTypes",
+          "interactionModel": {
+            "controlType": "checkbox-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "tech-detection", "label": "Technology Detection", "description": "Detect frameworks, languages and tools in use", "preselected": true },
+                { "id": "security-scan", "label": "Security Scan", "description": "Identify secrets, vulnerabilities and misconfigurations", "preselected": true },
+                { "id": "dependency-audit", "label": "Dependency Audit", "description": "Check for outdated or vulnerable packages" },
+                { "id": "project-intelligence", "label": "Project Intelligence", "description": "Extract architecture and structure insights" },
+                { "id": "accessibility", "label": "Accessibility Audit", "description": "Identify a11y issues in UI code" }
+              ]
+            }
+          }
+        },
+        {
+          "id": "include-paths",
+          "type": "text-input",
+          "label": "Include Paths",
+          "prompt": "Which paths should be included in the analysis? (comma-separated, leave blank for entire workspace)",
+          "field": "includePaths",
+          "optional": true,
+          "placeholder": "e.g. src/, packages/",
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. src/, packages/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "output-config",
+      "label": "Output",
+      "title": "Output Configuration",
+      "steps": [
+        {
+          "id": "output-format",
+          "type": "radio-group",
+          "label": "Output Format",
+          "prompt": "How should the analysis results be saved?",
+          "field": "outputFormat",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "chat", "label": "Chat Summary", "description": "Show results inline in chat", "preselected": true },
+                { "id": "json", "label": "JSON Report", "description": "Save as .agencee/reports/*.json" },
+                { "id": "markdown", "label": "Markdown Report", "description": "Save as .agencee/reports/*.md" }
+              ]
+            }
+          }
+        },
+        {
+          "id": "severity-threshold",
+          "type": "radio-group",
+          "label": "Severity Threshold",
+          "prompt": "Minimum severity level to report?",
+          "field": "severityThreshold",
+          "optional": true,
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "info", "label": "Info", "description": "All findings" },
+                { "id": "warning", "label": "Warning", "description": "Warnings and above", "preselected": true },
+                { "id": "error", "label": "Error", "description": "Errors only" },
+                { "id": "critical", "label": "Critical", "description": "Critical only" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "output": {
+    "toolName": "analyse-codebase",
+    "args": {
+      "types": "{{analysisTypes}}",
+      "includePaths": "{{includePaths}}",
+      "outputFormat": "{{outputFormat}}",
+      "severityThreshold": "{{severityThreshold}}"
+    }
+  }
+}

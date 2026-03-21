@@ -1,0 +1,160 @@
+{
+  "id": "5-phase-journey",
+  "version": "1.0.0",
+  "type": "journey",
+  "theme": "orange",
+  "label": "5-Phase Journey",
+  "welcomeMessage": "🟠 **5-Phase Journey** — Let's walk through a complete project setup lifecycle.",
+  "completionMessage": "Your project journey setup is complete!",
+  "phases": [
+    {
+      "id": "project",
+      "label": "Project",
+      "title": "Project Definition",
+      "steps": [
+        {
+          "id": "project-name",
+          "type": "text-input",
+          "label": "Project Name",
+          "prompt": "What is your project called?",
+          "field": "projectName",
+          "placeholder": "e.g. my-saas-app",
+          "validation": {
+            "required": true,
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "message": "Use lowercase kebab-case"
+          },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. my-saas-app"
+          }
+        },
+        {
+          "id": "project-description",
+          "type": "text-input",
+          "label": "Description",
+          "prompt": "What does this project do?",
+          "field": "projectDescription",
+          "placeholder": "e.g. B2B SaaS platform for invoice management",
+          "validation": { "required": true },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. B2B SaaS platform for invoice management"
+          }
+        }
+      ]
+    },
+    {
+      "id": "technologies",
+      "label": "Technologies",
+      "title": "Technology Stack",
+      "steps": [
+        {
+          "id": "tech-stack",
+          "type": "tech-picker",
+          "label": "Technologies",
+          "prompt": "Which technologies make up your stack?",
+          "field": "technologies",
+          "interactionModel": {
+            "controlType": "tech-picker",
+            "dataSource": { "type": "dynamic", "value": "list-technologies" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "label": "Agents",
+      "title": "Agent Configuration",
+      "steps": [
+        {
+          "id": "agent-roles",
+          "type": "checkbox-group",
+          "label": "Agent Roles",
+          "prompt": "Which agent roles should your project include?",
+          "field": "agentRoles",
+          "interactionModel": {
+            "controlType": "checkbox-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "security", "label": "Security Agent", "description": "Scans for security issues", "preselected": true },
+                { "id": "code-review", "label": "Code Review Agent", "description": "Reviews pull requests" },
+                { "id": "testing", "label": "Testing Agent", "description": "Generates and runs tests" },
+                { "id": "documentation", "label": "Documentation Agent", "description": "Maintains docs" },
+                { "id": "dependency", "label": "Dependency Agent", "description": "Audits dependencies" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "rules",
+      "label": "Rules",
+      "title": "Coding Standards",
+      "steps": [
+        {
+          "id": "rule-categories",
+          "type": "checkbox-group",
+          "label": "Rule Categories",
+          "prompt": "Which coding rule categories apply to this project?",
+          "field": "ruleCategories",
+          "optional": true,
+          "interactionModel": {
+            "controlType": "checkbox-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "security", "label": "Security Rules", "description": "OWASP, injection prevention", "preselected": true },
+                { "id": "style", "label": "Style Rules", "description": "Naming, formatting, conventions" },
+                { "id": "architecture", "label": "Architecture Rules", "description": "Layering, coupling, patterns" },
+                { "id": "testing", "label": "Testing Rules", "description": "Coverage, patterns, mocking" },
+                { "id": "performance", "label": "Performance Rules", "description": "Efficiency and optimization" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "finalize",
+      "label": "Finalize",
+      "title": "Review & Bootstrap",
+      "steps": [
+        {
+          "id": "confirm-bootstrap",
+          "type": "radio-group",
+          "label": "Bootstrap Options",
+          "prompt": "What would you like to generate from this configuration?",
+          "field": "bootstrapOption",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "full", "label": "Full Bootstrap", "description": "Generate all agents, rules, and DAGs", "preselected": true },
+                { "id": "agents-only", "label": "Agents Only", "description": "Generate only agent configurations" },
+                { "id": "rules-only", "label": "Rules Only", "description": "Generate only coding rules" },
+                { "id": "preview", "label": "Preview Only", "description": "Show what would be generated without creating files" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "output": {
+    "toolName": "bootstrap-project",
+    "args": {
+      "name": "{{projectName}}",
+      "description": "{{projectDescription}}",
+      "technologies": "{{technologies}}",
+      "agentRoles": "{{agentRoles}}",
+      "ruleCategories": "{{ruleCategories}}",
+      "bootstrapOption": "{{bootstrapOption}}"
+    }
+  }
+}
