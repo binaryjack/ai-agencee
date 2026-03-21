@@ -1,0 +1,106 @@
+{
+  "id": "create-agent",
+  "version": "1.0.0",
+  "type": "agent",
+  "theme": "green",
+  "label": "Create Agent",
+  "welcomeMessage": "Let's create a new AI agent. I'll guide you through the configuration.",
+  "completionMessage": "Your agent has been created successfully!",
+  "phases": [
+    {
+      "id": "basics",
+      "label": "Basics",
+      "title": "Agent Identity",
+      "steps": [
+        {
+          "id": "agent-name",
+          "type": "text-input",
+          "label": "Agent Name",
+          "prompt": "What should this agent be called?",
+          "field": "name",
+          "placeholder": "e.g. security-review",
+          "validation": {
+            "required": true,
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "message": "Use lowercase kebab-case (e.g. my-agent)"
+          },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. security-review"
+          }
+        },
+        {
+          "id": "agent-description",
+          "type": "text-input",
+          "label": "Description",
+          "prompt": "Describe what this agent does.",
+          "field": "description",
+          "placeholder": "e.g. Reviews code for security vulnerabilities",
+          "validation": { "required": true },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. Reviews code for security vulnerabilities"
+          }
+        }
+      ]
+    },
+    {
+      "id": "configuration",
+      "label": "Configuration",
+      "title": "Model & Capabilities",
+      "steps": [
+        {
+          "id": "model",
+          "type": "radio-group",
+          "label": "Language Model",
+          "prompt": "Which model should power this agent?",
+          "field": "model",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "gpt-4o", "label": "GPT-4o", "description": "Best overall capability" },
+                { "id": "gpt-4o-mini", "label": "GPT-4o Mini", "description": "Faster and cheaper", "preselected": true },
+                { "id": "claude-3-5-sonnet", "label": "Claude 3.5 Sonnet", "description": "Strong reasoning" },
+                { "id": "gemini-2.0-flash", "label": "Gemini 2.0 Flash", "description": "High-speed responses" }
+              ]
+            }
+          }
+        },
+        {
+          "id": "capabilities",
+          "type": "checkbox-group",
+          "label": "Capabilities",
+          "prompt": "Which tools should this agent have access to?",
+          "field": "capabilities",
+          "optional": true,
+          "interactionModel": {
+            "controlType": "checkbox-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "file-read", "label": "File Read", "description": "Read workspace files", "preselected": true },
+                { "id": "file-write", "label": "File Write", "description": "Write workspace files" },
+                { "id": "shell", "label": "Shell", "description": "Execute shell commands" },
+                { "id": "web-search", "label": "Web Search", "description": "Search the internet" },
+                { "id": "mcp", "label": "MCP Tools", "description": "Call registered MCP tools", "preselected": true }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "output": {
+    "toolName": "create-agent",
+    "args": {
+      "name": "{{agent-name}}",
+      "description": "{{agent-description}}",
+      "model": "{{model}}",
+      "capabilities": "{{capabilities}}"
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "id": "create-rule",
+  "version": "1.0.0",
+  "type": "rule",
+  "theme": "red",
+  "label": "Create Rule",
+  "welcomeMessage": "Let's add a coding rule or best practice. I'll guide you through the details.",
+  "completionMessage": "Your rule has been added successfully!",
+  "phases": [
+    {
+      "id": "definition",
+      "label": "Definition",
+      "title": "Rule Definition",
+      "steps": [
+        {
+          "id": "rule-title",
+          "type": "text-input",
+          "label": "Rule Title",
+          "prompt": "What is the title of this rule?",
+          "field": "heading",
+          "placeholder": "e.g. Use parameterized SQL queries",
+          "validation": { "required": true },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. Use parameterized SQL queries"
+          }
+        },
+        {
+          "id": "rule-scope",
+          "type": "radio-group",
+          "label": "Scope",
+          "prompt": "Which area of the codebase does this rule apply to?",
+          "field": "scope",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "global", "label": "Global", "description": "Applies to entire codebase", "preselected": true },
+                { "id": "security", "label": "Security", "description": "Security best practices" },
+                { "id": "performance", "label": "Performance", "description": "Performance patterns" },
+                { "id": "testing", "label": "Testing", "description": "Test authoring rules" },
+                { "id": "style", "label": "Code Style", "description": "Formatting and naming conventions" },
+                { "id": "architecture", "label": "Architecture", "description": "Structural patterns" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "label": "Content",
+      "title": "Rule Content",
+      "steps": [
+        {
+          "id": "rule-content",
+          "type": "text-input",
+          "label": "Rule Body",
+          "prompt": "Describe the rule in detail. What should developers do or avoid?",
+          "field": "body",
+          "placeholder": "Always use parameterized queries instead of string concatenation when building SQL statements. This prevents SQL injection attacks.",
+          "validation": { "required": true, "minLength": 20 },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "Always use parameterized queries instead of string concatenation..."
+          }
+        }
+      ]
+    }
+  ],
+  "output": {
+    "toolName": "create-rule",
+    "args": {
+      "heading": "{{rule-title}}",
+      "body": "{{rule-content}}",
+      "scope": "{{rule-scope}}"
+    }
+  }
+}

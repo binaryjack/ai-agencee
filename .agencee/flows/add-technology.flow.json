@@ -1,0 +1,105 @@
+{
+  "id": "add-technology",
+  "version": "1.0.0",
+  "type": "technology",
+  "theme": "blue",
+  "label": "Add Technology",
+  "welcomeMessage": "Let's onboard a new technology stack. I'll help you configure it for your project.",
+  "completionMessage": "Technology has been onboarded successfully!",
+  "phases": [
+    {
+      "id": "identity",
+      "label": "Identity",
+      "title": "Technology Identity",
+      "steps": [
+        {
+          "id": "tech-name",
+          "type": "text-input",
+          "label": "Technology Name",
+          "prompt": "What technology are you adding?",
+          "field": "name",
+          "placeholder": "e.g. PostgreSQL",
+          "validation": { "required": true },
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. PostgreSQL"
+          }
+        },
+        {
+          "id": "tech-category",
+          "type": "radio-group",
+          "label": "Category",
+          "prompt": "What category best describes this technology?",
+          "field": "category",
+          "interactionModel": {
+            "controlType": "radio-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "database", "label": "Database", "preselected": true },
+                { "id": "api", "label": "API / Service" },
+                { "id": "framework", "label": "Framework" },
+                { "id": "infra", "label": "Infrastructure" },
+                { "id": "observability", "label": "Observability" },
+                { "id": "other", "label": "Other" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "details",
+      "label": "Details",
+      "title": "Version & Patterns",
+      "steps": [
+        {
+          "id": "tech-version",
+          "type": "text-input",
+          "label": "Version",
+          "prompt": "Which version are you using?",
+          "field": "version",
+          "optional": true,
+          "placeholder": "e.g. 16.2",
+          "interactionModel": {
+            "controlType": "text-input",
+            "dataSource": { "type": "empty", "value": null },
+            "placeholder": "e.g. 16.2"
+          }
+        },
+        {
+          "id": "tech-patterns",
+          "type": "checkbox-group",
+          "label": "Patterns",
+          "prompt": "Which patterns does your team follow with this technology?",
+          "field": "patterns",
+          "optional": true,
+          "interactionModel": {
+            "controlType": "checkbox-group",
+            "dataSource": {
+              "type": "static",
+              "value": [
+                { "id": "migrations", "label": "Schema Migrations" },
+                { "id": "orm", "label": "ORM / ODM" },
+                { "id": "connection-pooling", "label": "Connection Pooling" },
+                { "id": "read-replica", "label": "Read Replicas" },
+                { "id": "transactions", "label": "Transactions" },
+                { "id": "caching", "label": "Query Caching" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "output": {
+    "toolName": "create-tech-pack",
+    "args": {
+      "name": "{{tech-name}}",
+      "category": "{{tech-category}}",
+      "version": "{{tech-version}}",
+      "patterns": "{{tech-patterns}}"
+    }
+  }
+}
