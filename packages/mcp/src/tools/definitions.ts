@@ -90,7 +90,7 @@ export const agentTools: Tool[] = [
         dagFile: {
           type: 'string',
           description: 'Path to DAG configuration file',
-          default: 'agents/dag.json',
+          default: '.agencee/config/agents/dag.json',
         },
         projectRoot: {
           type: 'string',
@@ -439,6 +439,24 @@ export const utilityTools: Tool[] = [
     inputSchema: {
       type: 'object' as const,
       properties: {
+        projectRoot: {
+          type: 'string',
+          description: 'Project root directory',
+        },
+      },
+    },
+  },
+  {
+    name: 'dag-dry-run',
+    description: 'Validate a DAG file — check agent files, detect cycles, verify capabilities — without executing any LLM calls',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        dagFile: {
+          type: 'string',
+          description: 'Path to DAG JSON file (relative to projectRoot or absolute)',
+          default: '.agencee/config/agents/dag.json',
+        },
         projectRoot: {
           type: 'string',
           description: 'Project root directory',

@@ -16,6 +16,7 @@ import * as path from 'path'
 import { buildDashboard } from './dashboard/index.js'
 import { findProjectRoot } from './find-project-root.js'
 import { runAnalyzeProject } from './handlers/analyze-project/index.js'
+import { runDagDryRun } from './handlers/dag-dry-run/index.js'
 import { getAgentCapabilities } from './handlers/get-agent-capabilities/index.js'
 import { runHealthCheck } from './handlers/health-check/index.js'
 import { runPreviewPrompt } from './handlers/preview-prompt/index.js'
@@ -345,7 +346,7 @@ Status: Ready to validate
         const cd = (args as Record<string, unknown> | undefined) ?? {};
         const dagName = String(cd.dagName ?? '');
         if (!dagName) return { content: [{ type: 'text', text: 'Error: dagName required' }], isError: true };
-        if (!Array.isArray(cd.lanes) || cd.lanes.length === 0) return { content: [{ type: 'text', text: 'Error: lanes array required' }], isError: true };
+        if (!Array.isArray(cd.lanes)) return { content: [{ type: 'text', text: 'Error: lanes must be an array' }], isError: true };
         const pr = typeof cd.projectRoot === 'string' ? path.resolve(cd.projectRoot) : findProjectRoot();
         const agentsDir = path.join(pr, AGENTS_DIR);
         await fs.mkdir(agentsDir, { recursive: true });
@@ -468,6 +469,32 @@ Status: Ready to validate
         return { content: [{ type: 'text', text: result }] }
       }
 
+      case 'dag-dry-run': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const dagFile = typeof a.dagFile === 'string' ? a.dagFile : path.join(AGENTS_DIR, 'dag.json')
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const report = await runDagDryRun(dagFile, pr)
+        const lines = [
+          `# DAG Dry Run: ${dagFile}`,
+          `**Valid:** ${report.valid ? '✅ Yes' : '❌ No'}  |  **Lanes:** ${report.laneCount}`,
+          '',
+          ...(report.errors.length > 0
+            ? ['## Errors', ...report.errors.map((e) => `- ❌ ${e.lane ? `[${e.lane}] ` : ''}${e.message} _(${e.type})_`)]
+            : ['_No errors._']),
+          '',
+          ...(report.warnings.length > 0
+            ? ['## Warnings', ...report.warnings.map((w) => `- ⚠️ ${w.lane ? `[${w.lane}] ` : ''}${w.message}`)]
+            : []),
+          ...(report.agentFiles.length > 0
+            ? ['', '## Agent Files', ...report.agentFiles.map((f) => `- ${f}`)]
+            : []),
+        ]
+        return {
+          content: [{ type: 'text', text: lines.join('\n') }],
+          isError: !report.valid,
+        }
+      }
+
       case 'tech-catalog': {
         const a = (args as Record<string, unknown> | undefined) ?? {}
         const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : undefined
@@ -484,30 +511,28 @@ Status: Ready to validate
       case 'create-tech-pack': {
         const a = (args as Record<string, unknown> | undefined) ?? {}
         const { runCreateTechPack } = await import('./handlers/create-tech-pack/index.js')
+        const validCategories = ['language', 'framework', 'library', 'tool', 'platform', 'database'] as const
+        type ValidCategory = typeof validCategories[number]
+        const rawCategory = typeof a.category === 'string' ? a.category : ''
+        const category = (validCategories as readonly string[]).includes(rawCategory)
+          ? rawCategory as ValidCategory
+          : 'library' as const
         const result = await runCreateTechPack({
           name: typeof a.name === 'string' ? a.name : '',
           displayName: typeof a.displayName === 'string' ? a.displayName : '',
-          category: typeof a.category === 'string' ? a.category : '',
+          category,
           description: typeof a.description === 'string' ? a.description : '',
           version: typeof a.version === 'string' ? a.version : '1.0.0',
-          conventions: typeof a.conventions === 'string' ? a.conventions : undefined,
-          patterns: typeof a.patterns === 'string' ? a.patterns : undefined,
-          antiPatterns: typeof a.antiPatterns === 'string' ? a.antiPatterns : undefined,
-          fileNaming: typeof a.fileNaming === 'string' ? a.fileNaming : undefined,
-          organization: typeof a.organization === 'string' ? a.organization : undefined,
-          extensions: Array.isArray(a.extensions) ? a.extensions.filter((e): e is string => typeof e === 'string') : undefined,
-          relatedTechs: Array.isArray(a.relatedTechs) ? a.relatedTechs.filter((t): t is string => typeof t === 'string') : undefined,
-          ecosystem: typeof a.ecosystem === 'string' ? a.ecosystem : undefined,
-          codeExample: typeof a.codeExample === 'string' ? a.codeExample : undefined,
-          template: typeof a.template === 'string' ? a.template : undefined,
-          destination: (a.destination === 'local' || a.destination === 'package') ? a.destination : 'local',
+          frameworks: Array.isArray(a.frameworks) ? a.frameworks.filter((e): e is string => typeof e === 'string') : undefined,
+          ruleTopics: undefined,
+          destination: a.destination === 'package' ? 'package' : 'workspace',
           projectRoot: typeof a.projectRoot === 'string' ? a.projectRoot : undefined,
         })
         return {
           content: [{
             type: 'text',
             text: result.success
-              ? `✅ ${result.message}\n\nFile: ${result.filePath}`
+              ? `✅ ${result.message}\n\nDirectory: ${result.path}\nFiles:\n${result.files.map((f) => `  - ${f}`).join('\n')}`
               : `❌ ${result.message}`
           }],
           isError: !result.success,
