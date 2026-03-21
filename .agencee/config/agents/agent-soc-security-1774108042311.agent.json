@@ -1,0 +1,6 @@
+{
+  "name": "soc-security",
+  "description": "the soc security is in charge of identify threath through the logs",
+  "llm": "gpt-5-mini",
+  "checks": []
+}
