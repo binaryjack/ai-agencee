@@ -1,9 +1,9 @@
 ﻿/**
  * Unit tests for SqliteVectorMemory
  *
- * Because `better-sqlite3` is a native module and may not be installed in CI,
- * tests are structured to cover BOTH the "db available" and "db unavailable"
- * (graceful no-op) code paths via jest module mocking.
+ * Tests cover BOTH the "db available" and "db unavailable" (graceful no-op)
+ * code paths. DB unavailability is simulated by mocking `@sqlite.org/sqlite-wasm`
+ * to reject on init.
  */
 
 
@@ -31,16 +31,9 @@ function cosineSim(a: number[], b: number[]): number {
   return denom === 0 ? 0 : dot / denom;
 }
 
-// ─── Tests when better-sqlite3 is NOT available ───────────────────────────────
+// ─── Tests when sqlite-wasm is NOT available ────────────────────────────────
 
-describe('SqliteVectorMemory — graceful fallback when better-sqlite3 unavailable', () => {
-  let originalRequire: NodeRequire;
-
-  beforeAll(() => {
-    // Suppress "better-sqlite3 not installed" silent catch
-    originalRequire = require;
-  });
-
+describe('SqliteVectorMemory — cosine similarity helpers (no DB required)', () => {
   it('cosine similarity helper: identical vectors → 1.0', () => {
     const v = [1, 0, 0];
     expect(cosineSim(v, v)).toBeCloseTo(1.0);
@@ -65,117 +58,70 @@ describe('SqliteVectorMemory — graceful fallback when better-sqlite3 unavailab
   });
 });
 
-// ─── Tests using a mocked Database ───────────────────────────────────────────
+// ─── Helper: mock sqlite-wasm to reject ──────────────────────────────────────
 
-describe('SqliteVectorMemory — with mocked better-sqlite3', () => {
-  // We test through the class by providing a mock in-memory store
+function mockSqliteWasmUnavailable() {
+  jest.mock('@sqlite.org/sqlite-wasm', () => ({
+    default: () => Promise.reject(new Error('sqlite-wasm unavailable')),
+  }), { virtual: true });
+}
 
-  /**
-   * Lightweight manual mock store that mimics the relevant better-sqlite3
-   * behaviour (synchronous, prepare/get/all/run).
-   */
-  class MockStore {
-    private rows: Map<string, { store: string; id: string; content: string | null; embedding: Buffer; metadata: string; created_at: string }> = new Map();
-
-    prepare(sql: string) {
-      const rows = this.rows;
-      return {
-        run: (..._args: unknown[]) => { /* handled per-op below */ },
-        get: (..._args: unknown[]) => undefined,
-        all: (..._args: unknown[]) => [],
-      };
-    }
-    pragma(_: string) { return this; }
-    exec(_: string) { return this; }
-  }
-
-  it('builds without throwing even when dbPath dir does not exist', () => {
-    // Point to an unreachable path — _open() catches the error, sets db=null
+describe('SqliteVectorMemory — graceful fallback when sqlite-wasm unavailable', () => {
+  it('builds without throwing even when sqlite-wasm rejects on init', () => {
     jest.resetModules();
-
-    // Mock require so that 'better-sqlite3' throws MODULE_NOT_FOUND
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
-    // Re-import the module fresh
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
-
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
     expect(mem).toBeDefined();
   });
 
   it('store() is a no-op when db is null', async () => {
     jest.resetModules();
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
-
-    // Should not throw
     await expect(mem.store('id1', [1, 2, 3], { text: 'hello' })).resolves.toBeUndefined();
   });
 
   it('search() returns [] when db is null', async () => {
     jest.resetModules();
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
-
-    const results = await mem.search([1, 0, 0], { topK: 5 });
-    expect(results).toEqual([]);
+    expect(await mem.search([1, 0, 0], { topK: 5 })).toEqual([]);
   });
 
   it('size() returns 0 when db is null', async () => {
     jest.resetModules();
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
-
     expect(await mem.size()).toBe(0);
   });
 
   it('delete() is a no-op when db is null', async () => {
     jest.resetModules();
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
-
     await expect(mem.delete('id1')).resolves.toBeUndefined();
   });
 
   it('clear() is a no-op when db is null', async () => {
     jest.resetModules();
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
-
     await expect(mem.clear()).resolves.toBeUndefined();
   });
 
-  it('close() is a no-op when db is null', () => {
+  it('close() is a no-op when db is null', async () => {
     jest.resetModules();
-    jest.mock('better-sqlite3', () => {
-      throw new Error('MODULE_NOT_FOUND');
-    }, { virtual: true });
-
+    mockSqliteWasmUnavailable();
     const { SqliteVectorMemory } = require('../lib/sqlite-vector-memory/index.js') as typeof import('../lib/sqlite-vector-memory/index.js');
     const mem = new SqliteVectorMemory({ dbPath: '/nonexistent/path/db.sqlite' });
-
+    // wait for _initPromise to settle so _repo is null
+    await (mem as any)._initPromise.catch(() => {});
     expect(() => mem.close()).not.toThrow();
   });
 });

@@ -9,7 +9,7 @@
  * _parsePatches → disk writes) without mocking the prototype methods themselves.
  *
  * The test environment stays portable across platforms and CI agents regardless
- * of whether `better-sqlite3` native bindings are compiled.
+ * of whether sqlite is available.
  */
 
 import * as fs from 'node:fs/promises';

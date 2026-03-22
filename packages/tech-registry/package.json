@@ -1,0 +1,7 @@
+{
+  "name": "@ai-agencee/tech-registry",
+  "version": "1.0.0",
+  "description": "Technology registry for AI Agencee",
+  "main": "index.js",
+  "type": "commonjs"
+}

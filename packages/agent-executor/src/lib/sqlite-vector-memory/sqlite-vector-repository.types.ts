@@ -1,5 +1,3 @@
-import type Database from 'better-sqlite3';
-
 export interface VectorItem {
   id:        string;
   store:     string;
@@ -10,7 +8,7 @@ export interface VectorItem {
 }
 
 export interface ISqliteVectorRepository {
-  _db: Database.Database;
+  _db: any;
   createSchema(): void;
   insert(item: VectorItem): void;
   fetchAll(namespace: string): VectorItem[];

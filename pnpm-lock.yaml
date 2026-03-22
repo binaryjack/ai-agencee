@@ -33,16 +33,13 @@ importers:
       '@ai-agencee/tech-registry':
         specifier: workspace:^1.0.0
         version: link:../tech-registry
-      better-sqlite3:
-        specifier: ^12.6.2
-        version: 12.6.2
+      '@sqlite.org/sqlite-wasm':
+        specifier: 3.49.2-build1
+        version: 3.49.2-build1
       glob:
         specifier: ^10.3.10
         version: 10.5.0
     devDependencies:
-      '@types/better-sqlite3':
-        specifier: ^7.6.13
-        version: 7.6.13
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
@@ -155,23 +152,7 @@ importers:
         specifier: ^5.4.5
         version: 5.9.3
 
-  packages/tech-registry:
-    devDependencies:
-      '@types/jest':
-        specifier: ^30.0.0
-        version: 30.0.0
-      '@types/node':
-        specifier: ^25.3.5
-        version: 25.3.5
-      jest:
-        specifier: ^30.3.0
-        version: 30.3.0(@types/node@25.3.5)
-      ts-jest:
-        specifier: ^29.4.6
-        version: 29.4.6(@babel/core@7.29.0)(@jest/transform@30.3.0)(@jest/types@30.3.0)(babel-jest@30.3.0(@babel/core@7.29.0))(jest-util@30.3.0)(jest@30.3.0(@types/node@25.3.5))(typescript@5.9.3)
-      typescript:
-        specifier: ^5.4.5
-        version: 5.9.3
+  packages/tech-registry: {}
 
 packages:
 
@@ -1008,6 +989,10 @@ packages:
   '@sinonjs/fake-timers@15.1.1':
     resolution: {integrity: sha512-cO5W33JgAPbOh07tvZjUOJ7oWhtaqGHiZw+11DPbyqh2kHTBc3eF/CjJDeQ4205RLQsX6rxCuYOroFQwl7JDRw==}
 
+  '@sqlite.org/sqlite-wasm@3.49.2-build1':
+    resolution: {integrity: sha512-yQSfIBn4alEXNcRj8o47rI4pID0JrsavyskzaH4PCq77PVpc05WUeIgqFOT86fa62KpMM9/qaRH8dtpia3UxGQ==}
+    hasBin: true
+
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
@@ -1025,9 +1010,6 @@ packages:
 
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
-
-  '@types/better-sqlite3@7.6.13':
-    resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -3672,6 +3654,8 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
+  '@sqlite.org/sqlite-wasm@3.49.2-build1': {}
+
   '@standard-schema/spec@1.1.0': {}
 
   '@tybys/wasm-util@0.10.1':
@@ -3699,10 +3683,6 @@ snapshots:
   '@types/babel__traverse@7.28.0':
     dependencies:
       '@babel/types': 7.29.0
-
-  '@types/better-sqlite3@7.6.13':
-    dependencies:
-      '@types/node': 25.3.5
 
   '@types/chai@5.2.3':
     dependencies:

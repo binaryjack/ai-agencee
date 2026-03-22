@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import type { Embedding, SearchOptions, SearchResult, StoreOptions } from '../../vector-memory/index.js';
 import { ISqliteVectorMemory } from '../sqlite-vector-memory.js';
 import { SqliteVectorRepository } from '../sqlite-vector-repository.js';
@@ -22,16 +23,26 @@ export function _cosineSim(a: Float32Array, b: Float32Array): number {
   return denom === 0 ? 0 : dot / denom;
 }
 
+// ─── Singleton WASM loader ───────────────────────────────────────────────────
+
+let _sqlite3Cache: Promise<any> | null = null;
+function _getSqlite3(): Promise<any> {
+  if (!_sqlite3Cache) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _sqlite3Cache = (sqlite3InitModule as any)();
+  }
+  return _sqlite3Cache!;
+}
+
 // ─── ISqliteVectorMemory methods ─────────────────────────────────────────────
 
-export function _open(this: ISqliteVectorMemory): void {
+export async function _open(this: ISqliteVectorMemory): Promise<void> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const Database = require('better-sqlite3');
+    const sqlite3 = await _getSqlite3();
     const dir = path.dirname(this._dbPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-    const db = new Database(this._dbPath);
+    const db = new sqlite3.oo1.DB(this._dbPath, 'cw');
     this._db = db;
     this._repo = new SqliteVectorRepository(db);
     this._repo.createSchema();
@@ -47,6 +58,7 @@ export async function store(
   embedding: Embedding,
   options: StoreOptions = {},
 ): Promise<void> {
+  await this._initPromise;
   if (!this._repo) return;
   const emb  = _toFloat32(embedding);
   const blob = Buffer.from(emb.buffer);
@@ -69,6 +81,7 @@ export async function search(
   query: Embedding,
   options: SearchOptions = {},
 ): Promise<SearchResult[]> {
+  await this._initPromise;
   const topK     = options.topK     ?? 5;
   const minScore = options.minScore ?? 0.0;
   const ns       = options.namespace ?? this._namespace;
@@ -97,14 +110,17 @@ export async function search(
 }
 
 export async function deleteEntry(this: ISqliteVectorMemory, id: string): Promise<void> {
+  await this._initPromise;
   this._repo?.delete(id, this._namespace);
 }
 
 export async function clear(this: ISqliteVectorMemory, namespace?: string): Promise<void> {
+  await this._initPromise;
   this._repo?.clear(namespace ?? this._namespace);
 }
 
 export async function size(this: ISqliteVectorMemory, namespace?: string): Promise<number> {
+  await this._initPromise;
   if (!this._repo) return 0;
   return this._repo.count(namespace ?? this._namespace);
 }

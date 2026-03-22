@@ -2,15 +2,13 @@
  * Type definitions for Codebase Index Store
  */
 
-import type Database from 'better-sqlite3';
-
 export type CodebaseIndexStoreOptions = {
   dbPath: string;
   projectId: string;
 };
 
 export type CodebaseIndexStoreInstance = {
-  _db: Database.Database | null;
+  _db: any | null;
   _projectId: string;
   _dbPath: string;
   initialize(): Promise<void>;

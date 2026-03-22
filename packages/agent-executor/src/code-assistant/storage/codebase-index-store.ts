@@ -1,12 +1,23 @@
 /**
  * SQLite-based storage for codebase index
  * Manages files, symbols, dependencies, and embeddings
+ * Uses @sqlite.org/sqlite-wasm (OO1 API) — ABI-safe in Electron/VS Code extension host.
  */
 
-import Database from 'better-sqlite3';
+import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type { CodebaseIndexStoreOptions, DependencyData, FileData, FileRecord, SymbolData } from './codebase-index-store.types';
+
+// Module-level singleton so WASM is loaded only once.
+let _sqlite3Cache: Promise<any> | null = null;
+function getSqlite3(): Promise<any> {
+  if (!_sqlite3Cache) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _sqlite3Cache = (sqlite3InitModule as any)();
+  }
+  return _sqlite3Cache!;
+}
 
 function cosineSimilarityBuffers(a: Float32Array, b: Float32Array): number {
   const len = Math.min(a.length, b.length)
@@ -17,7 +28,7 @@ function cosineSimilarityBuffers(a: Float32Array, b: Float32Array): number {
 }
 
 export type CodebaseIndexStoreInstance = {
-  _db: Database.Database | null;
+  _db: any | null;
   _dbPath: string;
   _projectId: string;
   initialize(): Promise<void>;
@@ -40,18 +51,18 @@ export type CodebaseIndexStoreInstance = {
 
 export const CodebaseIndexStore = function(this: CodebaseIndexStoreInstance, options: CodebaseIndexStoreOptions) {
   const { dbPath, projectId } = options;
-  
+
   Object.defineProperty(this, '_db', {
     enumerable: false,
     writable: true,
     value: null
   });
-  
+
   Object.defineProperty(this, '_dbPath', {
     enumerable: false,
     value: dbPath
   });
-  
+
   Object.defineProperty(this, '_projectId', {
     enumerable: false,
     value: projectId
@@ -59,18 +70,15 @@ export const CodebaseIndexStore = function(this: CodebaseIndexStoreInstance, opt
 };
 
 CodebaseIndexStore.prototype.initialize = async function(this: CodebaseIndexStoreInstance): Promise<void> {
-  // Ensure directory exists
   const dir = path.dirname(this._dbPath);
   await fs.mkdir(dir, { recursive: true });
-  
-  // Open database
-  this._db = new Database(this._dbPath);
-  this._db!.pragma('journal_mode = WAL');
-  this._db!.pragma('foreign_keys = ON');
-  
-  // Create tables
+
+  const sqlite3 = await getSqlite3();
+  this._db = new sqlite3.oo1.DB(this._dbPath, 'cw');
+  this._db!.exec('PRAGMA journal_mode = WAL');
+  this._db!.exec('PRAGMA foreign_keys = ON');
+
   await this._createTables();
-  // Add embedding column if this is an existing DB that pre-dates it
   this._migrateEmbeddingColumn();
 };
 
@@ -86,10 +94,8 @@ CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexS
       last_indexed_at INTEGER,
       UNIQUE(project_id, file_path)
     );
-    
     CREATE INDEX IF NOT EXISTS idx_files_project ON codebase_files(project_id);
     CREATE INDEX IF NOT EXISTS idx_files_hash ON codebase_files(file_hash);
-    
     CREATE TABLE IF NOT EXISTS codebase_symbols (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       file_id INTEGER NOT NULL,
@@ -102,17 +108,14 @@ CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexS
       is_exported BOOLEAN,
       FOREIGN KEY(file_id) REFERENCES codebase_files(id) ON DELETE CASCADE
     );
-    
     CREATE INDEX IF NOT EXISTS idx_symbols_name ON codebase_symbols(name);
     CREATE INDEX IF NOT EXISTS idx_symbols_kind ON codebase_symbols(kind);
     CREATE INDEX IF NOT EXISTS idx_symbols_file ON codebase_symbols(file_id);
-    
     CREATE VIRTUAL TABLE IF NOT EXISTS codebase_symbols_fts USING fts5(
       name, signature, docstring,
       content='codebase_symbols',
       content_rowid='id'
     );
-    
     CREATE TABLE IF NOT EXISTS codebase_dependencies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id TEXT NOT NULL,
@@ -123,17 +126,15 @@ CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexS
       FOREIGN KEY(source_file_id) REFERENCES codebase_files(id) ON DELETE CASCADE,
       FOREIGN KEY(target_file_id) REFERENCES codebase_files(id) ON DELETE CASCADE
     );
-    
     CREATE INDEX IF NOT EXISTS idx_deps_source ON codebase_dependencies(source_file_id);
     CREATE INDEX IF NOT EXISTS idx_deps_target ON codebase_dependencies(target_file_id);
   `);
 };
 
 CodebaseIndexStore.prototype._migrateEmbeddingColumn = function(this: CodebaseIndexStoreInstance): void {
-  // SQLite does not support IF NOT EXISTS for ALTER TABLE, so we check first.
-  const cols = this._db!.pragma('table_info(codebase_symbols)') as { name: string }[]
+  const cols = this._db!.selectObjects("PRAGMA table_info('codebase_symbols')") as { name: string }[];
   if (!cols.some(c => c.name === 'embedding')) {
-    this._db!.exec('ALTER TABLE codebase_symbols ADD COLUMN embedding BLOB')
+    this._db!.exec('ALTER TABLE codebase_symbols ADD COLUMN embedding BLOB');
   }
 };
 
@@ -141,9 +142,10 @@ CodebaseIndexStore.prototype.getSymbolsByFile = async function(
   this: CodebaseIndexStoreInstance,
   fileId: number
 ): Promise<{ id: number; name: string; docstring: string | null; is_exported: number }[]> {
-  return this._db!
-    .prepare('SELECT id, name, docstring, is_exported FROM codebase_symbols WHERE file_id = ?')
-    .all(fileId) as { id: number; name: string; docstring: string | null; is_exported: number }[]
+  return this._db!.selectObjects(
+    'SELECT id, name, docstring, is_exported FROM codebase_symbols WHERE file_id = ?',
+    [fileId]
+  ) as { id: number; name: string; docstring: string | null; is_exported: number }[];
 };
 
 CodebaseIndexStore.prototype.storeEmbedding = async function(
@@ -151,9 +153,10 @@ CodebaseIndexStore.prototype.storeEmbedding = async function(
   symbolId: number,
   vector: Float32Array
 ): Promise<void> {
-  this._db!
-    .prepare('UPDATE codebase_symbols SET embedding = ? WHERE id = ?')
-    .run(Buffer.from(vector.buffer), symbolId)
+  this._db!.exec({
+    sql: 'UPDATE codebase_symbols SET embedding = ? WHERE id = ?',
+    bind: [Buffer.from(vector.buffer), symbolId],
+  });
 };
 
 CodebaseIndexStore.prototype.semanticSearch = async function(
@@ -164,24 +167,24 @@ CodebaseIndexStore.prototype.semanticSearch = async function(
 ): Promise<import('../embeddings/embedding-provider.types').SemanticSearchResult[]> {
   type Row = {
     id: number; name: string; kind: string; signature: string | null;
-    docstring: string | null; file_path: string; embedding: Buffer
+    docstring: string | null; file_path: string; embedding: Uint8Array
   }
 
   const rows: Row[] = ftsQuery
-    ? this._db!.prepare(`
+    ? this._db!.selectObjects(`
         SELECT s.id, s.name, s.kind, s.signature, s.docstring, f.file_path, s.embedding
         FROM codebase_symbols_fts
         JOIN codebase_symbols s ON codebase_symbols_fts.rowid = s.id
         JOIN codebase_files f ON s.file_id = f.id
         WHERE f.project_id = ? AND codebase_symbols_fts MATCH ? AND s.embedding IS NOT NULL
         LIMIT 200
-      `).all(this._projectId, ftsQuery) as Row[]
-    : this._db!.prepare(`
+      `, [this._projectId, ftsQuery]) as Row[]
+    : this._db!.selectObjects(`
         SELECT s.id, s.name, s.kind, s.signature, s.docstring, f.file_path, s.embedding
         FROM codebase_symbols s
         JOIN codebase_files f ON s.file_id = f.id
         WHERE f.project_id = ? AND s.embedding IS NOT NULL
-      `).all(this._projectId) as Row[]
+      `, [this._projectId]) as Row[]
 
   const scored = rows.map(row => {
     const vec = new Float32Array(row.embedding.buffer, row.embedding.byteOffset, row.embedding.byteLength / 4)
@@ -198,7 +201,7 @@ CodebaseIndexStore.prototype.rebuildFts = function(this: CodebaseIndexStoreInsta
 };
 
 CodebaseIndexStore.prototype.upsertFile = async function(this: CodebaseIndexStoreInstance, fileData: FileData): Promise<number> {
-  const stmt = this._db!.prepare(`
+  const rows = this._db!.selectObjects(`
     INSERT INTO codebase_files (project_id, file_path, file_hash, language, size_bytes, last_indexed_at)
     VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT(project_id, file_path) DO UPDATE SET
@@ -207,136 +210,108 @@ CodebaseIndexStore.prototype.upsertFile = async function(this: CodebaseIndexStor
       size_bytes = excluded.size_bytes,
       last_indexed_at = excluded.last_indexed_at
     RETURNING id
-  `);
-  
-  const result = stmt.get(
+  `, [
     this._projectId,
     fileData.filePath,
     fileData.hash,
     fileData.language,
     fileData.sizeBytes || 0,
-    Date.now()
-  ) as { id: number };
-  
-  return result.id;
+    Date.now(),
+  ]) as { id: number }[];
+  return rows[0].id;
 };
 
 CodebaseIndexStore.prototype.upsertSymbols = async function(this: CodebaseIndexStoreInstance, fileId: number, symbols: SymbolData[]): Promise<void> {
-  // Delete existing symbols for this file
-  this._db!.prepare('DELETE FROM codebase_symbols WHERE file_id = ?').run(fileId);
-  
+  this._db!.exec({ sql: 'DELETE FROM codebase_symbols WHERE file_id = ?', bind: [fileId] });
   if (symbols.length === 0) return;
-  
-  const stmt = this._db!.prepare(`
-    INSERT INTO codebase_symbols (
-      file_id, name, kind, line_start, line_end, signature, docstring, is_exported
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  
-  const transaction = this._db!.transaction((symbolList: SymbolData[]) => {
-    for (const symbol of symbolList) {
-      stmt.run(
-        fileId,
-        symbol.name,
-        symbol.kind,
-        symbol.lineStart,
-        symbol.lineEnd,
-        symbol.signature || null,
-        symbol.docstring || null,
-        symbol.isExported ? 1 : 0
-      );
+  this._db!.exec('BEGIN');
+  try {
+    for (const symbol of symbols) {
+      this._db!.exec({
+        sql: `INSERT INTO codebase_symbols (
+          file_id, name, kind, line_start, line_end, signature, docstring, is_exported
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        bind: [
+          fileId, symbol.name, symbol.kind, symbol.lineStart, symbol.lineEnd,
+          symbol.signature || null, symbol.docstring || null, symbol.isExported ? 1 : 0,
+        ],
+      });
     }
-  });
-  
-  transaction(symbols);
+    this._db!.exec('COMMIT');
+  } catch (e) {
+    try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
+    throw e;
+  }
 };
 
 CodebaseIndexStore.prototype.upsertDependencies = async function(this: CodebaseIndexStoreInstance, dependencies: DependencyData[]): Promise<void> {
-  // Clear existing dependencies for this project
-  this._db!.prepare('DELETE FROM codebase_dependencies WHERE project_id = ?').run(this._projectId);
-  
+  this._db!.exec({ sql: 'DELETE FROM codebase_dependencies WHERE project_id = ?', bind: [this._projectId] });
   if (dependencies.length === 0) return;
-  
-  const stmt = this._db!.prepare(`
-    INSERT INTO codebase_dependencies (
-      project_id, source_file_id, target_file_id, import_specifier, dependency_type
-    ) VALUES (?, ?, ?, ?, ?)
-  `);
-  
-  const transaction = this._db!.transaction((depList: DependencyData[]) => {
-    for (const dep of depList) {
-      stmt.run(
-        this._projectId,
-        dep.sourceFileId,
-        dep.targetFileId || null,
-        dep.importSpecifier,
-        dep.type
-      );
+  this._db!.exec('BEGIN');
+  try {
+    for (const dep of dependencies) {
+      this._db!.exec({
+        sql: `INSERT INTO codebase_dependencies (
+          project_id, source_file_id, target_file_id, import_specifier, dependency_type
+        ) VALUES (?, ?, ?, ?, ?)`,
+        bind: [this._projectId, dep.sourceFileId, dep.targetFileId || null, dep.importSpecifier, dep.type],
+      });
     }
-  });
-  
-  transaction(dependencies);
+    this._db!.exec('COMMIT');
+  } catch (e) {
+    try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
+    throw e;
+  }
 };
 
 CodebaseIndexStore.prototype.getFileByPath = async function(this: CodebaseIndexStoreInstance, filePath: string): Promise<FileRecord | undefined> {
-  // Normalize path to use forward slashes for cross-platform consistency
   const normalizedPath = filePath.split('\\').join('/');
-  
-  const stmt = this._db!.prepare(`
-    SELECT * FROM codebase_files
-    WHERE project_id = ? AND file_path = ?
-  `);
-  
-  return stmt.get(this._projectId, normalizedPath) as FileRecord | undefined;
+  return this._db!.selectObject(
+    'SELECT * FROM codebase_files WHERE project_id = ? AND file_path = ?',
+    [this._projectId, normalizedPath]
+  ) as FileRecord | undefined;
 };
 
 CodebaseIndexStore.prototype.getFileByHash = async function(this: CodebaseIndexStoreInstance, hash: string): Promise<FileRecord | undefined> {
-  const stmt = this._db!.prepare(`
-    SELECT * FROM codebase_files
-    WHERE project_id = ? AND file_hash = ?
-  `);
-  
-  return stmt.get(this._projectId, hash) as FileRecord | undefined;
+  return this._db!.selectObject(
+    'SELECT * FROM codebase_files WHERE project_id = ? AND file_hash = ?',
+    [this._projectId, hash]
+  ) as FileRecord | undefined;
 };
 
 CodebaseIndexStore.prototype.getAllFiles = async function(this: CodebaseIndexStoreInstance): Promise<FileRecord[]> {
-  const stmt = this._db!.prepare(`
-    SELECT * FROM codebase_files WHERE project_id = ?
-  `);
-  
-  return stmt.all(this._projectId) as FileRecord[];
+  return this._db!.selectObjects(
+    'SELECT * FROM codebase_files WHERE project_id = ?',
+    [this._projectId]
+  ) as FileRecord[];
 };
 
 CodebaseIndexStore.prototype.query = async function(this: CodebaseIndexStoreInstance, sql: string, params: unknown[] = []): Promise<unknown> {
-  const stmt = this._db!.prepare(sql);
-  
-  // Check if it's a SELECT query
   if (sql.trim().toUpperCase().startsWith('SELECT')) {
-    return stmt.all(...(params as Parameters<typeof stmt.all>));
+    return this._db!.selectObjects(sql, params);
   } else {
-    return stmt.run(...(params as Parameters<typeof stmt.run>));
+    return this._db!.exec({ sql, bind: params });
   }
 };
 
 CodebaseIndexStore.prototype.getStats = async function(this: CodebaseIndexStoreInstance): Promise<{ totalFiles: number; totalSymbols: number; totalDependencies: number }> {
-  const filesCount = this._db!.prepare(
-    'SELECT COUNT(*) as count FROM codebase_files WHERE project_id = ?'
-  ).get(this._projectId) as { count: number };
-  
-  const symbolsCount = this._db!.prepare(`
+  const filesRow = this._db!.selectObject(
+    'SELECT COUNT(*) as count FROM codebase_files WHERE project_id = ?',
+    [this._projectId]
+  ) as { count: number };
+  const symbolsRow = this._db!.selectObject(`
     SELECT COUNT(*) as count FROM codebase_symbols s
     JOIN codebase_files f ON s.file_id = f.id
     WHERE f.project_id = ?
-  `).get(this._projectId) as { count: number };
-  
-  const depsCount = this._db!.prepare(
-    'SELECT COUNT(*) as count FROM codebase_dependencies WHERE project_id = ?'
-  ).get(this._projectId) as { count: number };
-  
+  `, [this._projectId]) as { count: number };
+  const depsRow = this._db!.selectObject(
+    'SELECT COUNT(*) as count FROM codebase_dependencies WHERE project_id = ?',
+    [this._projectId]
+  ) as { count: number };
   return {
-    totalFiles: filesCount.count,
-    totalSymbols: symbolsCount.count,
-    totalDependencies: depsCount.count
+    totalFiles: filesRow.count,
+    totalSymbols: symbolsRow.count,
+    totalDependencies: depsRow.count,
   };
 };
 

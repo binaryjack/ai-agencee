@@ -34,16 +34,12 @@ import { createParserRegistry } from '../parsers/create-parser-registry.js';
 import { createTypeScriptParser } from '../parsers/create-typescript-parser.js';
 import { createCodebaseIndexStore } from '../storage/create-codebase-index-store.js';
 
-// Guard: skip entire file when native better-sqlite3 bindings are unavailable
-// (pre-existing machine/CI issue â€” node-v137-win32-x64 bindings not compiled).
-// Load succeeds but instantiation throws when native addon is missing, so we
-// probe with an actual in-memory db creation.
+// Guard: skip entire file when @sqlite.org/sqlite-wasm is unavailable
+// (module not yet installed, e.g. before first pnpm install).
 let _sqliteAvailable = true;
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Db = require('better-sqlite3');
-  const probe = new Db(':memory:');
-  probe.close();
+  require('@sqlite.org/sqlite-wasm');
 } catch { _sqliteAvailable = false; }
 const describeIf = (_sqliteAvailable ? describe : describe.skip) as typeof describe;
 

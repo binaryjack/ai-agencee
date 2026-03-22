@@ -8,6 +8,7 @@ export async function store(
   embedding: Embedding,
   options: StoreOptions = {},
 ): Promise<void> {
+  await this._initPromise;
   if (!this._repo) return;
   const emb  = _toFloat32(embedding);
   const blob = Buffer.from(emb.buffer);

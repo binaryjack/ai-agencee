@@ -7,6 +7,7 @@ export async function search(
   query: Embedding,
   options: SearchOptions = {},
 ): Promise<SearchResult[]> {
+  await this._initPromise;
   const topK     = options.topK     ?? 5;
   const minScore = options.minScore ?? 0.0;
   const ns       = options.namespace ?? this._namespace;
