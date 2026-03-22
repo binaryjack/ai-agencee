@@ -1,0 +1,14 @@
+[
+  "Use PascalCase for all public, protected, and internal method names (e.g., `GetCustomerById`).",
+  "Keep methods short and focused on a single responsibility (ideally under 30 lines).",
+  "Use `async Task` or `async Task<T>` for asynchronous methods and suffix them with `Async` (e.g., `LoadDataAsync`).",
+  "Use expression-bodied members for simple one-liner methods and properties (e.g., `public int Area => Width * Height;`).",
+  "Prefer returning `IEnumerable<T>`, `IReadOnlyList<T>`, or `IReadOnlyCollection<T>` over concrete collection types in public APIs.",
+  "Use `CancellationToken` as the last parameter in async methods that can be cancelled.",
+  "Validate method arguments at the entry point and throw `ArgumentNullException` or `ArgumentException` with `nameof()`.",
+  "Use tuple returns or dedicated result types/records instead of `out` parameters for multi-value returns.",
+  "Mark methods as `static` when they do not access instance state.",
+  "Use XML documentation comments (`///`) on all public and protected methods.",
+  "Prefer method overloads or optional parameters with sensible defaults over accepting `null` to mean 'use default'.",
+  "Apply the `[Pure]` or equivalent attribute to side-effect-free methods when using code contracts or analyzers."
+]

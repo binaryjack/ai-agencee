@@ -1,0 +1,16 @@
+[
+  "Mark components as 'use client' only when they need browser APIs, event handlers, or React hooks like useState/useEffect",
+  "Default to Server Components for data fetching, accessing backend resources, and reducing client bundle size",
+  "Use the App Router file conventions: page.tsx, layout.tsx, loading.tsx, error.tsx, not-found.tsx for routing concerns",
+  "Use Next.js Server Actions ('use server') for form handling and mutations instead of creating separate API routes",
+  "Colocate data fetching inside Server Components using async/await directly rather than useEffect",
+  "Use generateMetadata and generateStaticParams as async functions for dynamic SEO and static generation",
+  "Create reusable utility functions in a lib/ or utils/ directory with pure, testable implementations",
+  "Use Route Handlers (route.ts) only for webhook endpoints, third-party API proxies, or non-UI responses",
+  "Wrap client-interactive islands in their own 'use client' boundary components and import them into Server Components",
+  "Use next/image for all images to get automatic optimization, lazy loading, and responsive sizing",
+  "Use next/link for all internal navigation to enable client-side transitions and prefetching",
+  "Implement parallel data fetching using Promise.all in Server Components to avoid request waterfalls",
+  "Use React.cache or Next.js fetch deduplication to avoid redundant data requests within a single render",
+  "Keep Server Actions small and focused; extract business logic into separate service functions"
+]

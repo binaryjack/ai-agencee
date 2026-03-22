@@ -1,0 +1,13 @@
+[
+  "Catch specific exception types rather than the base `Exception` class (e.g., `catch (HttpRequestException ex)`).",
+  "Use `throw;` to rethrow exceptions to preserve the original stack trace.",
+  "Use exception filters (`catch (Exception ex) when (ex is not OperationCanceledException)`) for conditional handling.",
+  "Log exceptions with full context (message, stack trace, inner exceptions) using structured logging (e.g., Serilog, ILogger).",
+  "Create custom exception types for domain-specific error conditions, inheriting from `Exception` and providing standard constructors.",
+  "Use `finally` blocks or `using`/`await using` statements to ensure deterministic cleanup of resources.",
+  "Use the Result/Option pattern (or libraries like `OneOf`, `FluentResults`) for expected failure paths instead of exceptions.",
+  "Throw `ArgumentNullException`, `ArgumentOutOfRangeException`, or `InvalidOperationException` for precondition violations.",
+  "Use `ExceptionDispatchInfo.Capture(ex).Throw()` when rethrowing from a different context to maintain the original stack trace.",
+  "In ASP.NET, use global exception-handling middleware or `IExceptionHandler` to produce consistent error responses.",
+  "Fail fast for unrecoverable errors; do not catch exceptions you cannot meaningfully handle."
+]

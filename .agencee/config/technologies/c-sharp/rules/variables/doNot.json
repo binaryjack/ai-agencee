@@ -1,0 +1,10 @@
+[
+  "Do not use Hungarian notation (e.g., `strName`, `intAge`).",
+  "Do not use single-letter variable names except in trivial loop counters (`i`, `j`).",
+  "Do not declare multiple variables on the same line (e.g., `int a, b, c;`).",
+  "Do not use `var` when the type is ambiguous and readability suffers.",
+  "Do not use public fields; use properties instead.",
+  "Do not shadow outer variables with inner declarations of the same name.",
+  "Do not leave unused variables in the code; remove or prefix with a discard `_`.",
+  "Do not use magic numbers or magic strings; extract them into named constants or configuration."
+]

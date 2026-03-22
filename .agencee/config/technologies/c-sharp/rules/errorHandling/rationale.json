@@ -1,0 +1,16 @@
+{
+  "summary": "Disciplined exception handling ensures that failures are observable, diagnosable, and recoverable while keeping the normal code path clean and performant.",
+  "reasoning": [
+    "Catching specific exceptions avoids accidentally masking unrelated bugs (e.g., catching OutOfMemoryException when you expected IOException).",
+    "`throw;` preserves the original stack trace, which is critical for diagnosing the root cause of errors in production.",
+    "Using exceptions for control flow is orders of magnitude slower than conditional checks and obscures the code's intent.",
+    "Global exception middleware centralizes error formatting and logging, preventing inconsistent error responses across endpoints.",
+    "The Result pattern for expected failures (validation, not-found) avoids the performance cost and semantic mismatch of throwing exceptions for non-exceptional conditions."
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions",
+    "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/exceptions",
+    "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling",
+    "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.exceptionservices.exceptiondispatchinfo"
+  ]
+}

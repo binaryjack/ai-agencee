@@ -1,0 +1,15 @@
+[
+  "Create error.tsx files at each route segment level to provide granular error boundaries",
+  "Always include a global-error.tsx at the app root to catch errors in the root layout",
+  "Use not-found.tsx files to handle 404 errors with user-friendly pages at appropriate route levels",
+  "Call the notFound() function from next/navigation when data lookups return null/undefined in Server Components",
+  "Implement try/catch blocks in Server Actions and return structured error responses instead of throwing",
+  "Use the 'error' prop in error.tsx components to display meaningful messages and provide a 'reset' retry button",
+  "Log errors server-side with structured logging (request ID, user context, stack trace) before returning error responses",
+  "Validate all user inputs in Server Actions and API Route Handlers using Zod or similar schemas before processing",
+  "Return appropriate HTTP status codes (400, 401, 403, 404, 500) from Route Handlers using NextResponse",
+  "Use loading.tsx and Suspense boundaries to handle async states gracefully and prevent layout shift",
+  "Implement middleware for cross-cutting concerns like authentication checks and redirect unauthorized users with proper status codes",
+  "Add error monitoring and reporting (Sentry, Datadog) with Next.js instrumentation.ts for server-side observability",
+  "Handle redirect() calls from next/navigation outside of try/catch blocks since redirect throws a special error internally"
+]

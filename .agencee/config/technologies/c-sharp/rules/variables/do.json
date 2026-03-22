@@ -1,0 +1,13 @@
+[
+  "Use camelCase for local variables and private fields (e.g., `int itemCount`, `private string _userName`).",
+  "Use PascalCase for public properties, constants, and static readonly fields (e.g., `public int MaxRetries`).",
+  "Prefix private backing fields with an underscore (e.g., `private readonly ILogger _logger`).",
+  "Use `var` when the type is obvious from the right-hand side of the assignment (e.g., `var list = new List<string>()`).",
+  "Use explicit types when the type is not immediately clear from context to improve readability.",
+  "Declare variables with the narrowest possible scope.",
+  "Prefer `const` for compile-time constants and `static readonly` for runtime constants.",
+  "Use meaningful, descriptive names that convey intent (e.g., `customerCount` instead of `n`).",
+  "Use nullable reference types (`string?`) and enable the `<Nullable>enable</Nullable>` project setting.",
+  "Prefer `readonly` on fields that should not be reassigned after construction.",
+  "Use `record` types or `init`-only setters for immutable data models where appropriate."
+]

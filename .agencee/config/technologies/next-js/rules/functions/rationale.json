@@ -1,0 +1,15 @@
+{
+  "summary": "Next.js App Router's architecture is built around Server Components by default, with Client Components as opt-in boundaries. Following this model minimizes bundle size, improves performance, and simplifies data fetching.",
+  "reasoning": [
+    "Server Components execute only on the server, sending zero JavaScript to the client, which reduces bundle size and improves Time to Interactive",
+    "Fetching data in Server Components eliminates client-server waterfalls and removes the need for loading spinners caused by useEffect patterns",
+    "Server Actions provide built-in progressive enhancement, CSRF protection, and a type-safe RPC-like interface for mutations",
+    "The App Router's file conventions (loading.tsx, error.tsx) provide automatic Suspense and Error Boundary integration"
+  ],
+  "references": [
+    "https://nextjs.org/docs/app/building-your-application/rendering/server-components",
+    "https://nextjs.org/docs/app/building-your-application/rendering/client-components",
+    "https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations",
+    "https://nextjs.org/docs/app/building-your-application/routing"
+  ]
+}

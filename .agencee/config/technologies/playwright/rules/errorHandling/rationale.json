@@ -1,0 +1,19 @@
+{
+  "summary": "Effective error handling in Playwright leverages built-in tracing, retries, and web-first assertions to produce clear, actionable failure diagnostics without masking genuine bugs.",
+  "reasoning": [
+    "Web-first assertions provide automatic retries with clear timeout error messages, reducing false negatives",
+    "Tracing captures full execution context (screenshots, network, DOM) making post-mortem debugging efficient",
+    "Swallowing errors with try/catch hides real failures and defeats the purpose of automated testing",
+    "Custom assertion messages make CI failure reports immediately actionable without requiring trace analysis",
+    "Retries handle transient infrastructure issues but should not be a substitute for fixing flaky test logic",
+    "expect.soft() enables comprehensive validation tests that report all failures rather than stopping at the first"
+  ],
+  "references": [
+    "https://playwright.dev/docs/test-assertions",
+    "https://playwright.dev/docs/trace-viewer",
+    "https://playwright.dev/docs/test-retries",
+    "https://playwright.dev/docs/test-configuration",
+    "https://playwright.dev/docs/best-practices",
+    "https://playwright.dev/docs/test-reporters"
+  ]
+}

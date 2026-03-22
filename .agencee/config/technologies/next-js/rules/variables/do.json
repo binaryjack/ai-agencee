@@ -1,0 +1,12 @@
+[
+  "Use environment variables prefixed with NEXT_PUBLIC_ only for values that must be exposed to the browser",
+  "Store sensitive keys and secrets in server-only environment variables (no NEXT_PUBLIC_ prefix)",
+  "Define environment variable schemas and validate them at build time using libraries like @t3-oss/env-nextjs or zod",
+  "Use TypeScript const assertions or enums for route path constants to avoid magic strings",
+  "Co-locate component-specific constants within the component file or a nearby constants file",
+  "Use camelCase for local variables and UPPER_SNAKE_CASE for module-level constants",
+  "Leverage Next.js built-in environment variable loading from .env, .env.local, .env.production, and .env.development files",
+  "Type all props and state variables with explicit TypeScript interfaces or types",
+  "Use React.useState with explicit generic types when the initial value doesn't convey the full type",
+  "Prefer 'as const' for configuration objects that should be deeply immutable"
+]

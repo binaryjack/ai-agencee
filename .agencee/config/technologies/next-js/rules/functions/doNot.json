@@ -1,0 +1,12 @@
+[
+  "Do not add 'use client' to every component; this negates the benefits of Server Components",
+  "Do not use useEffect for initial data fetching in components that could be Server Components",
+  "Do not create API route handlers solely to fetch data for your own Server Components; fetch directly",
+  "Do not perform heavy computation or data transformation in Client Components when it can be done server-side",
+  "Do not use next/router from 'next/router' in the App Router; use next/navigation instead",
+  "Do not nest layouts unnecessarily; each layout persists state across navigations of its child segments",
+  "Do not call Server Actions from third-party scripts or outside React's component tree without proper CSRF handling",
+  "Do not return large payloads from Server Actions; return only the data the client needs",
+  "Do not use default exports for utility functions; reserve default exports for page, layout, and route files",
+  "Do not block rendering with sequential awaits when requests are independent; parallelize them"
+]

@@ -1,0 +1,11 @@
+[
+  "Do not use page.waitForTimeout() for synchronization; rely on auto-waiting locators and web-first assertions",
+  "Do not write overly long test functions that cover multiple unrelated user flows",
+  "Do not call page.evaluate() to query elements when a built-in locator method exists",
+  "Do not use page.waitForSelector() followed by manual actions; use locator actions that auto-wait",
+  "Do not share a single page instance across tests in a describe block without proper isolation",
+  "Do not wrap Playwright auto-waiting calls in additional try/catch for flow control; let assertions fail naturally",
+  "Do not use nested callbacks; always use async/await for readability",
+  "Do not bypass the Playwright Test runner by using raw Jest/Mocha unless you have a specific need, as you lose fixtures, parallelism, and tracing",
+  "Do not perform UI interactions for setup tasks that can be done faster via API calls"
+]

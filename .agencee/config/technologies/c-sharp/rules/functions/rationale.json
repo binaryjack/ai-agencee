@@ -1,0 +1,15 @@
+{
+  "summary": "Well-structured methods with clear naming, proper async patterns, and single responsibility make code testable, maintainable, and resilient.",
+  "reasoning": [
+    "The `Async` suffix convention signals to callers that they must await the method, preventing accidental synchronous usage.",
+    "`async void` prevents callers from observing exceptions and breaks structured concurrency, leading to silent failures.",
+    "Blocking on async code (`.Result`, `.Wait()`) can deadlock in UI or ASP.NET synchronization contexts.",
+    "Guard clauses and argument validation at method entry points fail fast with clear messages, simplifying debugging.",
+    "Small, focused methods with descriptive names serve as self-documenting code and are easier to unit test."
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/",
+    "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/member",
+    "https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming"
+  ]
+}

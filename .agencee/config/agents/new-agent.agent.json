@@ -1,6 +1,8 @@
 {
-  "name": "New Agent",
+  "name": "Next.js Specialist",
   "icon": "🤖",
-  "description": "create agent",
-  "checks": []
+  "description": "Agent that masters Next Js",
+  "checks": [],
+  "llm": "gpt-5-mini",
+  "tech": "next-js"
 }

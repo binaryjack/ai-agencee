@@ -1,0 +1,14 @@
+{
+  "summary": "Proper variable management in Next.js prevents security leaks, ensures type safety, and leverages the framework's built-in environment variable handling for both server and client contexts.",
+  "reasoning": [
+    "Next.js inlines NEXT_PUBLIC_ variables at build time, so any secret prefixed this way is permanently embedded in client bundles",
+    "TypeScript strict typing catches bugs at compile time and improves developer experience with autocompletion",
+    "Environment variable validation at build time prevents runtime failures in production from missing configuration",
+    "The server/client component boundary means server-only env vars are intentionally inaccessible on the client for security"
+  ],
+  "references": [
+    "https://nextjs.org/docs/app/building-your-application/configuring/environment-variables",
+    "https://nextjs.org/docs/app/building-your-application/configuring/typescript",
+    "https://env.t3.gg/docs/nextjs"
+  ]
+}

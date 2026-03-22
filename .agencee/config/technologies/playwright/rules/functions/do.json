@@ -1,0 +1,13 @@
+[
+  "Use the Page Object Model pattern to encapsulate page interactions into reusable classes with descriptive methods",
+  "Prefer Playwright's built-in auto-waiting locator methods (click, fill, check) over manual waitForSelector calls",
+  "Use test.step() to annotate logical groups of actions within a test for better trace and report readability",
+  "Write small, focused test functions that test one behavior or user flow each",
+  "Use test.describe() to logically group related tests and share beforeEach/afterEach hooks",
+  "Use Playwright fixtures (test.extend) for reusable setup/teardown logic instead of beforeAll/afterAll when possible",
+  "Use async/await consistently; every Playwright API call returns a Promise",
+  "Use expect with Playwright's web-first assertions (toBeVisible, toHaveText, toHaveURL) for auto-retrying checks",
+  "Leverage API requests via page.request or APIRequestContext for test setup/teardown (seeding data, cleaning up)",
+  "Use test.use() to configure per-test or per-describe options like viewport, locale, or storageState",
+  "Parametrize tests with arrays or test.describe loops for data-driven scenarios"
+]

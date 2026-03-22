@@ -1,0 +1,10 @@
+[
+  "Do not expose API keys, database URLs, or secrets via NEXT_PUBLIC_ prefixed variables",
+  "Do not hardcode environment-specific values (URLs, ports, feature flags) directly in source code",
+  "Do not use 'any' type for variables; prefer 'unknown' and narrow with type guards",
+  "Do not mutate state variables directly; always use setter functions or state management actions",
+  "Do not store derived data in state; compute it during render or use useMemo",
+  "Do not commit .env.local or .env.*.local files to version control",
+  "Do not reference server-only environment variables in Client Components; they will be undefined",
+  "Do not use var; always prefer const or let with block scoping"
+]

@@ -28,7 +28,9 @@
       "path": "e2e",
       "pass": "✅ E2E tests directory found (e2e/)",
       "fail": "ℹ️  No e2e/ directory found",
-      "failRecommendations": ["Consider adding Playwright or Cypress for end-to-end testing"]
+      "failRecommendations": [
+        "Consider adding Playwright or Cypress for end-to-end testing"
+      ]
     },
     {
       "type": "dir-exists",
@@ -58,5 +60,7 @@
       "glob": "**/playwright/**/*.spec.ts",
       "pass": "✅ {count} Playwright spec file(s) found"
     }
-  ]
+  ],
+  "llm": "gpt-5-mini",
+  "tech": "playwright"
 }

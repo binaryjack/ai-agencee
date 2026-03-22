@@ -1,0 +1,16 @@
+{
+  "summary": "Proper variable management in Playwright ensures maintainable, readable, and resilient tests by centralizing selectors, securing configuration, and preventing stale references.",
+  "reasoning": [
+    "User-facing locators are resilient to DOM structure changes and reflect how users interact with the application",
+    "Environment variables prevent credential leakage and support multi-environment testing",
+    "Playwright tests run in isolated browser contexts by default, making shared mutable state unreliable",
+    "const prevents accidental reassignment, reducing bugs in asynchronous test code",
+    "Page Object Model centralizes selectors so DOM changes only require updates in one place"
+  ],
+  "references": [
+    "https://playwright.dev/docs/locators",
+    "https://playwright.dev/docs/test-fixtures",
+    "https://playwright.dev/docs/pom",
+    "https://playwright.dev/docs/auth"
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  "Store locators in descriptive, reusable constants (e.g., const submitButton = page.getByRole('button', { name: 'Submit' }))",
+  "Use environment variables for base URLs, credentials, and environment-specific configuration via dotenv or playwright.config.ts",
+  "Leverage Playwright fixtures to share state and variables across tests instead of global mutable variables",
+  "Use meaningful, descriptive names for Page Object Model properties that reflect UI semantics",
+  "Define test data as typed constants or factory functions to ensure immutability and clarity",
+  "Scope variables to the narrowest block necessary; prefer const over let",
+  "Use storageState files to persist and reuse authentication state across tests",
+  "Store selectors centrally in Page Object classes rather than scattering them across test files"
+]

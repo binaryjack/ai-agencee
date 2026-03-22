@@ -1,0 +1,11 @@
+[
+  "Do not use exceptions for control flow (e.g., catching an exception to check if a key exists in a dictionary).",
+  "Do not swallow exceptions with empty `catch` blocks (`catch { }`) — at minimum log them.",
+  "Do not catch `Exception` or `SystemException` broadly unless at a top-level boundary (e.g., global handler).",
+  "Do not use `throw ex;` — it resets the stack trace and loses diagnostic information.",
+  "Do not expose raw exception details (stack traces, connection strings) in API responses; map them to safe error DTOs.",
+  "Do not throw exceptions from constructors for conditions that could be validated before construction.",
+  "Do not nest excessive try-catch blocks; consolidate or use helper methods.",
+  "Do not catch `OperationCanceledException` and treat it as a failure; propagate cancellation properly.",
+  "Do not throw `NullReferenceException`, `IndexOutOfRangeException`, or `StackOverflowException` explicitly — these are reserved for the runtime."
+]

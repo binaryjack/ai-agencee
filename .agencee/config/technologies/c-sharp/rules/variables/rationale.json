@@ -1,0 +1,15 @@
+{
+  "summary": "Consistent, descriptive naming and proper scoping improve readability, reduce bugs, and align with the .NET runtime design guidelines.",
+  "reasoning": [
+    "PascalCase/camelCase conventions are the universally adopted .NET standard making codebases immediately familiar to any C# developer.",
+    "The underscore prefix for private fields distinguishes them from local variables and parameters, reducing accidental misuse.",
+    "Using `var` where the type is obvious reduces noise; using explicit types elsewhere preserves clarity.",
+    "Nullable reference types catch null-related bugs at compile time, drastically reducing NullReferenceExceptions.",
+    "Immutable fields and records prevent unintended mutation and simplify reasoning about state."
+  ],
+  "references": [
+    "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions",
+    "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines",
+    "https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references"
+  ]
+}

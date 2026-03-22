@@ -1,0 +1,10 @@
+[
+  "Do not write overly long methods; extract logical steps into well-named private helper methods.",
+  "Do not use `async void` except for event handlers; it swallows exceptions and prevents proper awaiting.",
+  "Do not block on async code with `.Result` or `.Wait()`; it can cause deadlocks.",
+  "Do not return `null` from methods that return collections; return an empty collection instead.",
+  "Do not have methods with more than 4-5 parameters; refactor into a parameter object or builder.",
+  "Do not mix business logic and infrastructure concerns (logging, data access) in the same method without abstraction.",
+  "Do not ignore the return value of `Task`-returning methods (fire-and-forget); at minimum log exceptions.",
+  "Do not create deeply nested methods; flatten with early returns (guard clauses)."
+]

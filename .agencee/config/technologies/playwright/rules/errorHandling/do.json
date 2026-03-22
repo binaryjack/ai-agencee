@@ -1,0 +1,13 @@
+[
+  "Use web-first assertions (expect(locator).toBeVisible()) that auto-retry and produce clear error messages on failure",
+  "Configure meaningful timeouts in playwright.config.ts (actionTimeout, navigationTimeout, expect.timeout) rather than per-call overrides",
+  "Enable Playwright tracing (trace: 'on-first-retry' or 'retain-on-failure') to capture screenshots, DOM snapshots, and network logs for failed tests",
+  "Enable video and screenshot capture on failure (screenshot: 'only-on-failure', video: 'retain-on-failure') for debugging",
+  "Use test.fail() to mark known-failing tests explicitly with documentation of expected failure",
+  "Use test.skip() or test.fixme() with conditions for environment-dependent or work-in-progress tests",
+  "Use expect.soft() for non-critical assertions that should report failures without stopping the test",
+  "Configure retries in playwright.config.ts (retries: 2 in CI) to mitigate infrastructure-related flakiness",
+  "Add custom error messages to assertions: expect(locator, 'Login button should appear after form submission').toBeVisible()",
+  "Use test.info().attach() to attach additional debugging context (API responses, logs) to test reports on failure",
+  "Handle expected error dialogs or alerts with page.on('dialog') listeners registered before triggering the action"
+]

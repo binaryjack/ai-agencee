@@ -1,0 +1,12 @@
+[
+  "Do not let unhandled promise rejections propagate silently in Server Components or Server Actions",
+  "Do not expose internal error details, stack traces, or database errors to the client in production",
+  "Do not catch errors generically and swallow them without logging; always log before recovering",
+  "Do not rely on client-side error boundaries alone; implement server-side error handling for Server Components",
+  "Do not use error.tsx to catch errors in the same-level layout.tsx; errors in layouts bubble to the parent segment's error boundary",
+  "Do not put redirect() or notFound() inside try/catch blocks as they use throw internally and will be caught incorrectly",
+  "Do not return HTML error pages from API Route Handlers; return structured JSON error responses",
+  "Do not ignore TypeScript errors or use @ts-ignore to suppress type mismatches in data handling code",
+  "Do not use console.error as your sole error reporting mechanism in production",
+  "Do not show raw error messages from third-party APIs to end users; map them to user-friendly messages"
+]

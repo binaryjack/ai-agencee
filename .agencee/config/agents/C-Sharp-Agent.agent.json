@@ -2,5 +2,7 @@
   "name": "C Sharp Agent",
   "icon": "🤖",
   "description": "this agent is specialized in c#",
-  "checks": []
+  "checks": [],
+  "llm": "gpt-5-mini",
+  "tech": "c-sharp"
 }

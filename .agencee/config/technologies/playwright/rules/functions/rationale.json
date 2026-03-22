@@ -1,0 +1,19 @@
+{
+  "summary": "Well-structured functions and test design maximize Playwright's auto-waiting, parallel execution, and debugging capabilities while keeping tests fast, reliable, and maintainable.",
+  "reasoning": [
+    "Auto-waiting eliminates flakiness caused by explicit sleeps and race conditions",
+    "Page Object Model reduces duplication and makes tests resilient to UI changes",
+    "Web-first assertions auto-retry until timeout, dramatically reducing flaky test failures",
+    "Small focused tests are easier to debug, parallelize, and maintain",
+    "API-based test setup is faster and more reliable than navigating through UI for preconditions",
+    "Fixtures provide deterministic setup/teardown with proper scoping and dependency injection"
+  ],
+  "references": [
+    "https://playwright.dev/docs/best-practices",
+    "https://playwright.dev/docs/test-assertions",
+    "https://playwright.dev/docs/pom",
+    "https://playwright.dev/docs/api-testing",
+    "https://playwright.dev/docs/test-fixtures",
+    "https://playwright.dev/docs/actionability"
+  ]
+}

@@ -1,0 +1,8 @@
+[
+  "Do not use hard-coded magic strings for selectors repeatedly across multiple test files",
+  "Do not store sensitive credentials directly in test source code; use environment variables or secret managers",
+  "Do not rely on global mutable state shared between test files as tests run in isolation by default",
+  "Do not use CSS or XPath selectors when user-facing locators (getByRole, getByText, getByLabel) are available",
+  "Do not cache page or browser references in module-level variables; they become stale across tests",
+  "Do not duplicate locator definitions; extract them into Page Objects or shared constants"
+]

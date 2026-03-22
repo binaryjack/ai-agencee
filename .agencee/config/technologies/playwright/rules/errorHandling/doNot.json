@@ -1,0 +1,10 @@
+[
+  "Do not wrap Playwright assertions in try/catch blocks to swallow errors; let the test runner handle failures",
+  "Do not use generic try/catch around entire tests to convert failures into passes",
+  "Do not set excessively long global timeouts to mask flakiness; investigate and fix the root cause",
+  "Do not ignore console errors from the page; use page.on('pageerror') to detect and optionally fail on unhandled exceptions",
+  "Do not use process.exit() or force-kill in test teardown; let Playwright manage browser lifecycle",
+  "Do not catch and re-throw errors without adding context; either add information or let them propagate",
+  "Do not rely solely on retries to handle flaky tests; identify and fix the underlying cause",
+  "Do not use assertions without messages in complex tests; descriptive messages speed up debugging"
+]

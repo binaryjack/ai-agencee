@@ -1,0 +1,17 @@
+{
+  "summary": "Next.js provides a layered error handling architecture through file conventions (error.tsx, not-found.tsx, global-error.tsx) and special functions (notFound, redirect). Proper use of these features ensures resilient applications with good user experience during failures.",
+  "reasoning": [
+    "error.tsx files create automatic React Error Boundaries scoped to route segments, isolating failures and preventing full-page crashes",
+    "Server Components can throw errors that are caught by the nearest error.tsx boundary, but layout errors require a parent boundary",
+    "redirect() and notFound() use Next.js's internal throw mechanism, so wrapping them in try/catch will break their functionality",
+    "Structured error responses from Server Actions allow Client Components to display contextual error messages and maintain form state",
+    "Input validation at the server boundary prevents injection attacks, data corruption, and provides early, clear error feedback"
+  ],
+  "references": [
+    "https://nextjs.org/docs/app/building-your-application/routing/error-handling",
+    "https://nextjs.org/docs/app/api-reference/file-conventions/error",
+    "https://nextjs.org/docs/app/api-reference/file-conventions/not-found",
+    "https://nextjs.org/docs/app/api-reference/functions/not-found",
+    "https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#error-handling"
+  ]
+}
