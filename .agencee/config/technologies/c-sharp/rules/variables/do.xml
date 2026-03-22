@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rules category="do">
-  <rule>Use meaningful, descriptive variable names (e.g., customerName, orderTotal)</rule>
-  <rule>Use PascalCase for public properties and class names</rule>
-  <rule>Use camelCase for local variables and parameters</rule>
-  <rule>Prefer var for local variables when the type is obvious</rule>
-  <rule>Initialize variables at declaration when possible</rule>
-</rules>

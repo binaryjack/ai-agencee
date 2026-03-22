@@ -1,0 +1,14 @@
+[
+  "Use PascalCase for public and protected fields, properties, and constants (e.g., CustomerName, MaxRetries).",
+  "Use camelCase with a leading underscore for private fields (e.g., _customerName, _orderTotal).",
+  "Use camelCase for local variables and method parameters (e.g., itemCount, userName).",
+  "Always use Option Explicit On and Option Strict On at the project or file level to enforce explicit declarations and strict type checking.",
+  "Declare variables with explicit types rather than relying on type inference when the type is not obvious (e.g., Dim count As Integer = 0).",
+  "Use meaningful, descriptive names that reveal intent (e.g., invoiceTotal instead of x or temp).",
+  "Use Const for values known at compile time and Shared ReadOnly for values determined at runtime.",
+  "Prefer String.Empty over empty string literals \"\" for clarity.",
+  "Scope variables as narrowly as possible; declare them closest to their first use.",
+  "Use nullable value types (e.g., Dim result As Integer? = Nothing) when a value may legitimately be absent.",
+  "Use Enum types for related sets of named constants instead of magic numbers.",
+  "Use properties with backing fields instead of public fields for encapsulation in classes."
+]

@@ -1,0 +1,16 @@
+{
+  "summary": "Structured, specific, and logged exception handling prevents silent failures, preserves diagnostic information, and ensures resources are properly released across MVC and MVVM application layers.",
+  "reasoning": [
+    "On Error Resume Next hides errors completely and makes debugging nearly impossible; structured Try...Catch makes error handling explicit.",
+    "Catching specific exceptions allows different recovery strategies for different failure modes (e.g., retry on transient network errors, fail fast on data validation).",
+    "Using statements guarantee IDisposable.Dispose() is called even when exceptions occur, preventing resource leaks in long-running applications.",
+    "Throw (without ex) preserves the original call stack, which is essential for diagnosing root causes in production.",
+    "Global exception handlers in MVC middleware or MVVM application-level handlers provide a safety net against unhandled exceptions crashing the application."
+  ],
+  "references": [
+    "Microsoft VB.NET Exception Handling: https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/error-types",
+    "Try...Catch...Finally Statement: https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/try-catch-finally-statement",
+    "Best Practices for Exceptions in .NET: https://learn.microsoft.com/en-us/dotnet/standard/exceptions/best-practices-for-exceptions",
+    "Using Statement (VB): https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/using-statement"
+  ]
+}

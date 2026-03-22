@@ -1,0 +1,15 @@
+[
+  "Use PascalCase for all method names (e.g., CalculateTotal, GetCustomerById).",
+  "Keep methods short and focused on a single responsibility; aim for no more than 20-30 lines.",
+  "Use Function when the method returns a value and Sub when it does not; never abuse ByRef parameters as a substitute for return values.",
+  "Specify access modifiers explicitly (Public, Private, Protected, Friend) on every method.",
+  "Use ByVal (default in modern VB.NET) for parameters unless there is a specific reason to use ByRef.",
+  "Validate all public method parameters at entry (guard clauses) and throw ArgumentNullException or ArgumentException for invalid input.",
+  "Use Async/Await (Async Function ... As Task(Of T)) for I/O-bound operations instead of blocking calls.",
+  "Return Task or Task(Of T) from asynchronous methods; name them with an Async suffix (e.g., LoadDataAsync).",
+  "Extract repeated logic into well-named private helper methods to follow DRY principles.",
+  "Use interfaces (IDisposable, IComparable, etc.) and program to abstractions to support MVC/MVVM patterns and testability.",
+  "Document public methods with XML comments (''' <summary>) describing purpose, parameters, returns, and exceptions.",
+  "Prefer method overloading over Optional parameters when parameter combinations lead to significantly different behavior.",
+  "Keep the number of parameters small (ideally 3 or fewer); group related parameters into a class or structure if needed."
+]

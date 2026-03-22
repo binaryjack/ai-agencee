@@ -1,0 +1,11 @@
+[
+  "Do not use Hungarian notation or type prefixes (e.g., strName, intCount, objCustomer).",
+  "Do not use Option Strict Off or Option Explicit Off as it hides type conversion errors.",
+  "Do not use Variant-style Object typing for general-purpose variables; always use the strongest applicable type.",
+  "Do not use single-character variable names except for simple loop counters (i, j, k).",
+  "Do not declare multiple variables on a single line (e.g., Dim a, b, c As Integer).",
+  "Do not use module-level or global variables when local scope is sufficient.",
+  "Do not shadow variables from outer scopes with identically named inner variables.",
+  "Do not use magic numbers or magic strings directly in code; extract them into named constants or configuration.",
+  "Do not leave variables uninitialized when a sensible default exists."
+]

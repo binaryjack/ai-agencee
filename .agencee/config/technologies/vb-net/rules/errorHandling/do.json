@@ -1,0 +1,14 @@
+[
+  "Use structured exception handling (Try...Catch...Finally) exclusively; never use On Error GoTo or On Error Resume Next.",
+  "Catch the most specific exception type first, then more general types (e.g., Catch ex As FileNotFoundException before Catch ex As IOException).",
+  "Always include a Finally block or Using statement for resource cleanup (database connections, file handles, streams).",
+  "Use the Using statement (Using conn As New SqlConnection(...)) for all IDisposable objects to guarantee cleanup.",
+  "Log exceptions with full details (message, stack trace, inner exceptions) using a logging framework (Serilog, NLog, or Microsoft.Extensions.Logging).",
+  "Throw meaningful custom exceptions (inheriting from Exception) for domain-specific error conditions.",
+  "Use Throw (without an argument) to re-throw exceptions and preserve the original stack trace instead of Throw ex.",
+  "Validate inputs early with guard clauses and throw ArgumentNullException, ArgumentException, or ArgumentOutOfRangeException before processing begins.",
+  "Return consistent error responses in MVC controllers (e.g., appropriate HTTP status codes) and surface user-friendly messages in MVVM view models.",
+  "Use global exception handling middleware (in ASP.NET MVC) or Application.UnhandledException / AppDomain.UnhandledException for last-resort error capture.",
+  "Use ExceptionFilterAttribute or middleware in ASP.NET MVC to centralize cross-cutting error handling logic.",
+  "Wrap third-party library exceptions in your own exception types at service boundaries to avoid leaking implementation details."
+]

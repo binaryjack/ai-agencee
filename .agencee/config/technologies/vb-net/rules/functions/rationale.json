@@ -1,0 +1,15 @@
+{
+  "summary": "Well-structured, small, single-responsibility methods with clear contracts and proper async patterns lead to maintainable, testable VB.NET code compatible with both MVC and MVVM architectures.",
+  "reasoning": [
+    "Single-responsibility methods are easier to unit test in isolation, which is critical for MVC controllers and MVVM view models.",
+    "Async/Await prevents thread starvation in ASP.NET MVC controllers and keeps WPF/WinForms MVVM UIs responsive.",
+    "Guard clauses at method entry fail fast with clear error messages, reducing debugging time.",
+    "Separating concerns across layers (View, Controller/ViewModel, Model, Service) ensures each method has a clear role."
+  ],
+  "references": [
+    "Microsoft VB.NET Programming Guide - Procedures: https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/procedures/",
+    "Async Programming with Async and Await (VB): https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/concepts/async/",
+    "Clean Code by Robert C. Martin (method design principles)",
+    "SOLID Principles: https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles"
+  ]
+}

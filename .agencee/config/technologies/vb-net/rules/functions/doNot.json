@@ -1,0 +1,11 @@
+[
+  "Do not create methods with excessive parameter lists (more than 5 parameters is a strong code smell).",
+  "Do not use GoTo, GoSub, or On Error Resume Next for flow control; use structured constructs instead.",
+  "Do not write deeply nested methods (more than 2-3 levels); use early returns or extract sub-methods.",
+  "Do not mix business logic with UI or data access logic in the same method; separate concerns per MVC/MVVM layering.",
+  "Do not use late-bound method calls via Object unless absolutely necessary for COM interop.",
+  "Do not swallow exceptions silently within methods (empty Catch blocks).",
+  "Do not return Nothing from a method that returns a collection; return an empty collection instead.",
+  "Do not use Shared (static) methods for everything; prefer instance methods with dependency injection for testability.",
+  "Do not perform long-running synchronous work on the UI thread; use Async/Await or BackgroundWorker."
+]

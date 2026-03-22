@@ -1,0 +1,12 @@
+[
+  "Do not use On Error Resume Next or On Error GoTo; these are legacy VB6 patterns that hide bugs.",
+  "Do not catch Exception or SystemException broadly unless you are at the top-level boundary (global handler) and you log/re-throw.",
+  "Do not use empty Catch blocks that silently swallow exceptions (Catch ex As Exception without any handling).",
+  "Do not use exceptions for normal control flow (e.g., catching an exception to check if a key exists in a dictionary; use TryGetValue instead).",
+  "Do not throw System.Exception directly; always use a more specific derived exception type.",
+  "Do not expose stack traces, connection strings, or internal details to end users in error messages.",
+  "Do not catch and re-throw with Throw ex as it resets the stack trace; use Throw alone.",
+  "Do not rely on Finalize/destructor patterns for resource cleanup; use IDisposable and Using instead.",
+  "Do not put large amounts of business logic inside Catch blocks; keep them focused on handling the error.",
+  "Do not ignore Task exceptions in async methods; always Await tasks or observe their exceptions."
+]

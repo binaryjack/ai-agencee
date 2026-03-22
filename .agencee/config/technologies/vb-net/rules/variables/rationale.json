@@ -1,0 +1,14 @@
+{
+  "summary": "Consistent naming, explicit typing, and narrow scoping improve readability, reduce bugs, and align with .NET Framework Design Guidelines for VB.NET.",
+  "reasoning": [
+    "Option Strict On catches implicit narrowing conversions and late binding at compile time, preventing runtime InvalidCastExceptions.",
+    "PascalCase for public members and camelCase for private/local members follows the .NET Framework Design Guidelines, making code recognizable to all .NET developers.",
+    "Descriptive names reduce cognitive load during code reviews and long-term maintenance.",
+    "Narrow scoping minimizes the surface area for unintended side effects and makes refactoring safer."
+  ],
+  "references": [
+    "Microsoft .NET Framework Design Guidelines: https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/",
+    "Microsoft VB.NET Naming Conventions: https://learn.microsoft.com/en-us/dotnet/visual-basic/programming-guide/program-structure/naming-conventions",
+    "Option Strict Statement: https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/option-strict-statement"
+  ]
+}
