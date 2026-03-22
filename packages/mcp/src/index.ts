@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { AGENTS_DIR, AuditLog, DagOrchestrator } from '@ai-agencee/engine'
+import { AGENTS_DIR, AuditLog, DagOrchestrator, createCodeAssistantOrchestrator, createCodebaseIndexStore } from '@ai-agencee/engine'
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
@@ -537,6 +537,94 @@ Status: Ready to validate
           }],
           isError: !result.success,
         }
+      }
+
+      case 'code-search-context': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const query = typeof a.query === 'string' ? a.query : ''
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const topK = typeof a.topK === 'number' ? a.topK : 40
+
+        const dbPath = path.join(pr, '.agencee', 'code-index.db')
+        try {
+          await fs.access(dbPath)
+        } catch {
+          return { content: [{ type: 'text', text: '' }] }
+        }
+
+        const store = await createCodebaseIndexStore({ dbPath, projectId: path.basename(pr) })
+        try {
+          // Extract keywords for FTS5 (≥4 chars, max 6)
+          const seenKw: Record<string, boolean> = {}
+          const keywords: string[] = []
+          for (const w of query.split(/\W+/)) {
+            if (w.length >= 4 && !seenKw[w]) {
+              seenKw[w] = true
+              keywords.push(w)
+              if (keywords.length === 6) break
+            }
+          }
+          const ftsQuery = keywords.join(' OR ')
+          if (!ftsQuery) return { content: [{ type: 'text', text: '' }] }
+
+          type SymbolRow = { name: string; kind: string; signature: string | null; file_path: string; line_start: number }
+          const symbols = (await store.query(
+            `SELECT s.name, s.kind, s.signature, f.file_path, s.line_start
+             FROM codebase_symbols_fts fts
+             JOIN codebase_symbols s ON s.id      = fts.rowid
+             JOIN codebase_files   f ON s.file_id = f.id
+             WHERE codebase_symbols_fts MATCH ?
+             ORDER BY rank
+             LIMIT ?`,
+            [ftsQuery, topK],
+          )) as SymbolRow[]
+
+          if (symbols.length === 0) return { content: [{ type: 'text', text: '' }] }
+
+          const lines = ['### Relevant symbols\n']
+          for (const s of symbols) {
+            const sig = s.signature ? '\n  `' + s.signature + '`' : ''
+            lines.push('- **' + s.kind + '** `' + s.name + '` (' + s.file_path + ':' + s.line_start + ')' + sig)
+          }
+          return { content: [{ type: 'text', text: lines.join('\n') }] }
+        } finally {
+          await store.close()
+        }
+      }
+
+      case 'code-generate': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const task = typeof a.task === 'string' ? a.task.trim() : ''
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const dryRun = typeof a.dryRun === 'boolean' ? a.dryRun : true
+        const mode = (['feature', 'quick-fix', 'refactor', 'debug'] as const).includes(a.mode as never)
+          ? (a.mode as 'feature' | 'quick-fix' | 'refactor' | 'debug')
+          : 'feature'
+
+        if (!task) {
+          return { content: [{ type: 'text', text: 'Error: task is required' }], isError: true }
+        }
+
+        const orch = createCodeAssistantOrchestrator({ projectRoot: pr })
+        const result = await orch.execute({ task, dryRun, mode })
+
+        if (!result.success) {
+          return {
+            content: [{ type: 'text', text: result.error ?? 'Code generation failed' }],
+            isError: true,
+          }
+        }
+
+        const summary = [
+          dryRun ? '# Codernic — Dry Run Plan' : '# Codernic — Changes Applied',
+          '',
+          dryRun
+            ? String(result.plan ?? 'No plan generated')
+            : '**Files modified:** ' + result.filesModified.join(', '),
+          '',
+          `**Duration:** ${result.duration}ms · **Cost:** $${result.totalCost.toFixed(4)}`,
+        ]
+        return { content: [{ type: 'text', text: summary.join('\n') }] }
       }
 
       default:

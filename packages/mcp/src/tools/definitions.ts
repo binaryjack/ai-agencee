@@ -467,6 +467,69 @@ export const utilityTools: Tool[] = [
 ]
 
 /**
+ * Codernic (code-assistant) tools
+ */
+export const coderniceTools: Tool[] = [
+  {
+    name: 'code-search-context',
+    description:
+      'Search the Codernic code index for symbols relevant to a query and return a formatted context block. ' +
+      'Used to enrich LLM prompts with real codebase grounding before answering code questions.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Natural-language query or task description to search for',
+        },
+        projectRoot: {
+          type: 'string',
+          description: 'Absolute path to the project root (must contain .agencee/code-index.db)',
+        },
+        topK: {
+          type: 'number',
+          description: 'Maximum number of symbols to return (default: 40)',
+          default: 40,
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'code-generate',
+    description:
+      'Run Codernic — the codebase-aware code generation assistant. ' +
+      'Reads the code index, gathers relevant context, and uses an LLM to plan or generate file changes. ' +
+      'Use dryRun:true (default) to preview the plan before writing files.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        task: {
+          type: 'string',
+          description: 'Plain-language description of what to implement, refactor, or fix',
+        },
+        projectRoot: {
+          type: 'string',
+          description: 'Absolute path to the project root',
+        },
+        dryRun: {
+          type: 'boolean',
+          description: 'Preview the plan without writing files (default: true)',
+          default: true,
+        },
+        mode: {
+          type: 'string',
+          enum: ['feature', 'quick-fix', 'refactor', 'debug'],
+          description: 'Generation mode — controls model tier and prompt framing (default: feature)',
+          default: 'feature',
+        },
+      },
+      required: ['task'],
+    },
+  },
+]
+
+/**
  * All tool definitions combined
  */
 export const allToolDefinitions: Tool[] = [
@@ -474,6 +537,7 @@ export const allToolDefinitions: Tool[] = [
   ...agentTools,
   ...creationTools,
   ...utilityTools,
+  ...coderniceTools,
 ]
 
 /**
