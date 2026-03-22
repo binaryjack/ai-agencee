@@ -1,0 +1,59 @@
+{
+  "name": "TODO Backend Generator",
+  "icon": "🔧",
+  "description": "Generates a NestJS + SQL.js CRUD backend for the TODO app",
+  "checks": [
+    {
+      "type": "dir-exists",
+      "path": "todo-app/packages/backend",
+      "pass": "✅ Backend package directory exists",
+      "fail": "❌ todo-app/packages/backend/ missing — run scaffold lane first",
+      "failSeverity": "error"
+    },
+    {
+      "type": "llm-tool",
+      "taskType": "code-generation",
+      "enableTools": true,
+      "toolNames": ["write_file", "read_file", "list_dir"],
+      "path": "todo-app/packages/backend",
+      "prompt": "You are generating a complete NestJS 10 + SQL.js backend for a TODO CRUD app.\n\nRequirements:\n- SQL.js (npm: sql.js) for in-memory SQLite — no external DB process needed\n- Full CRUD: Create, Read, ReadAll, Update, Delete for Todo items\n- Todo entity: id (integer PK autoincrement), title (text, not null), completed (boolean, default 0), createdAt (text ISO timestamp)\n- REST endpoints under /api/todos:\n  GET    /api/todos          → list all\n  GET    /api/todos/:id      → get one\n  POST   /api/todos          → create\n  PATCH  /api/todos/:id      → update title/completed\n  DELETE /api/todos/:id      → delete\n- Global prefix: 'api'\n- CORS enabled for http://localhost:3000\n- Port: 3001\n\nWrite ALL the following files using write_file:\n\n`todo-app/packages/backend/src/main.ts`\n  — Bootstrap NestJS, setGlobalPrefix('api'), enableCors, listen(3001)\n\n`todo-app/packages/backend/src/app.module.ts`\n  — AppModule importing TodosModule and DatabaseModule\n\n`todo-app/packages/backend/src/database/database.module.ts`\n  — DatabaseModule providing SQL_JS token via factory: loads sql.js wasm-less variant, creates 'todos' table if not exists\n\n`todo-app/packages/backend/src/database/database.tokens.ts`\n  — export const SQL_JS = 'SQL_JS' injection token\n\n`todo-app/packages/backend/src/todos/todo.entity.ts`\n  — TodoEntity class with id, title, completed (boolean), createdAt (string)\n\n`todo-app/packages/backend/src/todos/dto/create-todo.dto.ts`\n  — CreateTodoDto: title (string, required)\n\n`todo-app/packages/backend/src/todos/dto/update-todo.dto.ts`\n  — UpdateTodoDto: PartialType(CreateTodoDto) + completed?: boolean\n\n`todo-app/packages/backend/src/todos/todos.service.ts`\n  — TodosService injecting SQL_JS Database instance\n  — findAll(): TodoEntity[]\n  — findOne(id): TodoEntity | undefined\n  — create(dto): TodoEntity\n  — update(id, dto): TodoEntity\n  — remove(id): void\n  — All methods use parameterized SQL queries (never string interpolation)\n\n`todo-app/packages/backend/src/todos/todos.controller.ts`\n  — TodosController with @Controller('todos') and full CRUD route handlers\n  — Throws NotFoundException for missing records\n\n`todo-app/packages/backend/src/todos/todos.module.ts`\n  — TodosModule importing DatabaseModule, providing and exporting TodosService, declaring TodosController\n\nSecurity requirements:\n- ALL SQL queries MUST use parameterized statements (db.prepare + run/get/all with bound parameters)\n- NEVER concatenate user input into SQL strings\n- Input validation: title must be a non-empty string\n\nDo NOT write placeholder comments. Write complete, compilable TypeScript.",
+      "pass": "✅ NestJS backend files written",
+      "fail": "❌ Backend code generation failed",
+      "failSeverity": "error",
+      "outputKey": "backend_result"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/backend/src/main.ts",
+      "pass": "✅ main.ts created",
+      "fail": "❌ main.ts missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/backend/src/todos/todos.service.ts",
+      "pass": "✅ todos.service.ts created",
+      "fail": "❌ todos.service.ts missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/backend/src/todos/todos.controller.ts",
+      "pass": "✅ todos.controller.ts created",
+      "fail": "❌ todos.controller.ts missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "run-command",
+      "command": "grep -rn \"\\$\\{\\|'\\s*+\\s*\\|\\\"\\s*+\\s*\" todo-app/packages/backend/src/todos/todos.service.ts 2>/dev/null | grep -i \"sql\\|query\\|prepare\" | head -5 || true",
+      "passPattern": "^\\s*$",
+      "pass": "✅ No raw SQL interpolation detected in service",
+      "fail": "⚠️  Possible SQL injection risk: found string concatenation near SQL queries",
+      "failSeverity": "warning",
+      "failRecommendations": [
+        "Replace all SQL string concatenation with db.prepare() bound parameters",
+        "Never interpolate user input directly into SQL strings"
+      ]
+    }
+  ]
+}

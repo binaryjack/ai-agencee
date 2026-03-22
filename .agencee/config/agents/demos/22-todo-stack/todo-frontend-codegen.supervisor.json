@@ -1,0 +1,32 @@
+{
+  "laneId": "frontend",
+  "retryBudget": 3,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "The frontend directory check failed. Ensure todo-app/packages/frontend/ exists. The scaffold lane must run before this lane."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "One or more frontend files are missing. Re-run the llm-tool check. Ensure write_file was called for every .tsx and .module.css file in the list. Pay attention to: main.tsx, todos.sagas.ts, and TodoPage. All TypeScript components must export a default function component."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "laneId": "scaffold",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "The llm-tool scaffold check failed. Re-run it. Ensure write_file was called for every required file. Check that paths start with todo-app/ and that JSON files contain valid JSON."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}

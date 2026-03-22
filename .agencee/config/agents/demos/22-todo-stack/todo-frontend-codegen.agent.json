@@ -1,0 +1,55 @@
+{
+  "name": "TODO Frontend Generator",
+  "icon": "⚛️",
+  "description": "Generates a React 18 + Redux Saga + Atomic Design frontend for the TODO app",
+  "checks": [
+    {
+      "type": "dir-exists",
+      "path": "todo-app/packages/frontend",
+      "pass": "✅ Frontend package directory exists",
+      "fail": "❌ todo-app/packages/frontend/ missing — run scaffold lane first",
+      "failSeverity": "error"
+    },
+    {
+      "type": "llm-tool",
+      "taskType": "code-generation",
+      "enableTools": true,
+      "toolNames": ["write_file", "read_file", "list_dir"],
+      "path": "todo-app/packages/frontend",
+      "prompt": "You are generating a complete React 18 + Redux Toolkit + Redux Saga frontend for a TODO CRUD app.\n\nDesign system: Atomic Design\n  atoms/     → smallest building blocks (Button, Input, Checkbox, Spinner, Badge)\n  molecules/ → composed from atoms (TodoItem, TodoForm, EmptyState)\n  organisms/ → composed from molecules (TodoList, TodoHeader)\n  templates/ → page layouts (MainLayout)\n  pages/     → full pages (TodoPage)\n\nStack:\n- React 18 with functional components + hooks\n- Redux Toolkit (configureStore, createSlice, createAction)\n- Redux Saga for async side effects (takeLatest, call, put)\n- CSS Modules for styling (one .module.css per component)\n- TypeScript strict\n- API base URL: /api (proxied to NestJS by Vite)\n\nTodo type: { id: number; title: string; completed: boolean; createdAt: string }\n\nWrite ALL the following files using write_file:\n\n`todo-app/packages/frontend/src/main.tsx`\n  — ReactDOM.createRoot, wraps App with <Provider store={store}>\n\n`todo-app/packages/frontend/src/app.tsx`\n  — App component: renders <MainLayout><TodoPage /></MainLayout>\n\n`todo-app/packages/frontend/src/store/index.ts`\n  — configureStore with todosReducer\n\n`todo-app/packages/frontend/src/store/todos/todos.slice.ts`\n  — createSlice with state: { items: Todo[], loading: boolean, error: string|null }\n  — reducers: setLoading, setTodos, addTodo, updateTodo, removeTodo, setError\n\n`todo-app/packages/frontend/src/store/todos/todos.actions.ts`\n  — createAction for saga triggers: fetchTodos, createTodo, toggleTodo, deleteTodo\n\n`todo-app/packages/frontend/src/store/todos/todos.sagas.ts`\n  — Saga workers: fetchTodosSaga (GET /api/todos), createTodoSaga (POST), toggleTodoSaga (PATCH), deleteTodoSaga (DELETE)\n  — Use fetch() for HTTP calls inside sagas\n  — Watcher: todosRootSaga with takeLatest per action\n\n`todo-app/packages/frontend/src/store/todos/todos.selectors.ts`\n  — selectTodos, selectTodosLoading, selectTodosError\n\n`todo-app/packages/frontend/src/store/root-saga.ts`\n  — all() combining todosRootSaga\n\n`todo-app/packages/frontend/src/types/todo.ts`\n  — export interface Todo\n\n`todo-app/packages/frontend/src/components/atoms/Button/Button.tsx` + `Button.module.css`\n  — variant: 'primary' | 'danger' | 'ghost'; size: 'sm' | 'md'; disabled, onClick\n\n`todo-app/packages/frontend/src/components/atoms/Input/Input.tsx` + `Input.module.css`\n  — controlled input, placeholder, value, onChange, onKeyDown\n\n`todo-app/packages/frontend/src/components/atoms/Checkbox/Checkbox.tsx` + `Checkbox.module.css`\n  — checked, onChange, label\n\n`todo-app/packages/frontend/src/components/atoms/Spinner/Spinner.tsx` + `Spinner.module.css`\n  — simple CSS spinner\n\n`todo-app/packages/frontend/src/components/molecules/TodoItem/TodoItem.tsx` + `TodoItem.module.css`\n  — displays one Todo: Checkbox (toggleTodo dispatch), title text, delete Button (deleteTodo dispatch)\n  — completed items have strikethrough style\n\n`todo-app/packages/frontend/src/components/molecules/TodoForm/TodoForm.tsx` + `TodoForm.module.css`\n  — Input + Button 'Add', submits createTodo action on Enter or click\n\n`todo-app/packages/frontend/src/components/molecules/EmptyState/EmptyState.tsx` + `EmptyState.module.css`\n  — 'No todos yet. Add one above!' message\n\n`todo-app/packages/frontend/src/components/organisms/TodoList/TodoList.tsx` + `TodoList.module.css`\n  — maps items → TodoItem; shows Spinner while loading; shows EmptyState when empty\n\n`todo-app/packages/frontend/src/components/organisms/TodoHeader/TodoHeader.tsx` + `TodoHeader.module.css`\n  — Title 'My Todos' + item count badge\n\n`todo-app/packages/frontend/src/components/templates/MainLayout/MainLayout.tsx` + `MainLayout.module.css`\n  — centered container, max-width 640px\n\n`todo-app/packages/frontend/src/pages/TodoPage/TodoPage.tsx` + `TodoPage.module.css`\n  — useEffect dispatches fetchTodos on mount\n  — renders: TodoHeader, TodoForm, TodoList\n  — reads from useSelector(selectTodos), useSelector(selectTodosLoading)\n\nWrite every .tsx and .module.css file. Every component must be a complete, importable TypeScript module — no placeholder implementations.",
+      "pass": "✅ React frontend files written",
+      "fail": "❌ Frontend code generation failed",
+      "failSeverity": "error",
+      "outputKey": "frontend_result"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/frontend/src/main.tsx",
+      "pass": "✅ main.tsx created",
+      "fail": "❌ main.tsx missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/frontend/src/store/todos/todos.sagas.ts",
+      "pass": "✅ todos.sagas.ts created",
+      "fail": "❌ todos.sagas.ts missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/frontend/src/pages/TodoPage/TodoPage.tsx",
+      "pass": "✅ TodoPage created",
+      "fail": "❌ TodoPage missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "count-files",
+      "path": "todo-app/packages/frontend/src/components",
+      "glob": "**/*.tsx",
+      "pass": "✅ {count} React component file(s) generated",
+      "fail": "⚠️  No .tsx component files found under src/components",
+      "failSeverity": "warning"
+    }
+  ]
+}

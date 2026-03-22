@@ -1,0 +1,44 @@
+{
+  "name": "TODO Stack Code Generator",
+  "description": "Generates a complete compilable TODO app: pnpm monorepo scaffold → NestJS+SQL.js backend + React+Redux Saga frontend (in parallel)",
+  "lanes": [
+    {
+      "id": "scaffold",
+      "agentFile": "demos/22-todo-stack/todo-scaffold-codegen.agent.json",
+      "supervisorFile": "demos/22-todo-stack/todo-scaffold-codegen.supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["project-scaffold", "monorepo-setup"]
+    },
+    {
+      "id": "backend",
+      "agentFile": "demos/22-todo-stack/todo-backend-codegen.agent.json",
+      "supervisorFile": "demos/22-todo-stack/todo-backend-codegen.supervisor.json",
+      "dependsOn": ["scaffold"],
+      "capabilities": ["nestjs-crud", "sqljs-database"]
+    },
+    {
+      "id": "frontend",
+      "agentFile": "demos/22-todo-stack/todo-frontend-codegen.agent.json",
+      "supervisorFile": "demos/22-todo-stack/todo-frontend-codegen.supervisor.json",
+      "dependsOn": ["scaffold"],
+      "capabilities": ["react-components", "redux-saga", "atomic-design"]
+    }
+  ],
+  "globalBarriers": [
+    {
+      "name": "backend-frontend-parallel",
+      "participants": ["backend", "frontend"],
+      "timeoutMs": 120000
+    }
+  ],
+  "capabilityRegistry": {
+    "project-scaffold": ["scaffold"],
+    "monorepo-setup": ["scaffold"],
+    "nestjs-crud": ["backend"],
+    "sqljs-database": ["backend"],
+    "react-components": ["frontend"],
+    "redux-saga": ["frontend"],
+    "atomic-design": ["frontend"]
+  },
+  "modelRouterFile": "demos/model-router.json"
+}

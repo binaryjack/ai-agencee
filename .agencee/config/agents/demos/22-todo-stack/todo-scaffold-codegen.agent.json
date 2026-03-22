@@ -1,0 +1,39 @@
+{
+  "name": "TODO Stack Scaffolder",
+  "icon": "🏗️",
+  "description": "Writes project scaffold: root package.json, tsconfig files, vite config, folder structure for a React + NestJS monorepo",
+  "checks": [
+    {
+      "type": "llm-tool",
+      "taskType": "code-generation",
+      "enableTools": true,
+      "toolNames": ["write_file", "read_file", "list_dir"],
+      "prompt": "You are scaffolding a TODO app monorepo using pnpm workspaces.\n\nStack:\n- Frontend: React 18 + Vite + Redux Toolkit + Redux Saga + TypeScript\n- Backend: NestJS 10 + SQL.js (in-memory SQLite via sql.js npm package) + TypeScript\n- Design: Atomic Design (atoms / molecules / organisms / templates / pages)\n- Style: CSS Modules\n\nWrite ALL files listed below using write_file. Use relative paths from the project root.\n\n## Files to write\n\n### Root\n- `todo-app/package.json` — pnpm workspace root, workspaces: [\"packages/*\"], no root deps\n- `todo-app/pnpm-workspace.yaml` — lists packages/*\n- `todo-app/tsconfig.base.json` — strict TS config, target ES2022, moduleResolution bundler\n\n### Backend package\n- `todo-app/packages/backend/package.json` — name @todo/backend, deps: @nestjs/core @nestjs/common @nestjs/platform-express @nestjs/mapped-types sql.js reflect-metadata rxjs; devDeps: @nestjs/cli typescript ts-node @types/node @types/sql.js; scripts: start:dev/start/build\n- `todo-app/packages/backend/tsconfig.json` — extends ../../tsconfig.base.json, add emitDecoratorMetadata: true, experimentalDecorators: true, outDir dist\n\n### Frontend package\n- `todo-app/packages/frontend/package.json` — name @todo/frontend, deps: react react-dom redux @reduxjs/toolkit redux-saga; devDeps: vite @vitejs/plugin-react typescript @types/react @types/react-dom; scripts: dev/build/preview\n- `todo-app/packages/frontend/tsconfig.json` — extends ../../tsconfig.base.json, jsx: react-jsx\n- `todo-app/packages/frontend/tsconfig.node.json` — for vite.config.ts, moduleResolution Node\n- `todo-app/packages/frontend/vite.config.ts` — React plugin, server port 3000, proxy /api to http://localhost:3001\n- `todo-app/packages/frontend/index.html` — minimal HTML entry, mounts #root\n\nAfter writing each file, use list_dir on todo-app/ to verify the structure.\n\nDo NOT generate placeholder TODO comments — write complete, valid content for every file.",
+      "pass": "✅ Project scaffold written",
+      "fail": "❌ Scaffold generation failed",
+      "failSeverity": "error",
+      "outputKey": "scaffold_result"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/package.json",
+      "pass": "✅ Root package.json created",
+      "fail": "❌ Root package.json missing — scaffold did not run",
+      "failSeverity": "error"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/backend/package.json",
+      "pass": "✅ Backend package.json created",
+      "fail": "❌ Backend package.json missing",
+      "failSeverity": "error"
+    },
+    {
+      "type": "file-exists",
+      "path": "todo-app/packages/frontend/vite.config.ts",
+      "pass": "✅ Frontend vite.config.ts created",
+      "fail": "❌ vite.config.ts missing",
+      "failSeverity": "error"
+    }
+  ]
+}

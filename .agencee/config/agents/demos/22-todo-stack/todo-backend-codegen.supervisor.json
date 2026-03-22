@@ -1,0 +1,32 @@
+{
+  "laneId": "backend",
+  "retryBudget": 3,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "The backend directory check failed. Ensure the scaffold lane ran first and todo-app/packages/backend/ exists. If needed, create the directory with list_dir and write_file."
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "One or more backend source files were not written. Re-run the llm-tool check. Ensure write_file was called for every file in the list. Verify paths start with todo-app/packages/backend/src/. All TypeScript must be complete and syntactically valid — no placeholder exports."
+    },
+    {
+      "checkpointId": "step-2",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "ESCALATE"
+    }
+  ]
+}
