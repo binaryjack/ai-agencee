@@ -46,6 +46,7 @@
     "@ai-agencee/core": "workspace:^1.1.0",
     "@ai-agencee/tech-registry": "workspace:^1.0.0",
     "@sqlite.org/sqlite-wasm": "3.49.2-build1",
+    "@xenova/transformers": "^2.17.2",
     "glob": "^10.3.10"
   },
   "devDependencies": {

@@ -25,7 +25,7 @@ import * as path from 'path';
 
 import type { CodebaseIndexStoreInstance } from '../../storage/codebase-index-store.types.js';
 import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js';
-import { MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js';
+import { KNN_K, MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js';
 
 type SymbolRow = {
   name:       string;
@@ -69,6 +69,36 @@ export async function _gatherContext(
       )) as SymbolRow[];
     } catch {
       // Index not built yet or FTS table absent — generate from task desc only
+    }
+  }
+
+  // ── Stage 1.5: Semantic (vector) search ──────────────────────────────────
+  //
+  // When an embedding provider is wired, embed the task and run knn against the
+  // stored vectors.  Results are merged with FTS5 candidates (deduped by
+  // name+file_path) so each retrieval method fills the other's blind spots:
+  //   - FTS5   → exact symbol names, typo-sensitive
+  //   - knn    → conceptual intent, unaware of symbol names
+
+  const provider = this._options.embeddingProvider;
+  if (provider) {
+    try {
+      const [queryVector] = await provider.embed([task]);
+      const semanticHits = await store.semanticSearch(queryVector, KNN_K, ftsQuery || undefined);
+      const seen = new Set(symbols.map(s => s.name + '\0' + s.file_path));
+      for (const r of semanticHits) {
+        const key = r.name + '\0' + r.file_path;
+        if (!seen.has(key)) {
+          seen.add(key);
+          symbols.push({
+            name: r.name, kind: r.kind, signature: r.signature,
+            file_path: r.file_path, line_start: r.line_start,
+          });
+        }
+      }
+      if (symbols.length > MAX_SYMBOLS) symbols = symbols.slice(0, MAX_SYMBOLS);
+    } catch {
+      // Embedding provider unavailable or vectors not yet generated — degrade gracefully
     }
   }
 

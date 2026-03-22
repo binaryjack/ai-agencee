@@ -167,12 +167,12 @@ CodebaseIndexStore.prototype.semanticSearch = async function(
 ): Promise<import('../embeddings/embedding-provider.types').SemanticSearchResult[]> {
   type Row = {
     id: number; name: string; kind: string; signature: string | null;
-    docstring: string | null; file_path: string; embedding: Uint8Array
+    docstring: string | null; file_path: string; line_start: number; embedding: Uint8Array
   }
 
   const rows: Row[] = ftsQuery
     ? this._db!.selectObjects(`
-        SELECT s.id, s.name, s.kind, s.signature, s.docstring, f.file_path, s.embedding
+        SELECT s.id, s.name, s.kind, s.signature, s.docstring, s.line_start, f.file_path, s.embedding
         FROM codebase_symbols_fts
         JOIN codebase_symbols s ON codebase_symbols_fts.rowid = s.id
         JOIN codebase_files f ON s.file_id = f.id
@@ -180,7 +180,7 @@ CodebaseIndexStore.prototype.semanticSearch = async function(
         LIMIT 200
       `, [this._projectId, ftsQuery]) as Row[]
     : this._db!.selectObjects(`
-        SELECT s.id, s.name, s.kind, s.signature, s.docstring, f.file_path, s.embedding
+        SELECT s.id, s.name, s.kind, s.signature, s.docstring, s.line_start, f.file_path, s.embedding
         FROM codebase_symbols s
         JOIN codebase_files f ON s.file_id = f.id
         WHERE f.project_id = ? AND s.embedding IS NOT NULL
@@ -190,7 +190,7 @@ CodebaseIndexStore.prototype.semanticSearch = async function(
     const vec = new Float32Array(row.embedding.buffer, row.embedding.byteOffset, row.embedding.byteLength / 4)
     const score = cosineSimilarityBuffers(queryVector, vec)
     return { id: row.id, name: row.name, kind: row.kind, signature: row.signature,
-             docstring: row.docstring, file_path: row.file_path, score }
+             docstring: row.docstring, file_path: row.file_path, line_start: row.line_start, score }
   })
 
   return scored.sort((a, b) => b.score - a.score).slice(0, topK)

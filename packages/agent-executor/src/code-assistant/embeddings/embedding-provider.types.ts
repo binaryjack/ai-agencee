@@ -32,6 +32,13 @@ export type OllamaEmbeddingProviderOptions = {
   baseURL?: string   // default: 'http://localhost:11434'
 }
 
+export type TransformersEmbeddingProviderOptions = {
+  /** HuggingFace model id, e.g. 'Xenova/nomic-embed-text-v1.5'. Default: 'Xenova/nomic-embed-text-v1.5' */
+  model?:      string
+  /** Use quantized (int8) weights — smaller download, ~5% accuracy trade-off. Default: true */
+  quantized?:  boolean
+}
+
 /** A symbol row returned by Store.semanticSearch(). */
 export type SemanticSearchResult = {
   id:         number
@@ -40,5 +47,6 @@ export type SemanticSearchResult = {
   signature:  string | null
   docstring:  string | null
   file_path:  string
+  line_start: number
   score:      number
 }

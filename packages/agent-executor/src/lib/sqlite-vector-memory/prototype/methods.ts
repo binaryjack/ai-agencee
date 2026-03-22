@@ -1,6 +1,6 @@
+import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import * as fs from 'fs';
 import * as path from 'path';
-import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
 import type { Embedding, SearchOptions, SearchResult, StoreOptions } from '../../vector-memory/index.js';
 import { ISqliteVectorMemory } from '../sqlite-vector-memory.js';
 import { SqliteVectorRepository } from '../sqlite-vector-repository.js';

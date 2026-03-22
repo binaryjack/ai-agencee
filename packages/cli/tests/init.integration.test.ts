@@ -27,7 +27,7 @@ describe('runInit — tech-registry integration', () => {
   it('adds @ai-agencee/tech-registry to devDependencies when package.json present', async () => {
     const pkgPath = path.join(tmpDir, 'package.json')
     fs.writeFileSync(pkgPath, JSON.stringify({ name: 'my-project', devDependencies: {} }, null, 2))
-    const { runInit } = await import('../src/commands/init/run-init')
+    const { runInit } = await import('../src/commands/init/run-init.js')
     await runInit()
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as { devDependencies: Record<string, string> }
     expect(pkg.devDependencies['@ai-agencee/tech-registry']).toBe('^1.0.0')
@@ -37,14 +37,14 @@ describe('runInit — tech-registry integration', () => {
     const pkgPath = path.join(tmpDir, 'package.json')
     const existing = { name: 'my-project', devDependencies: { '@ai-agencee/tech-registry': '^0.9.0' } }
     fs.writeFileSync(pkgPath, JSON.stringify(existing, null, 2))
-    const { runInit } = await import('../src/commands/init/run-init')
+    const { runInit } = await import('../src/commands/init/run-init.js')
     await runInit()
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as { devDependencies: Record<string, string> }
     expect(pkg.devDependencies['@ai-agencee/tech-registry']).toBe('^0.9.0') // unchanged
   })
 
   it('skips silently when no package.json exists', async () => {
-    const { runInit } = await import('../src/commands/init/run-init')
+    const { runInit } = await import('../src/commands/init/run-init.js')
     await expect(runInit()).resolves.not.toThrow()
   })
 })

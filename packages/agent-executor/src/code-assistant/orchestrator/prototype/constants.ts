@@ -13,6 +13,12 @@ import type { TaskType } from '../../../lib/llm-provider.js';
 export const MAX_SYMBOLS    = 40;
 
 /**
+ * Number of nearest neighbours retrieved by semantic (vector) search.
+ * Results are merged with FTS5 candidates before being fed to the LLM.
+ */
+export const KNN_K          = 30;
+
+/**
  * Maximum distinct source files whose content is injected into the prompt.
  * Kept deliberately low — each file can be up to MAX_FILE_LINES long and we
  * want to remain well inside the LLM context window.

@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
-import { runCodeIndex } from '../src/commands/code/index.js'
+import { runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
 import { runDag } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runDoctor } from '../src/commands/doctor/index.js'
@@ -64,6 +64,42 @@ program
   .option('--verbose', 'Show detailed progress')
   .action(async (options) => {
     await runCodeIndex(options);
+  });
+
+program
+  .command('code:search <term>')
+  .description('Search the code index for symbols, functions, or patterns')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--limit <n>', 'Maximum results to return', '10')
+  .option('--kind <kind>', 'Filter by symbol kind: function | class | interface | variable | import')
+  .option('--json', 'Output machine-readable JSON')
+  .action(async (term, options) => {
+    await runCodeSearch(term, {
+      project: options.project,
+      limit: parseInt(options.limit, 10),
+      kind: options.kind,
+      json: options.json,
+    });
+  });
+
+program
+  .command('code:watch')
+  .description('Watch project and auto re-index on file changes')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--languages <langs>', 'Comma-separated languages to index', 'typescript,javascript')
+  .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
+  .option('--verbose', 'Show detailed progress')
+  .action(async (options) => {
+    await runCodeWatch(options);
+  });
+
+program
+  .command('code:stats')
+  .description('Show code index statistics (files, symbols, last indexed)')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--json', 'Output machine-readable JSON')
+  .action(async (options) => {
+    await runCodeStats(options);
   });
 
 // Agent commands
@@ -196,26 +232,28 @@ program
   .action(runDataListTenants);
 
 // Framework import commands (IP-07)
+// Note: Commander v14 does not support 'import X <file>' shorthand for subcommands —
+// use colon-separated names consistent with the rest of the CLI.
 program
-  .command('import langgraph <file>')
+  .command('import:langgraph <file>')
   .description('Convert a LangGraph StateGraph JSON → ai-agencee DAG JSON')
   .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
   .action((file, options) => runImportLangGraph(file, { out: options.out }))
 
 program
-  .command('import crew <file>')
+  .command('import:crew <file>')
   .description('Convert a CrewAI Crew JSON definition → ai-agencee DAG JSON')
   .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
   .action((file, options) => runImportCrew(file, { out: options.out }))
 
 program
-  .command('import autogen <file>')
+  .command('import:autogen <file>')
   .description('Convert an AutoGen GroupChat config JSON → ai-agencee DAG JSON')
   .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
   .action((file, options) => runImportAutogen(file, { out: options.out }))
 
 program
-  .command('import sk-plan <file>')
+  .command('import:sk-plan <file>')
   .description('Convert a Semantic Kernel Planner JSON output → ai-agencee DAG JSON')
   .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
   .action((file, options) => runImportSkPlan(file, { out: options.out }))

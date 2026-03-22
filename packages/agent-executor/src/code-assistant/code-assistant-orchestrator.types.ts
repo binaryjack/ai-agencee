@@ -6,6 +6,7 @@
  */
 
 import type { IModelRouter } from '../lib/model-router/index.js';
+import type { EmbeddingProvider } from './embeddings/embedding-provider.types.js';
 import type { IIndexerAuditLog } from './indexer/codebase-indexer.types';
 import type { ParserRegistryInstance } from './parsers/parser-registry';
 import type { CodebaseIndexStoreInstance } from './storage/codebase-index-store.types';
@@ -24,6 +25,12 @@ export type CodeAssistantOptions = {
   indexStore?: CodebaseIndexStoreInstance;
   parserRegistry?: ParserRegistryInstance;
   auditLog?: IIndexerAuditLog;
+  /**
+   * Embedding provider used to enable semantic (vector) search in _gatherContext.
+   * When omitted, context gathering falls back to FTS5-only keyword search.
+   * Use TransformersEmbeddingProvider for a fully local, zero-cost option.
+   */
+  embeddingProvider?: EmbeddingProvider;
 };
 
 export type ExecutionRequest = {
