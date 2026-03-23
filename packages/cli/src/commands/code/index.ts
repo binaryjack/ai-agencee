@@ -24,6 +24,7 @@ export const codeCommand = function() {
     .option('--force', 'Force full re-index')
     .option('--languages <langs>', 'Comma-separated languages to index', 'typescript,javascript')
     .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
+    .option('--include <patterns>', 'Comma-separated include patterns (overrides .gitignore)')
     .option('--verbose', 'Show detailed progress')
     .action(async (options) => {
       try {
@@ -74,6 +75,7 @@ export const codeCommand = function() {
     .option('-p, --project <path>', 'Project root directory', process.cwd())
     .option('--languages <langs>', 'Comma-separated languages to watch', 'typescript,javascript')
     .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
+    .option('--include <patterns>', 'Comma-separated include patterns (overrides .gitignore)')
     .option('--verbose', 'Show detailed progress on each re-index')
     .action(async (options) => {
       try {

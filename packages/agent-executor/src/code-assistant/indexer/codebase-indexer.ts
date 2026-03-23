@@ -67,6 +67,7 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
     incremental = true,
     languages = ['typescript', 'javascript', 'python'],
     excludePatterns = ['node_modules', 'dist', 'build', '.git', 'coverage'],
+    includePatterns = [],
     budgetCap = Infinity
   } = options;
   
@@ -75,7 +76,8 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   // Phase 1: File discovery
   const files = await this._discoverFiles({
     extensions: this._getExtensions(languages),
-    exclude: excludePatterns
+    exclude: excludePatterns,
+    include: includePatterns
   });
   
   // Phase 2: Incremental check
@@ -199,12 +201,13 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   };
 };
 
-CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerInstance, options: { extensions: string[]; exclude: string[] }): Promise<string[]> {
-  const { extensions, exclude } = options;
+CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerInstance, options: { extensions: string[]; exclude: string[]; include: string[] }): Promise<string[]> {
+  const { extensions, exclude, include } = options;
   
   const patterns = extensions.map(ext => `**/*.${ext}`);
   const ignorePatterns = exclude.map(pattern => `**/${pattern}/**`);
   
+  // Standard file discovery
   const files = await glob(patterns, {
     cwd: this._projectRoot,
     ignore: ignorePatterns,
@@ -212,8 +215,25 @@ CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerI
     nodir: true
   });
   
+  // Also discover files matching includePatterns (overrides .gitignore/excludes)
+  let includedFiles: string[] = [];
+  if (include.length > 0) {
+    const includeGlobs = include.flatMap(pattern => 
+      extensions.map(ext => `${pattern}/**/*.${ext}`)
+    );
+    includedFiles = await glob(includeGlobs, {
+      cwd: this._projectRoot,
+      absolute: false,
+      nodir: true,
+      dot: true  // Include dotfiles
+    });
+  }
+  
+  // Merge and deduplicate
+  const allFiles = [...new Set([...files, ...includedFiles])];
+  
   // Normalize paths to use forward slashes for cross-platform consistency
-  return files.map(file => file.replace(/\\/g, '/'));
+  return allFiles.map(file => file.replace(/\\/g, '/'));
 };
 
 CodebaseIndexer.prototype._detectChanges = async function(this: CodebaseIndexerInstance, files: string[]): Promise<string[]> {

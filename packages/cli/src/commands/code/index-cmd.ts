@@ -34,6 +34,7 @@ type CodeIndexOptions = {
   incremental?: boolean;
   languages?: string;
   exclude?: string;
+  include?: string;
   verbose?: boolean;
 };
 
@@ -44,6 +45,7 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     incremental = true,
     languages = 'typescript,javascript',
     exclude = 'node_modules,dist,build,.git,coverage',
+    include = '',
     verbose = false
   } = options;
   
@@ -76,11 +78,14 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     });
     
     // Run indexing
-    const result = await indexer.indexProject({
+    const indexOptions = {
       incremental: incremental && !force,
       languages: languages.split(',').map((l: string) => l.trim()),
-      excludePatterns: exclude.split(',').map((p: string) => p.trim())
-    });
+      excludePatterns: exclude.split(',').map((p: string) => p.trim()),
+      ...(include ? { includePatterns: include.split(',').map((p: string) => p.trim()) } : {})
+    };
+    
+    const result = await indexer.indexProject(indexOptions);
     
     // Close store
     await indexStore.close();

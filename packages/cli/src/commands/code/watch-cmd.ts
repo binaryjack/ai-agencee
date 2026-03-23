@@ -11,6 +11,7 @@ type WatchOptions = {
   project?: string;
   languages?: string;
   exclude?: string;
+  include?: string;
   verbose?: boolean;
 };
 
@@ -47,6 +48,7 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
     project = process.cwd(),
     languages = 'typescript,javascript',
     exclude = 'node_modules,dist,build,.git,coverage',
+    include = '',
     verbose = false,
   } = options;
 
@@ -57,7 +59,7 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
   console.log(`   Press Ctrl+C to stop.\n`);
 
   // Initial full index
-  await runCodeIndex({ project, languages, exclude, verbose, incremental: true });
+  await runCodeIndex({ project, languages, exclude, include, verbose, incremental: true });
 
   const changedFiles = new Set<string>();
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -84,7 +86,7 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
 
       reindexing = true;
       try {
-        await runCodeIndex({ project, languages, exclude, verbose, incremental: true });
+        await runCodeIndex({ project, languages, exclude, include, verbose, incremental: true });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`❌ Re-index failed: ${msg}`);

@@ -37,7 +37,7 @@ export type CodebaseIndexerInstance = {
     depGraph: DependencyGraph | null;
   };
   indexProject(options?: IndexProjectOptions): Promise<IndexResult>;
-  _discoverFiles(options: { extensions: string[]; exclude: string[] }): Promise<string[]>;
+  _discoverFiles(options: { extensions: string[]; exclude: string[]; include: string[] }): Promise<string[]>;
   _detectChanges(files: string[]): Promise<string[]>;
   _parseFile(filePath: string): Promise<FileParseResult | null>;
   _buildDepGraph(parseResults: FileParseResult[]): Promise<DependencyGraph>;
@@ -53,6 +53,7 @@ export type IndexProjectOptions = {
   incremental?: boolean;
   languages?: string[];
   excludePatterns?: string[];
+  includePatterns?: string[];
   budgetCap?: number;
 };
 
