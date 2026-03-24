@@ -24,11 +24,10 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 
 import { createGraphTraversal } from '../../indexer/create-graph-traversal.js'
-import { createResultMerger } from '../create-result-merger.js'
-import type { SearchResult } from '../result-merger.types.js'
 import type { CodebaseIndexStoreInstance } from '../../storage/codebase-index-store.types.js'
 import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js'
-import { KNN_K, MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js'
+import { createResultMerger } from '../create-result-merger.js'
+import { MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js'
 
 type SymbolRow = {
   name:       string;
@@ -89,13 +88,19 @@ export async function _gatherContext(
   //   - FTS5   → exact symbol names, typo-sensitive
   //   - knn    → conceptual intent, unaware of symbol names
 
+  if (this._options.embeddingProvider) {
+    try {
+      const embeddings = await this._options.embeddingProvider.embed([task]);
+      const taskEmbedding = embeddings[0];
+      const semanticHits = await store.semanticSearch(taskEmbedding, MAX_SYMBOLS);
+      
       merger.addMany(semanticHits.map(r => ({
         name: r.name,
         kind: r.kind,
         signature: r.signature,
         file_path: r.file_path,
         line_start: r.line_start,
-        score: r.distance, // Semantic search provides distance/similarity
+        score: r.score, // Semantic search provides similarity score
         source: 'semantic' as const
       })));
     } catch (error) {
@@ -105,13 +110,8 @@ export async function _gatherContext(
   }
 
   // Get merged results after FTS + semantic search
-  const symbols = merger.getResults();     }
-      }
-      if (symbols.length > MAX_SYMBOLS) symbols = symbols.slice(0, MAX_SYMBOLS);
-    } catch {
-      // Embedding provider unavailable or vectors not yet generated — degrade gracefully
-    }
-  }
+  let symbols = merger.getResults();
+  if (symbols.length > MAX_SYMBOLS) symbols = symbols.slice(0, MAX_SYMBOLS);
 
   const blocks: string[] = [];
 
@@ -156,11 +156,11 @@ export async function _gatherContext(
             seenTransitive.add(key);
             transitiveSymbols.push(reach);
           }
-        }(error) {
+        }
+      }
+    } catch (error) {
       // Call graph not built, symbol not found, or error in traversal — log and continue
       console.warn('[gather-context] Graph traversal failed for symbol:', symbol.name, error);
-    } catch {
-      // Call graph not built or error in traversal — continue gracefully
     }
   }
 
@@ -187,12 +187,12 @@ export async function _gatherContext(
       const lines   = raw.split('\n');
       const snippet = lines.slice(0, MAX_FILE_LINES).join('\n');
       const truncated = lines.length > MAX_FILE_LINES
-        ? '\(error) {
+        ? '\n... (' + (lines.length - MAX_FILE_LINES) + ' more lines)\n'
+        : '';
+      blocks.push('\n### FILE: ' + fp + '\n```\n' + snippet + truncated + '\n```');
+    } catch (error) {
       // File removed between index time and now — log and skip
       console.warn('[gather-context] Failed to read file:', fp, error);
-      blocks.push('\n### FILE: ' + fp + '\n```\n' + snippet + truncated + '\n```');
-    } catch {
-      // File removed between index time and now — skip silently
     }
   }
 
