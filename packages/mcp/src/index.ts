@@ -627,6 +627,106 @@ Status: Ready to validate
         return { content: [{ type: 'text', text: summary.join('\n') }] }
       }
 
+      case 'generate-codernic-instructions': {
+        const a = (args as Record<string, unknown> | undefined) ?? {}
+        const mode = (['ask', 'plan', 'agent'] as const).includes(a.mode as never)
+          ? (a.mode as 'ask' | 'plan' | 'agent')
+          : 'ask'
+        const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
+        const dbPath = path.join(pr, '.agencee', 'code-index.db')
+
+        try {
+          await fs.access(dbPath)
+        } catch {
+          return {
+            content: [{ type: 'text', text: 'Error: Code index not found. Run indexing first.' }],
+            isError: true,
+          }
+        }
+
+        const store = await createCodebaseIndexStore({ dbPath, projectId: path.basename(pr) })
+        try {
+          // Analyze codebase patterns
+          type FileStatsRow = { ext: string; count: number }
+          const fileStats = (await store.query(
+            `SELECT SUBSTR(file_path, INSTR(file_path, '.', -1)) as ext, COUNT(*) as count
+             FROM codebase_files
+             WHERE ext IS NOT NULL AND ext != ''
+             GROUP BY ext
+             ORDER BY count DESC
+             LIMIT 10`
+          )) as FileStatsRow[]
+
+          type NamingPatternRow = { name: string }
+          const symbols = (await store.query(
+            `SELECT name FROM codebase_symbols ORDER BY RANDOM() LIMIT 100`
+          )) as NamingPatternRow[]
+
+          // Detect naming convention
+          const hasKebabCase = symbols.some(s => /^[a-z]+(-[a-z]+)+/.test(s.name))
+          const hasCamelCase = symbols.some(s => /^[a-z]+[A-Z]/.test(s.name))
+          const hasPascalCase = symbols.some(s => /^[A-Z][a-z]+[A-Z]/.test(s.name))
+
+          // Detect tech stack
+          const extensions = fileStats.slice(0, 5).map(f => f.ext).join(', ')
+          const hasTypescript = fileStats.some(f => f.ext === '.ts' || f.ext === '.tsx')
+          const hasReact = fileStats.some(f => f.ext === '.tsx' || f.ext === '.jsx')
+
+          // Generate mode-specific instructions
+          const modeDescriptions = {
+            ask: 'Quick Q&A assistant — provide concise answers with minimal context',
+            plan: 'Design planner — outline architecture and patterns without executing',
+            agent: 'Full-power executor — create agents, DAGs, and run workflows',
+          }
+
+          const instructions = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<codernic-instructions>',
+            `  <mode>${mode}</mode>`,
+            `  <description>${modeDescriptions[mode]}</description>`,
+            '  <codebase-patterns>',
+            `    <primary-extensions>${extensions}</primary-extensions>`,
+            hasTypescript ? '    <language>TypeScript</language>' : '    <language>JavaScript</language>',
+            hasReact ? '    <framework>React</framework>' : '',
+            '    <naming-conventions>',
+            hasKebabCase ? '      <convention>kebab-case (files, variables)</convention>' : '',
+            hasCamelCase ? '      <convention>camelCase (functions, variables)</convention>' : '',
+            hasPascalCase ? '      <convention>PascalCase (classes, components)</convention>' : '',
+            '    </naming-conventions>',
+            '  </codebase-patterns>',
+            '  <behavior-rules>',
+            mode === 'ask'
+              ? '    <rule>Provide brief, focused answers. Avoid executing commands.</rule>'
+              : mode === 'plan'
+              ? '    <rule>Design and plan workflows. Preview commands but do not execute.</rule>'
+              : '    <rule>Execute commands, create agents, run DAGs with full permissions.</rule>',
+            '    <rule>Reference actual codebase symbols when available.</rule>',
+            `    <rule>Context budget: topK=${mode === 'ask' ? 15 : mode === 'plan' ? 60 : 100}</rule>`,
+            '  </behavior-rules>',
+            '</codernic-instructions>',
+          ]
+            .filter(Boolean)
+            .join('\n')
+
+          // Save to .ai/codernic/{mode}.xml
+          const aiDir = path.join(pr, '.ai', 'codernic')
+          await fs.mkdir(aiDir, { recursive: true })
+          const outputPath = path.join(aiDir, `${mode}.xml`)
+          await fs.writeFile(outputPath, instructions, 'utf-8')
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `✅ Generated Codernic instructions for **${mode}** mode\n\n**Saved to:** ${outputPath}\n\n\`\`\`xml\n${instructions}\n\`\`\``,
+              },
+            ],
+          }
+        } finally {
+          await store.close()
+        }
+      }
+
       default:
         return {
           content: [

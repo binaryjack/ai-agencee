@@ -527,6 +527,28 @@ export const coderniceTools: Tool[] = [
       required: ['task'],
     },
   },
+  {
+    name: 'generate-codernic-instructions',
+    description:
+      'Generate mode-specific system instructions for Codernic by analyzing the codebase index. ' +
+      'Queries the SQLite FTS5 index to extract patterns (file naming, tech stack, architecture) and ' +
+      'produces XML instruction blocks optimized for Ask, Plan, or Agent modes.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        mode: {
+          type: 'string',
+          enum: ['ask', 'plan', 'agent'],
+          description: 'Mode for which to generate instructions (ask=Q&A, plan=design, agent=execution)',
+        },
+        projectRoot: {
+          type: 'string',
+          description: 'Absolute path to the project root (must contain .agencee/code-index.db)',
+        },
+      },
+      required: ['mode'],
+    },
+  },
 ]
 
 /**
