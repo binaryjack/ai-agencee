@@ -13,9 +13,14 @@ export type CodebaseIndexStoreInstance = {
   _dbPath: string;
   initialize(): Promise<void>;
   _createTables(): Promise<void>;
+  _migrateEmbeddingColumn(): void;
+  _migrateCharOffsetColumns(): void;
   upsertFile(fileData: FileData): Promise<number>;
   upsertSymbols(fileId: number, symbols: SymbolData[]): Promise<void>;
   upsertDependencies(dependencies: DependencyData[]): Promise<void>;
+  upsertFunctionCalls(calls: Array<{ callerSymbolId: number; calleeName: string; lineNumber?: number; charOffset?: number }>): Promise<void>;
+  findCallersOf(symbolName: string): Promise<Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>>;
+  getSymbolAtPosition(filePath: string, line: number, char: number): Promise<SymbolRecord | null>;
   getFileByPath(filePath: string): Promise<FileRecord | undefined>;
   getFileByHash(hash: string): Promise<FileRecord | undefined>;
   getAllFiles(): Promise<FileRecord[]>;
@@ -40,6 +45,8 @@ export type SymbolData = {
   kind: string;
   lineStart: number;
   lineEnd: number;
+  charStart: number;
+  charEnd: number;
   signature?: string;
   docstring?: string;
   isExported: boolean;
@@ -69,6 +76,8 @@ export type SymbolRecord = {
   kind: string;
   lineStart: number;
   lineEnd: number;
+  charStart: number;
+  charEnd: number;
   signature?: string;
   docstring?: string;
   isExported: boolean;

@@ -20,12 +20,13 @@
  * degrades output quality through context dilution.
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as fs from 'fs/promises'
+import * as path from 'path'
 
-import type { CodebaseIndexStoreInstance } from '../../storage/codebase-index-store.types.js';
-import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js';
-import { KNN_K, MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js';
+import { createGraphTraversal } from '../../indexer/create-graph-traversal.js'
+import type { CodebaseIndexStoreInstance } from '../../storage/codebase-index-store.types.js'
+import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js'
+import { KNN_K, MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js'
 
 type SymbolRow = {
   name:       string;
@@ -111,6 +112,53 @@ export async function _gatherContext(
       blocks.push(
         '- **' + s.kind + '** `' + s.name + '`' +
         ' (' + s.file_path + ':' + s.line_start + ')' + sig,
+      );
+    }
+  }
+
+  // ── Stage 1.75: Graph-distance expansion ─────────────────────────────────
+  //
+  // For each FTS5/semantic hit, traverse the call graph to find transitively
+  // related symbols (functions called by matches, or functions that call matches).
+  // This surfaces code that's conceptually related but lacks keyword overlap.
+
+  const graphTraversal = createGraphTraversal(store);
+  const transitiveSymbols: Array<{ name: string; filePath: string; distance: number; score: number }> = [];
+  const seenTransitive = new Set(symbols.map(s => s.name + '\0' + s.file_path));
+
+  for (const symbol of symbols.slice(0, 5)) { // Only expand top 5 to control cost
+    try {
+      // Get the symbol ID from database
+      const idResults = await store.query(
+        `SELECT s.id FROM codebase_symbols s
+         JOIN codebase_files f ON s.file_id = f.id
+         WHERE s.name = ? AND f.file_path = ?
+         LIMIT 1`,
+        [symbol.name, symbol.file_path]
+      ) as Array<{ id: number }>;
+      
+      if (idResults.length > 0) {
+        const reachable = await graphTraversal.computeReachableSymbols(idResults[0].id, 2);
+        
+        for (const reach of reachable) {
+          const key = reach.name + '\0' + reach.filePath;
+          if (!seenTransitive.has(key) && transitiveSymbols.length < 10) {
+            seenTransitive.add(key);
+            transitiveSymbols.push(reach);
+          }
+        }
+      }
+    } catch {
+      // Call graph not built or error in traversal — continue gracefully
+    }
+  }
+
+  if (transitiveSymbols.length > 0) {
+    blocks.push('\n### Related symbols (transitive)\n');
+    for (const t of transitiveSymbols) {
+      blocks.push(
+        '- `' + t.name + '` (' + t.filePath + ') — distance ' + t.distance +
+        ', score ' + t.score.toFixed(2)
       );
     }
   }

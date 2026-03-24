@@ -72,10 +72,13 @@ export type Symbol = {
   kind: 'function' | 'class' | 'interface' | 'type' | 'variable' | 'method';
   lineStart: number;
   lineEnd: number;
+  charStart: number;
+  charEnd: number;
   signature?: string;
   docstring?: string;
   isExported: boolean;
   methods?: string[];
+  calls?: string[]; // Array of function/method names called within this symbol
 };
 
 export type Import = {

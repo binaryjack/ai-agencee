@@ -35,6 +35,9 @@ export type CodebaseIndexStoreInstance = {
   upsertFile(fileData: FileData): Promise<number>;
   upsertSymbols(fileId: number, symbols: SymbolData[]): Promise<void>;
   upsertDependencies(dependencies: DependencyData[]): Promise<void>;
+  upsertFunctionCalls(calls: Array<{ callerSymbolId: number; calleeName: string; lineNumber?: number; charOffset?: number }>): Promise<void>;
+  findCallersOf(symbolName: string): Promise<Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>>;
+  getSymbolAtPosition(filePath: string, line: number, char: number): Promise<import('./codebase-index-store.types').SymbolRecord | null>;
   getFileByPath(filePath: string): Promise<FileRecord | undefined>;
   getFileByHash(hash: string): Promise<FileRecord | undefined>;
   getAllFiles(): Promise<FileRecord[]>;
@@ -47,6 +50,7 @@ export type CodebaseIndexStoreInstance = {
   close(): Promise<void>;
   _createTables(): Promise<void>;
   _migrateEmbeddingColumn(): void;
+  _migrateCharOffsetColumns(): void;
 };
 
 export const CodebaseIndexStore = function(this: CodebaseIndexStoreInstance, options: CodebaseIndexStoreOptions) {
@@ -80,6 +84,7 @@ CodebaseIndexStore.prototype.initialize = async function(this: CodebaseIndexStor
 
   await this._createTables();
   this._migrateEmbeddingColumn();
+  this._migrateCharOffsetColumns();
 };
 
 CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexStoreInstance): Promise<void> {
@@ -128,6 +133,17 @@ CodebaseIndexStore.prototype._createTables = async function(this: CodebaseIndexS
     );
     CREATE INDEX IF NOT EXISTS idx_deps_source ON codebase_dependencies(source_file_id);
     CREATE INDEX IF NOT EXISTS idx_deps_target ON codebase_dependencies(target_file_id);
+    CREATE TABLE IF NOT EXISTS codebase_function_calls (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      caller_symbol_id INTEGER NOT NULL,
+      callee_name TEXT NOT NULL,
+      callee_symbol_id INTEGER,
+      line_number INTEGER,
+      char_offset INTEGER,
+      FOREIGN KEY(caller_symbol_id) REFERENCES codebase_symbols(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_calls_caller ON codebase_function_calls(caller_symbol_id);
+    CREATE INDEX IF NOT EXISTS idx_calls_callee ON codebase_function_calls(callee_name);
   `);
 };
 
@@ -135,7 +151,17 @@ CodebaseIndexStore.prototype._migrateEmbeddingColumn = function(this: CodebaseIn
   const cols = this._db!.selectObjects("PRAGMA table_info('codebase_symbols')") as { name: string }[];
   if (!cols.some(c => c.name === 'embedding')) {
     this._db!.exec('ALTER TABLE codebase_symbols ADD COLUMN embedding BLOB');
+  
+
+CodebaseIndexStore.prototype._migrateCharOffsetColumns = function(this: CodebaseIndexStoreInstance): void {
+  const cols = this._db!.selectObjects("PRAGMA table_info('codebase_symbols')") as { name: string }[];
+  if (!cols.some(c => c.name === 'char_start')) {
+    this._db!.exec('ALTER TABLE codebase_symbols ADD COLUMN char_start INTEGER');
   }
+  if (!cols.some(c => c.name === 'char_end')) {
+    this._db!.exec('ALTER TABLE codebase_symbols ADD COLUMN char_end INTEGER');
+  }
+};}
 };
 
 CodebaseIndexStore.prototype.getSymbolsByFile = async function(
@@ -218,10 +244,11 @@ CodebaseIndexStore.prototype.upsertFile = async function(this: CodebaseIndexStor
     fileData.sizeBytes || 0,
     Date.now(),
   ]) as { id: number }[];
-  return rows[0].id;
-};
-
-CodebaseIndexStore.prototype.upsertSymbols = async function(this: CodebaseIndexStoreInstance, fileId: number, symbols: SymbolData[]): Promise<void> {
+  return rows[0].id;char_start, char_end, signature, docstring, is_exported
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        bind: [
+          fileId, symbol.name, symbol.kind, symbol.lineStart, symbol.lineEnd,
+          symbol.charStart, symbol.chareIndexStoreInstance, fileId: number, symbols: SymbolData[]): Promise<void> {
   this._db!.exec({ sql: 'DELETE FROM codebase_symbols WHERE file_id = ?', bind: [fileId] });
   if (symbols.length === 0) return;
   this._db!.exec('BEGIN');
@@ -262,6 +289,69 @@ CodebaseIndexStore.prototype.upsertDependencies = async function(this: CodebaseI
     try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
     throw e;
   }
+};
+
+CodebaseIndexStore.prototype.upsertFunctionCalls = async function(
+  this: CodebaseIndexStoreInstance,
+  calls: Array<{ callerSymbolId: number; calleeName: string; lineNumber?: number; charOffset?: number }>
+): Promise<void> {
+  if (calls.length === 0) return;
+  
+  this._db!.exec('BEGIN');
+  try {
+    for (const call of calls) {
+      this._db!.exec({
+        sql: `INSERT INTO codebase_function_calls (
+          caller_symbol_id, callee_name, line_number, char_offset
+        ) VALUES (?, ?, ?, ?)`,
+        bind: [call.callerSymbolId, call.calleeName, call.lineNumber || null, call.charOffset || null],
+      });
+    }
+    this._db!.exec('COMMIT');
+  } catch (e) {
+    try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
+    throw e;
+  }
+};
+
+CodebaseIndexStore.prototype.findCallersOf = async function(
+  this: CodebaseIndexStoreInstance,
+  symbolName: string
+): Promise<Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>> {
+  return this._db!.selectObjects(`
+    SELECT SymbolAtPosition = async function(
+  this: CodebaseIndexStoreInstance,
+  filePath: string,
+  line: number,
+  char: number
+): Promise<import('./codebase-index-store.types').SymbolRecord | null> {
+  const normalizedPath = filePath.split('\\').join('/');
+  const result = this._db!.selectObject(`
+    SELECT s.id, s.file_id as fileId, s.name, s.kind, s.line_start as lineStart, 
+           s.line_end as lineEnd, s.char_start as charStart, s.char_end as charEnd,
+           s.signature, s.docstring, s.is_exported as isExported
+    FROM codebase_symbols s
+    JOIN codebase_files f ON s.file_id = f.id
+    WHERE f.project_id = ? AND f.file_path = ?
+      AND s.line_start <= ? AND s.line_end >= ?
+      AND s.char_start <= ? AND s.char_end >= ?
+    ORDER BY (s.char_end - s.char_start) ASC
+    LIMIT 1
+  `, [this._projectId, normalizedPath, line, line, char, char]) as import('./codebase-index-store.types').SymbolRecord | undefined;
+  
+  return result || null;
+};
+
+CodebaseIndexStore.prototype.get
+      fc.caller_symbol_id as callerSymbolId,
+      s.name as callerName,
+      fc.line_number as lineNumber,
+      f.file_path as filePath
+    FROM codebase_function_calls fc
+    JOIN codebase_symbols s ON fc.caller_symbol_id = s.id
+    JOIN codebase_files f ON s.file_id = f.id
+    WHERE fc.callee_name = ? AND f.project_id = ?
+  `, [symbolName, this._projectId]) as Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>;
 };
 
 CodebaseIndexStore.prototype.getFileByPath = async function(this: CodebaseIndexStoreInstance, filePath: string): Promise<FileRecord | undefined> {

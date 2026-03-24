@@ -128,6 +128,29 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
     await this._indexStore.upsertSymbols(fileId, result.symbols);
     totalSymbols += result.symbols.length;
     fileIdMap.set(result.filePath, fileId);
+    
+    // Extract and store function calls
+    const dbSymbols = await this._indexStore.getSymbolsByFile(fileId);
+    const symbolIdMap = new Map<string, number>();
+    for (const dbSym of dbSymbols) {
+      symbolIdMap.set(dbSym.name, dbSym.id);
+    }
+    
+    const callRecords: Array<{ callerSymbolId: number; calleeName: string }> = [];
+    for (const symbol of result.symbols) {
+      if ((symbol.kind === 'function' || symbol.kind === 'method') && symbol.calls && symbol.calls.length > 0) {
+        const callerSymbolId = symbolIdMap.get(symbol.name);
+        if (callerSymbolId) {
+          for (const calleeName of symbol.calls) {
+            callRecords.push({ callerSymbolId, calleeName });
+          }
+        }
+      }
+    }
+    
+    if (callRecords.length > 0) {
+      await this._indexStore.upsertFunctionCalls(callRecords);
+    }
   }
 
   // Rebuild FTS once after all symbols are committed (not per-file)

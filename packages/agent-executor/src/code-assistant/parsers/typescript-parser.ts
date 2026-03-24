@@ -3,9 +3,9 @@
  * Extracts symbols, imports, exports with full type information
  */
 
-import * as ts from 'typescript';
-import type { Export, Import, Symbol } from '../indexer/codebase-indexer.types';
-import type { ParserOptions, PrintOptions } from './parser-protocol.types';
+import * as ts from 'typescript'
+import type { Export, Import, Symbol } from '../indexer/codebase-indexer.types'
+import type { ParserOptions, PrintOptions } from './parser-protocol.types'
 
 export type TypeScriptParserInstance = {
   _compilerOptions: ts.CompilerOptions;
@@ -19,6 +19,9 @@ export type TypeScriptParserInstance = {
   _extractJSDoc(node: ts.Node): string | null;
   _classifyImport(specifier: string): 'local' | 'npm' | 'builtin';
   _isBuiltinModule(name: string): boolean;
+  _extractCallSites(node: ts.Node, ast: ts.SourceFile): string[];
+  addImport(ast: ts.SourceFile, importStatement: string): ts.SourceFile;
+  wrapFunction(ast: ts.SourceFile, functionName: string, wrapperCode: string): ts.SourceFile;
   print(ast: ts.SourceFile, options?: PrintOptions): string;
 };
 
@@ -60,9 +63,12 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
         kind: 'function',
         lineStart: this._getLineNumber(ast, node.pos),
         lineEnd: this._getLineNumber(ast, node.end),
+        charStart: node.pos,
+        charEnd: node.end,
         signature: this._extractSignature(node, ast) || undefined,
         docstring: this._extractJSDoc(node) || undefined,
-        isExported: this._isExported(node)
+        isExported: this._isExported(node),
+        calls: this._extractCallSites(node, ast)
       });
     }
     
@@ -76,9 +82,12 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
             kind: 'function',
             lineStart: this._getLineNumber(ast, decl.pos),
             lineEnd: this._getLineNumber(ast, decl.end),
+            charStart: decl.pos,
+            charEnd: decl.end,
           signature: this._extractSignature(decl.initializer, ast) || undefined,
           docstring: this._extractJSDoc(node) || undefined,
-            isExported: this._isExported(node)
+            isExported: this._isExported(node),
+            calls: this._extractCallSites(decl.initializer, ast)
           });
         }
       });
@@ -98,6 +107,8 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
         kind: 'class',
         lineStart: this._getLineNumber(ast, node.pos),
         lineEnd: this._getLineNumber(ast, node.end),
+        charStart: node.pos,
+        charEnd: node.end,
         docstring: this._extractJSDoc(node) || undefined,
         isExported: this._isExported(node),
         methods
@@ -111,9 +122,12 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
           kind: 'method',
           lineStart: this._getLineNumber(ast, member.pos),
           lineEnd: this._getLineNumber(ast, member.end),
+          charStart: member.pos,
+          charEnd: member.end,
           signature: this._extractSignature(member, ast) || undefined,
           docstring: this._extractJSDoc(member) || undefined,
-          isExported: false
+          isExported: false,
+          calls: this._extractCallSites(member, ast)
         });
       }
     }
@@ -125,6 +139,8 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
         kind: 'interface',
         lineStart: this._getLineNumber(ast, node.pos),
         lineEnd: this._getLineNumber(ast, node.end),
+        charStart: node.pos,
+        charEnd: node.end,
         isExported: this._isExported(node)
       });
     }
@@ -136,6 +152,8 @@ TypeScriptParser.prototype.extractSymbols = async function(this: TypeScriptParse
         kind: 'type',
         lineStart: this._getLineNumber(ast, node.pos),
         lineEnd: this._getLineNumber(ast, node.end),
+        charStart: node.pos,
+        charEnd: node.end,
         isExported: this._isExported(node)
       });
     }
@@ -298,6 +316,140 @@ TypeScriptParser.prototype._isBuiltinModule = function(this: TypeScriptParserIns
     'stream', 'buffer', 'url', 'querystring', 'assert', 'child_process'
   ];
   return builtins.includes(name);
+};
+
+TypeScriptParser.prototype._extractCallSites = function(this: TypeScriptParserInstance, node: ts.Node, ast: ts.SourceFile): string[] {
+  const calls: string[] = [];
+  
+  const visit = (n: ts.Node): void => {
+    if (ts.isCallExpression(n)) {
+      let calleeName: string | null = null;
+      
+      // Direct function call: foo()
+      if (ts.isIdentifier(n.expression)) {
+        calleeName = n.expression.text;
+      }
+      // Method call: obj.method()
+      else if (ts.isPropertyAccessExpression(n.expression)) {
+        calleeName = n.expression.name.text;
+      }
+      // Chained property access: obj.nested.method()
+      else if (ts.isElementAccessExpression(n.expression)) {
+        const expr = n.expression.expression.getText(ast);
+        calleeName = expr;
+      }
+      
+      if (calleeName) {
+        calls.push(calleeName);
+      }
+    }
+    
+    ts.forEachChild(n, visit);
+  };
+  
+  // Only visit the function body, not nested function declarations
+  if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node) || 
+      ts.isFunctionExpression(node) || ts.isMethodDeclaration(node)) {
+    if (node.body) {
+      visit(node.body);
+    }
+  }
+  
+  return calls;
+};
+
+TypeScriptParser.prototype.addImport = function(
+  this: TypeScriptParserInstance,
+  ast: ts.SourceFile,
+  importStatement: string
+): ts.SourceFile {
+  // Parse the import statement to create AST node
+  const tempFile = ts.createSourceFile(
+    'temp.ts',
+    importStatement,
+    ts.ScriptTarget.Latest,
+    false
+  );
+
+  const importNode = tempFile.statements[0];
+  if (!ts.isImportDeclaration(importNode)) {
+    throw new Error('Invalid import statement');
+  }
+
+  // Clone all existing statements
+  const newStatements = [...ast.statements as unknown as ts.Statement[]];
+  
+  // Find position to insert (after existing imports)
+  let insertIndex = 0;
+  for (let i = 0; i < newStatements.length; i++) {
+    if (ts.isImportDeclaration(newStatements[i])) {
+      insertIndex = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  // Insert the new import
+  newStatements.splice(insertIndex, 0, importNode);
+
+  // Create new source file with updated statements
+  return ts.factory.updateSourceFile(ast, newStatements);
+};
+
+TypeScriptParser.prototype.wrapFunction = function(
+  this: TypeScriptParserInstance,
+  ast: ts.SourceFile,
+  functionName: string,
+  wrapperCode: string
+): ts.SourceFile {
+  // Find the function to wrap
+  let targetFunction: ts.FunctionDeclaration | null = null;
+  let targetIndex = -1;
+
+  for (let i = 0; i < ast.statements.length; i++) {
+    const stmt = ast.statements[i];
+    if (ts.isFunctionDeclaration(stmt) && stmt.name?.text === functionName) {
+      targetFunction = stmt;
+      targetIndex = i;
+      break;
+    }
+  }
+
+  if (!targetFunction || targetIndex === -1) {
+    throw new Error(`Function '${functionName}' not found`);
+  }
+
+  // Parse wrapper code
+  const wrapperFile = ts.createSourceFile(
+    'wrapper.ts',
+    wrapperCode,
+    ts.ScriptTarget.Latest,
+    false
+  );
+
+  const wrapperFunction = wrapperFile.statements[0];
+  if (!ts.isFunctionDeclaration(wrapperFunction)) {
+    throw new Error('Wrapper must be a function declaration');
+  }
+
+  // Rename original function to __original_${functionName}
+  const renamedFunction = ts.factory.updateFunctionDeclaration(
+    targetFunction,
+    targetFunction.modifiers,
+    targetFunction.asteriskToken,
+    ts.factory.createIdentifier(`__original_${functionName}`),
+    targetFunction.typeParameters,
+    targetFunction.parameters,
+    targetFunction.type,
+    targetFunction.body
+  );
+
+  // Clone statements and replace
+  const newStatements = [...ast.statements as unknown as ts.Statement[]];
+  newStatements[targetIndex] = renamedFunction;
+  newStatements.splice(targetIndex + 1, 0, wrapperFunction);
+
+  return ts.factory.updateSourceFile(ast, newStatements);
 };
 
 TypeScriptParser.prototype.print = function(this: TypeScriptParserInstance, ast: ts.SourceFile, options: PrintOptions = {}): string {
