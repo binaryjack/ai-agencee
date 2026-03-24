@@ -141,6 +141,8 @@ describe('CodebaseIndexStore', () => {
           kind: 'function',
           lineStart: 1,
           lineEnd: 10,
+          charStart: 0,
+          charEnd: 100,
           signature: 'function testFunction(): void',
           docstring: 'Test function',
           isExported: true
@@ -175,6 +177,8 @@ describe('CodebaseIndexStore', () => {
           kind: 'function',
           lineStart: 1,
           lineEnd: 5,
+          charStart: 0,
+          charEnd: 50,
           isExported: true
         }
       ];
@@ -185,6 +189,8 @@ describe('CodebaseIndexStore', () => {
           kind: 'function',
           lineStart: 10,
           lineEnd: 20,
+          charStart: 100,
+          charEnd: 200,
           isExported: false
         },
         {
@@ -192,11 +198,13 @@ describe('CodebaseIndexStore', () => {
           kind: 'function',
           lineStart: 25,
           lineEnd: 30,
+          charStart: 250,
+          charEnd: 300,
           isExported: true
         }
       ];
 
-      await store.upsertSymbols(fileId, symbols1);
+     await store.upsertSymbols(fileId, symbols1);
       await store.upsertSymbols(fileId, symbols2);
 
       const count = store._db!.prepare(`
@@ -214,6 +222,8 @@ describe('CodebaseIndexStore', () => {
           kind: 'function',
           lineStart: 1,
           lineEnd: 5,
+          charStart: 0,
+          charEnd: 50,
           isExported: true
         }
       ];
@@ -392,12 +402,12 @@ describe('CodebaseIndexStore', () => {
       });
 
       await store.upsertSymbols(fileId1, [
-        { name: 'func1', kind: 'function', lineStart: 1, lineEnd: 5, isExported: true }
+        { name: 'func1', kind: 'function', lineStart: 1, lineEnd: 5, charStart: 0, charEnd: 50, isExported: true }
       ]);
 
       await store.upsertSymbols(fileId2, [
-        { name: 'func2', kind: 'function', lineStart: 1, lineEnd: 5, isExported: true },
-        { name: 'func3', kind: 'function', lineStart: 10, lineEnd: 15, isExported: false }
+        { name: 'func2', kind: 'function', lineStart: 1, lineEnd: 5, charStart: 0, charEnd: 50, isExported: true },
+        { name: 'func3', kind: 'function', lineStart: 10, lineEnd: 15, charStart: 100, charEnd: 150, isExported: false }
       ]);
 
       await store.upsertDependencies([
@@ -442,7 +452,7 @@ describe('CodebaseIndexStore', () => {
 
     it('makes symbols searchable via FTS after upsertSymbols', async () => {
       await store.upsertSymbols(fileId, [
-        { name: 'rebuildTarget', kind: 'function', lineStart: 1, lineEnd: 3, isExported: true }
+        { name: 'rebuildTarget', kind: 'function', lineStart: 1, lineEnd: 3, charStart: 0, charEnd: 30, isExported: true }
       ]);
 
       const before = store._db!.prepare(
@@ -460,7 +470,7 @@ describe('CodebaseIndexStore', () => {
 
     it('is idempotent — multiple rebuilds produce correct results', async () => {
       await store.upsertSymbols(fileId, [
-        { name: 'idempotentFunc', kind: 'function', lineStart: 1, lineEnd: 3, isExported: true }
+        { name: 'idempotentFunc', kind: 'function', lineStart: 1, lineEnd: 3, charStart: 0, charEnd: 30, isExported: true }
       ]);
       store.rebuildFts();
       store.rebuildFts();
@@ -483,8 +493,8 @@ describe('CodebaseIndexStore', () => {
         sizeBytes: 512
       });
       await store.upsertSymbols(fileId, [
-        { name: 'authCheck', kind: 'function', lineStart: 1,  lineEnd: 5,  docstring: 'Verify user auth',    isExported: true },
-        { name: 'loadData',  kind: 'function', lineStart: 10, lineEnd: 15, docstring: 'Fetch data from API', isExported: true }
+        { name: 'authCheck', kind: 'function', lineStart: 1,  lineEnd: 5,  charStart: 0, charEnd: 50, docstring: 'Verify user auth',    isExported: true },
+        { name: 'loadData',  kind: 'function', lineStart: 10, lineEnd: 15, charStart: 100, charEnd: 150, docstring: 'Fetch data from API', isExported: true }
       ]);
       store.rebuildFts();
       const symbols = await store.getSymbolsByFile(fileId);

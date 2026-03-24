@@ -256,15 +256,25 @@ GoParser.prototype.parse = async function(
 }
 
 GoParser.prototype.extractSymbols = async function(ast: GoAST): Promise<Symbol[]> {
-  return ast.definitions.map((def: GoDef) => ({
-    name:       def.displayName,
-    kind:       def.kind,
-    lineStart:  def.lineStart,
-    lineEnd:    def.lineEnd,
-    signature:  def.signature,
-    docstring:  def.docstring,
-    isExported: def.isExported,
-  }))
+  const { definitions, lines } = ast
+  
+  return definitions.map((def: GoDef) => {
+    // Calculate character offsets from line positions
+    const charStart = lines.slice(0, def.lineStart - 1).reduce((sum, line) => sum + line.length + 1, 0)
+    const charEnd = lines.slice(0, def.lineEnd).reduce((sum, line) => sum + line.length + 1, 0)
+
+    return {
+      name:       def.displayName,
+      kind:       def.kind,
+      lineStart:  def.lineStart,
+      lineEnd:    def.lineEnd,
+      charStart,
+      charEnd,
+      signature:  def.signature,
+      docstring:  def.docstring,
+      isExported: def.isExported,
+    }
+  })
 }
 
 GoParser.prototype.extractImports = async function(ast: GoAST): Promise<Import[]> {

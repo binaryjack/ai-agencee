@@ -8,4 +8,7 @@ module.exports = {
     // Strip .js extensions so ts-jest resolves them to .ts source files
     '^(\.{1,2}/.*)\.js$': '$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!@sqlite\\.org/sqlite-wasm)' // Allow transforming @sqlite.org/sqlite-wasm
+  ],
 };

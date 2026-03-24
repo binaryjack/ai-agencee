@@ -26,7 +26,7 @@ PythonParser.prototype.parse = async function(
 }
 
 PythonParser.prototype.extractSymbols = async function(ast: PythonAST): Promise<Symbol[]> {
-  const { definitions, allExports } = ast
+  const { definitions, allExports, lines } = ast
   const hasAll = allExports.length > 0
 
   return definitions.map(def => {
@@ -35,11 +35,17 @@ PythonParser.prototype.extractSymbols = async function(ast: PythonAST): Promise<
       ? allExports.includes(baseName)
       : !baseName.startsWith('_')
 
+    // Calculate character offsets from line positions
+    const charStart = lines.slice(0, def.lineStart - 1).reduce((sum, line) => sum + line.length + 1, 0)
+    const charEnd = lines.slice(0, def.lineEnd).reduce((sum, line) => sum + line.length + 1, 0)
+
     return {
       name:       def.displayName,
       kind:       def.kind as Symbol['kind'],
       lineStart:  def.lineStart,
       lineEnd:    def.lineEnd,
+      charStart,
+      charEnd,
       signature:  def.signature,
       docstring:  def.docstring,
       isExported,

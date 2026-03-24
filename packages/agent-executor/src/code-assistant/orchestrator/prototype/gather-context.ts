@@ -24,6 +24,8 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 
 import { createGraphTraversal } from '../../indexer/create-graph-traversal.js'
+import { createResultMerger } from '../create-result-merger.js'
+import type { SearchResult } from '../result-merger.types.js'
 import type { CodebaseIndexStoreInstance } from '../../storage/codebase-index-store.types.js'
 import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js'
 import { KNN_K, MAX_FILE_LINES, MAX_FILES, MAX_SYMBOLS } from './constants.js'
@@ -53,12 +55,15 @@ export async function _gatherContext(
   }
   const ftsQuery = keywords.join(' OR ');
 
+  // ── Result Merger for deduplication ──────────────────────────────────────
+  
+  const merger = createResultMerger(MAX_SYMBOLS);
+
   // ── Stage 1: FTS5 symbol search ───────────────────────────────────────────
 
-  let symbols: SymbolRow[] = [];
   if (ftsQuery) {
     try {
-      symbols = (await store.query(
+      const ftsResults = (await store.query(
         `SELECT s.name, s.kind, s.signature, f.file_path, s.line_start
          FROM codebase_symbols_fts fts
          JOIN codebase_symbols s ON s.id       = fts.rowid
@@ -68,8 +73,11 @@ export async function _gatherContext(
          LIMIT ?`,
         [ftsQuery, MAX_SYMBOLS],
       )) as SymbolRow[];
-    } catch {
-      // Index not built yet or FTS table absent — generate from task desc only
+
+      merger.addMany(ftsResults.map(r => ({ ...r, source: 'fts' as const })));
+    } catch (error) {
+      // Index not built yet or FTS table absent — log and continue gracefully
+      console.warn('[gather-context] FTS search failed:', error);
     }
   }
 
@@ -81,21 +89,23 @@ export async function _gatherContext(
   //   - FTS5   → exact symbol names, typo-sensitive
   //   - knn    → conceptual intent, unaware of symbol names
 
-  const provider = this._options.embeddingProvider;
-  if (provider) {
-    try {
-      const [queryVector] = await provider.embed([task]);
-      const semanticHits = await store.semanticSearch(queryVector, KNN_K, ftsQuery || undefined);
-      const seen = new Set(symbols.map(s => s.name + '\0' + s.file_path));
-      for (const r of semanticHits) {
-        const key = r.name + '\0' + r.file_path;
-        if (!seen.has(key)) {
-          seen.add(key);
-          symbols.push({
-            name: r.name, kind: r.kind, signature: r.signature,
-            file_path: r.file_path, line_start: r.line_start,
-          });
-        }
+      merger.addMany(semanticHits.map(r => ({
+        name: r.name,
+        kind: r.kind,
+        signature: r.signature,
+        file_path: r.file_path,
+        line_start: r.line_start,
+        score: r.distance, // Semantic search provides distance/similarity
+        source: 'semantic' as const
+      })));
+    } catch (error) {
+      // Embedding provider unavailable or vectors not yet generated — log and continue
+      console.warn('[gather-context] Semantic search failed:', error);
+    }
+  }
+
+  // Get merged results after FTS + semantic search
+  const symbols = merger.getResults();     }
       }
       if (symbols.length > MAX_SYMBOLS) symbols = symbols.slice(0, MAX_SYMBOLS);
     } catch {
@@ -146,8 +156,9 @@ export async function _gatherContext(
             seenTransitive.add(key);
             transitiveSymbols.push(reach);
           }
-        }
-      }
+        }(error) {
+      // Call graph not built, symbol not found, or error in traversal — log and continue
+      console.warn('[gather-context] Graph traversal failed for symbol:', symbol.name, error);
     } catch {
       // Call graph not built or error in traversal — continue gracefully
     }
@@ -176,8 +187,9 @@ export async function _gatherContext(
       const lines   = raw.split('\n');
       const snippet = lines.slice(0, MAX_FILE_LINES).join('\n');
       const truncated = lines.length > MAX_FILE_LINES
-        ? '\n// … ' + (lines.length - MAX_FILE_LINES) + ' more lines omitted'
-        : '';
+        ? '\(error) {
+      // File removed between index time and now — log and skip
+      console.warn('[gather-context] Failed to read file:', fp, error);
       blocks.push('\n### FILE: ' + fp + '\n```\n' + snippet + truncated + '\n```');
     } catch {
       // File removed between index time and now — skip silently

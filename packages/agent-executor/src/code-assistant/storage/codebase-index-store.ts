@@ -4,10 +4,12 @@
  * Uses @sqlite.org/sqlite-wasm (OO1 API) — ABI-safe in Electron/VS Code extension host.
  */
 
-import sqlite3InitModule from '@sqlite.org/sqlite-wasm';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import type { CodebaseIndexStoreOptions, DependencyData, FileData, FileRecord, SymbolData } from './codebase-index-store.types';
+import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
+import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
+import type { CodebaseIndexStoreOptions, DependencyData, FileData, FileRecord, SymbolData } from './codebase-index-store.types'
+import { createTransactionManager } from './create-transaction-manager'
+import type { TransactionManagerInstance } from './transaction-manager.types'
 
 // Module-level singleton so WASM is loaded only once.
 let _sqlite3Cache: Promise<any> | null = null;
@@ -31,6 +33,7 @@ export type CodebaseIndexStoreInstance = {
   _db: any | null;
   _dbPath: string;
   _projectId: string;
+  _transactionManager: TransactionManagerInstance | null;
   initialize(): Promise<void>;
   upsertFile(fileData: FileData): Promise<number>;
   upsertSymbols(fileId: number, symbols: SymbolData[]): Promise<void>;
@@ -71,6 +74,12 @@ export const CodebaseIndexStore = function(this: CodebaseIndexStoreInstance, opt
     enumerable: false,
     value: projectId
   });
+
+  Object.defineProperty(this, '_transactionManager', {
+    enumerable: false,
+    writable: true,
+    value: null
+  });
 };
 
 CodebaseIndexStore.prototype.initialize = async function(this: CodebaseIndexStoreInstance): Promise<void> {
@@ -81,6 +90,8 @@ CodebaseIndexStore.prototype.initialize = async function(this: CodebaseIndexStor
   this._db = new sqlite3.oo1.DB(this._dbPath, 'cw');
   this._db!.exec('PRAGMA journal_mode = WAL');
   this._db!.exec('PRAGMA foreign_keys = ON');
+
+  this._transactionManager = createTransactionManager(this._db!);
 
   await this._createTables();
   this._migrateEmbeddingColumn();
@@ -244,38 +255,34 @@ CodebaseIndexStore.prototype.upsertFile = async function(this: CodebaseIndexStor
     fileData.sizeBytes || 0,
     Date.now(),
   ]) as { id: number }[];
-  return rows[0].id;char_start, char_end, signature, docstring, is_exported
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        bind: [
-          fileId, symbol.name, symbol.kind, symbol.lineStart, symbol.lineEnd,
-          symbol.charStart, symbol.chareIndexStoreInstance, fileId: number, symbols: SymbolData[]): Promise<void> {
+  return rows[0].id;
+};
+
+CodebaseIndexStore.prototype.upsertSymbols = async function(this: CodebaseIndexStoreInstance, fileId: number, symbols: SymbolData[]): Promise<void> {
   this._db!.exec({ sql: 'DELETE FROM codebase_symbols WHERE file_id = ?', bind: [fileId] });
   if (symbols.length === 0) return;
-  this._db!.exec('BEGIN');
-  try {
+
+  await this._transactionManager!.execute(() => {
     for (const symbol of symbols) {
       this._db!.exec({
         sql: `INSERT INTO codebase_symbols (
-          file_id, name, kind, line_start, line_end, signature, docstring, is_exported
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          file_id, name, kind, line_start, line_end, char_start, char_end, signature, docstring, is_exported
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         bind: [
           fileId, symbol.name, symbol.kind, symbol.lineStart, symbol.lineEnd,
+          symbol.charStart, symbol.charEnd,
           symbol.signature || null, symbol.docstring || null, symbol.isExported ? 1 : 0,
         ],
       });
     }
-    this._db!.exec('COMMIT');
-  } catch (e) {
-    try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
-    throw e;
-  }
+  });
 };
 
 CodebaseIndexStore.prototype.upsertDependencies = async function(this: CodebaseIndexStoreInstance, dependencies: DependencyData[]): Promise<void> {
   this._db!.exec({ sql: 'DELETE FROM codebase_dependencies WHERE project_id = ?', bind: [this._projectId] });
   if (dependencies.length === 0) return;
-  this._db!.exec('BEGIN');
-  try {
+
+  await this._transactionManager!.execute(() => {
     for (const dep of dependencies) {
       this._db!.exec({
         sql: `INSERT INTO codebase_dependencies (
@@ -284,11 +291,7 @@ CodebaseIndexStore.prototype.upsertDependencies = async function(this: CodebaseI
         bind: [this._projectId, dep.sourceFileId, dep.targetFileId || null, dep.importSpecifier, dep.type],
       });
     }
-    this._db!.exec('COMMIT');
-  } catch (e) {
-    try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
-    throw e;
-  }
+  });
 };
 
 CodebaseIndexStore.prototype.upsertFunctionCalls = async function(
@@ -296,9 +299,8 @@ CodebaseIndexStore.prototype.upsertFunctionCalls = async function(
   calls: Array<{ callerSymbolId: number; calleeName: string; lineNumber?: number; charOffset?: number }>
 ): Promise<void> {
   if (calls.length === 0) return;
-  
-  this._db!.exec('BEGIN');
-  try {
+
+  await this._transactionManager!.execute(() => {
     for (const call of calls) {
       this._db!.exec({
         sql: `INSERT INTO codebase_function_calls (
@@ -307,11 +309,7 @@ CodebaseIndexStore.prototype.upsertFunctionCalls = async function(
         bind: [call.callerSymbolId, call.calleeName, call.lineNumber || null, call.charOffset || null],
       });
     }
-    this._db!.exec('COMMIT');
-  } catch (e) {
-    try { this._db!.exec('ROLLBACK'); } catch { /* ignore */ }
-    throw e;
-  }
+  });
 };
 
 CodebaseIndexStore.prototype.findCallersOf = async function(
@@ -319,7 +317,19 @@ CodebaseIndexStore.prototype.findCallersOf = async function(
   symbolName: string
 ): Promise<Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>> {
   return this._db!.selectObjects(`
-    SELECT SymbolAtPosition = async function(
+    SELECT 
+      fc.caller_symbol_id as callerSymbolId,
+      s.name as callerName,
+      fc.line_number as lineNumber,
+      f.file_path as filePath
+    FROM codebase_function_calls fc
+    JOIN codebase_symbols s ON fc.caller_symbol_id = s.id
+    JOIN codebase_files f ON s.file_id = f.id
+    WHERE fc.callee_name = ? AND f.project_id = ?
+  `, [symbolName, this._projectId]) as Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>;
+};
+
+CodebaseIndexStore.prototype.getSymbolAtPosition = async function(
   this: CodebaseIndexStoreInstance,
   filePath: string,
   line: number,
@@ -340,18 +350,6 @@ CodebaseIndexStore.prototype.findCallersOf = async function(
   `, [this._projectId, normalizedPath, line, line, char, char]) as import('./codebase-index-store.types').SymbolRecord | undefined;
   
   return result || null;
-};
-
-CodebaseIndexStore.prototype.get
-      fc.caller_symbol_id as callerSymbolId,
-      s.name as callerName,
-      fc.line_number as lineNumber,
-      f.file_path as filePath
-    FROM codebase_function_calls fc
-    JOIN codebase_symbols s ON fc.caller_symbol_id = s.id
-    JOIN codebase_files f ON s.file_id = f.id
-    WHERE fc.callee_name = ? AND f.project_id = ?
-  `, [symbolName, this._projectId]) as Array<{ callerSymbolId: number; callerName: string; lineNumber: number | null; filePath: string }>;
 };
 
 CodebaseIndexStore.prototype.getFileByPath = async function(this: CodebaseIndexStoreInstance, filePath: string): Promise<FileRecord | undefined> {
