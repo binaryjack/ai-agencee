@@ -55,7 +55,7 @@ export type CodebaseIndexerInstance = {
     depGraph: DependencyGraph | null;
   };
   indexProject(options?: IndexProjectOptions): Promise<IndexResult>;
-  _discoverFiles(options: { extensions: string[]; exclude: string[]; include: string[] }): Promise<string[]>;
+  _discoverFiles(options: { extensions: string[]; exclude: string[]; include: string[]; respectGitignore?: boolean; forceIncludePatterns?: string[] }): Promise<string[]>;
   _detectChanges(files: string[]): Promise<string[]>;
   _parseFile(filePath: string): Promise<FileParseResult | null>;
   _buildDepGraph(parseResults: FileParseResult[]): Promise<DependencyGraph>;
@@ -72,6 +72,10 @@ export type IndexProjectOptions = {
   languages?: string[];
   excludePatterns?: string[];
   includePatterns?: string[];
+  /** Respect .gitignore files when discovering files (default: true) */
+  respectGitignore?: boolean;
+  /** Force include patterns that override .gitignore exclusions (e.g., ["_private/**"]) */
+  forceIncludePatterns?: string[];
   budgetCap?: number;
 };
 

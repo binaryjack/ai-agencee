@@ -1,0 +1,10 @@
+{
+  "$schema": "./schemas/codernicrc.schema.json",
+  "indexer": {
+    "languages": ["typescript", "javascript"],
+    "respectGitignore": true,
+    "forceIncludePatterns": ["_private/**"],
+    "excludePatterns": ["node_modules", "dist", "build", ".git", "coverage"],
+    "includePatterns": []
+  }
+}

@@ -6,6 +6,7 @@
 import { createCodebaseIndexer } from '@ai-agencee/engine/code-assistant';
 import { createParserRegistry, createTypeScriptParser } from '@ai-agencee/engine/code-assistant/parsers';
 import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage';
+import { getIndexerOptions } from '@ai-agencee/engine/code-assistant';
 import * as path from 'node:path';
 import { ProgressReporter } from './progress-reporter.js';
 
@@ -36,6 +37,8 @@ type CodeIndexOptions = {
   languages?: string;
   exclude?: string;
   include?: string;
+  respectGitignore?: boolean;
+  forceInclude?: string;
   verbose?: boolean;
   json?: boolean;
 };
@@ -48,6 +51,8 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     languages = 'typescript,javascript',
     exclude = 'node_modules,dist,build,.git,coverage',
     include = '',
+    respectGitignore,
+    forceInclude,
     verbose = false,
     json = false
   } = options;
@@ -55,6 +60,15 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
   const projectRoot = path.resolve(project);
   const dbPath = path.join(projectRoot, '.agencee', 'code-index.db');
   const projectId = path.basename(projectRoot);
+  
+  // Load config from file and merge with CLI options
+  const configOptions = await getIndexerOptions(projectRoot, {
+    languages: languages ? languages.split(',').map(l => l.trim()) : undefined,
+    excludePatterns: exclude ? exclude.split(',').map(p => p.trim()) : undefined,
+    includePatterns: include ? include.split(',').map(p => p.trim()) : undefined,
+    respectGitignore: respectGitignore,
+    forceIncludePatterns: forceInclude ? forceInclude.split(',').map(p => p.trim()) : undefined
+  });
   
   // Create progress reporter
   const reporter = new ProgressReporter(json);
@@ -101,9 +115,11 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     // Run indexing
     const indexOptions = {
       incremental: incremental && !force,
-      languages: languages.split(',').map((l: string) => l.trim()),
-      excludePatterns: exclude.split(',').map((p: string) => p.trim()),
-      ...(include ? { includePatterns: include.split(',').map((p: string) => p.trim()) } : {})
+      languages: configOptions.languages,
+      excludePatterns: configOptions.excludePatterns,
+      includePatterns: configOptions.includePatterns,
+      respectGitignore: configOptions.respectGitignore,
+      forceIncludePatterns: configOptions.forceIncludePatterns
     };
     
     const result = await indexer.indexProject(indexOptions);

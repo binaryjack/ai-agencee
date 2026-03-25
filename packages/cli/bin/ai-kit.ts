@@ -61,6 +61,9 @@ program
   .option('--force', 'Force full re-index')
   .option('--languages <langs>', 'Comma-separated languages to index', 'typescript,javascript')
   .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
+  .option('--include <patterns>', 'Comma-separated include patterns')
+  .option('--respect-gitignore', 'Respect .gitignore files (default: true)', true)
+  .option('--force-include <patterns>', 'Force-include patterns (overrides .gitignore)')
   .option('--verbose', 'Show detailed progress')
   .option('--json', 'Output progress as JSON events (machine-readable)')
   .action(async (options) => {

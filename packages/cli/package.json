@@ -26,7 +26,8 @@
     "@ai-agencee/core": "workspace:^1.1.0",
     "@ai-agencee/connectors": "workspace:^0.1.0",
     "@ai-agencee/mcp": "workspace:^1.3.0",
-    "commander": "^14.0.3"
+    "commander": "^14.0.3",
+    "cosmiconfig": "^9.0.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

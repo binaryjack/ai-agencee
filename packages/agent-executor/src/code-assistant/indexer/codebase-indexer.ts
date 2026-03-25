@@ -6,6 +6,7 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import { glob } from 'glob';
+import ignore from 'ignore';
 import * as os from 'os';
 import * as path from 'path';
 import type { CodebaseIndexerInstance, CodebaseIndexerOptions, DependencyGraph, FileParseResult, IndexProjectOptions, IndexResult } from './codebase-indexer.types';
@@ -74,6 +75,8 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
     languages = ['typescript', 'javascript', 'python'],
     excludePatterns = ['node_modules', 'dist', 'build', '.git', 'coverage'],
     includePatterns = [],
+    respectGitignore = true,
+    forceIncludePatterns = [],
     budgetCap = Infinity
   } = options;
   
@@ -83,7 +86,9 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   const files = await this._discoverFiles({
     extensions: this._getExtensions(languages),
     exclude: excludePatterns,
-    include: includePatterns
+    include: includePatterns,
+    respectGitignore,
+    forceIncludePatterns
   });
   
   // Report discovery progress
@@ -271,21 +276,21 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   };
 };
 
-CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerInstance, options: { extensions: string[]; exclude: string[]; include: string[] }): Promise<string[]> {
-  const { extensions, exclude, include } = options;
+CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerInstance, options: { extensions: string[]; exclude: string[]; include: string[]; respectGitignore?: boolean; forceIncludePatterns?: string[] }): Promise<string[]> {
+  const { extensions, exclude, include, respectGitignore = true, forceIncludePatterns = [] } = options;
   
   const patterns = extensions.map(ext => `**/*.${ext}`);
   const ignorePatterns = exclude.map(pattern => `**/${pattern}/**`);
   
-  // Standard file discovery
-  const files = await glob(patterns, {
+  // Discover all files matching extension patterns (without gitignore filtering)
+  const allFiles = await glob(patterns, {
     cwd: this._projectRoot,
     ignore: ignorePatterns,
     absolute: false,
     nodir: true
   });
   
-  // Also discover files matching includePatterns (overrides .gitignore/excludes)
+  // Also discover files matching includePatterns
   let includedFiles: string[] = [];
   if (include.length > 0) {
     const includeGlobs = include.flatMap(pattern => 
@@ -299,11 +304,45 @@ CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerI
     });
   }
   
-  // Merge and deduplicate
-  const allFiles = [...new Set([...files, ...includedFiles])];
+  // Merge discovered files
+  let discoveredFiles = [...new Set([...allFiles, ...includedFiles])];
+  
+  // Apply .gitignore filtering if enabled
+  if (respectGitignore) {
+    const ig = ignore();
+    
+    // Try to load .gitignore file
+    const gitignorePath = path.join(this._projectRoot, '.gitignore');
+    try {
+      const gitignoreContent = await fs.readFile(gitignorePath, 'utf-8');
+      ig.add(gitignoreContent);
+      
+      // Filter out gitignored files
+      discoveredFiles = discoveredFiles.filter(file => !ig.ignores(file));
+    } catch {
+      // No .gitignore or couldn't read it - skip filtering
+    }
+  }
+  
+  // Force-include files matching forceIncludePatterns (even if gitignored)
+  let forceIncludedFiles: string[] = [];
+  if (forceIncludePatterns.length > 0) {
+    const forceGlobs = forceIncludePatterns.flatMap(pattern => 
+      extensions.map(ext => `${pattern}/**/*.${ext}`)
+    );
+    forceIncludedFiles = await glob(forceGlobs, {
+      cwd: this._projectRoot,
+      absolute: false,
+      nodir: true,
+      dot: true
+    });
+  }
+  
+  // Final merge: discovered files + force-included files
+  const finalFiles = [...new Set([...discoveredFiles, ...forceIncludedFiles])];
   
   // Normalize paths to use forward slashes for cross-platform consistency
-  return allFiles.map(file => file.replace(/\\/g, '/'));
+  return finalFiles.map(file => file.replace(/\\/g, '/'));
 };
 
 CodebaseIndexer.prototype._detectChanges = async function(this: CodebaseIndexerInstance, files: string[]): Promise<string[]> {
