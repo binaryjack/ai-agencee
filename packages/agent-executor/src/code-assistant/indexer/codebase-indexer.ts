@@ -280,14 +280,21 @@ CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerI
   const { extensions, exclude, include, respectGitignore = true, forceIncludePatterns = [] } = options;
   
   const patterns = extensions.map(ext => `**/*.${ext}`);
-  const ignorePatterns = exclude.map(pattern => `**/${pattern}/**`);
   
-  // Discover all files matching extension patterns (without gitignore filtering)
+  // Build ignore patterns - both explicit patterns and directory patterns
+  const ignorePatterns = [
+    ...exclude.map(pattern => `**/${pattern}/**`), // Files within excluded dirs
+    ...exclude.map(pattern => `${pattern}/**`),    // Top-level excluded dirs
+    ...exclude.map(pattern => `**/${pattern}`),     // Exclude the dirs themselves
+  ];
+  
+  // Discover all files matching extension patterns
   const allFiles = await glob(patterns, {
     cwd: this._projectRoot,
     ignore: ignorePatterns,
     absolute: false,
-    nodir: true
+    nodir: true,
+    dot: false  // Don't include hidden files by default
   });
   
   // Also discover files matching includePatterns
@@ -300,7 +307,7 @@ CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerI
       cwd: this._projectRoot,
       absolute: false,
       nodir: true,
-      dot: true  // Include dotfiles
+      dot: true  // Include dotfiles in explicit include patterns
     });
   }
   
@@ -334,7 +341,7 @@ CodebaseIndexer.prototype._discoverFiles = async function(this: CodebaseIndexerI
       cwd: this._projectRoot,
       absolute: false,
       nodir: true,
-      dot: true
+      dot: true  // Include dotfiles in force-include patterns
     });
   }
   

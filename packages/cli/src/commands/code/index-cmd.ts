@@ -3,10 +3,9 @@
  * Indexes a codebase for intelligent search and assistance
  */
 
-import { createCodebaseIndexer } from '@ai-agencee/engine/code-assistant';
+import { createCodebaseIndexer, getIndexerOptions } from '@ai-agencee/engine/code-assistant';
 import { createParserRegistry, createTypeScriptParser } from '@ai-agencee/engine/code-assistant/parsers';
 import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage';
-import { getIndexerOptions } from '@ai-agencee/engine/code-assistant';
 import * as path from 'node:path';
 import { ProgressReporter } from './progress-reporter.js';
 
