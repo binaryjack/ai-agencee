@@ -15,6 +15,22 @@ export type IIndexerAuditLog = {
   write(event: Record<string, unknown>): void;
 };
 
+/** Progress phase during indexing */
+export type ProgressPhase = 
+  | 'discovery' 
+  | 'parsing' 
+  | 'indexing' 
+  | 'embedding' 
+  | 'complete';
+
+/** Progress callback signature */
+export type ProgressCallback = (
+  phase: ProgressPhase,
+  current: number,
+  total: number,
+  file?: string
+) => void;
+
 export type CodebaseIndexerOptions = {
   projectRoot: string;
   indexStore: CodebaseIndexStoreInstance;
@@ -22,6 +38,7 @@ export type CodebaseIndexerOptions = {
   embeddingProvider?: EmbeddingProvider;
   modelRouter?: IModelRouter;
   auditLog?: IIndexerAuditLog;
+  onProgress?: ProgressCallback;
 };
 
 export type CodebaseIndexerInstance = {
@@ -31,6 +48,7 @@ export type CodebaseIndexerInstance = {
   _embeddingProvider?: EmbeddingProvider;
   _modelRouter?: IModelRouter;
   _auditLog?: IIndexerAuditLog;
+  _onProgress?: ProgressCallback;
   _state: {
     indexedFiles: Set<string>;
     symbolCache: Map<string, Symbol[]>;

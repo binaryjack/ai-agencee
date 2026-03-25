@@ -62,6 +62,7 @@ program
   .option('--languages <langs>', 'Comma-separated languages to index', 'typescript,javascript')
   .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
   .option('--verbose', 'Show detailed progress')
+  .option('--json', 'Output progress as JSON events (machine-readable)')
   .action(async (options) => {
     await runCodeIndex(options);
   });

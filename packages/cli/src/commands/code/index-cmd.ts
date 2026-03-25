@@ -83,7 +83,19 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     const indexer = createCodebaseIndexer({
       projectRoot,
       indexStore,
-      parserRegistry
+      parserRegistry,
+      onProgress: (phase, current, total, file) => {
+        if (phase === 'discovery') {
+          reporter.discovery(current, total);
+        } else if (phase === 'parsing') {
+          reporter.parsing(current, total, file);
+        } else if (phase === 'indexing') {
+          reporter.indexing(current, total);
+        } else if (phase === 'embedding') {
+          reporter.embedding(current, total);
+        }
+        // 'complete' phase is handled separately after indexProject returns
+      }
     });
     
     // Run indexing

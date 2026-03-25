@@ -17,7 +17,8 @@ export const CodebaseIndexer = function(this: CodebaseIndexerInstance, options: 
     parserRegistry,
     embeddingProvider,
     modelRouter,
-    auditLog
+    auditLog,
+    onProgress
   } = options;
   
   Object.defineProperty(this, '_projectRoot', {
@@ -50,6 +51,11 @@ export const CodebaseIndexer = function(this: CodebaseIndexerInstance, options: 
     value: auditLog
   });
   
+  Object.defineProperty(this, '_onProgress', {
+    enumerable: false,
+    value: onProgress
+  });
+  
   Object.defineProperty(this, '_state', {
     enumerable: false,
     value: {
@@ -79,6 +85,11 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
     exclude: excludePatterns,
     include: includePatterns
   });
+  
+  // Report discovery progress
+  if (this._onProgress) {
+    this._onProgress('discovery', files.length, files.length);
+  }
   
   // Phase 2: Incremental check
   const filesToIndex = incremental
@@ -111,11 +122,19 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
         errors.push(`${chunk[j]}: ${(outcome.reason as any)?.message || 'Unknown error'}`);
       }
     }
+    
+    // Report parsing progress after each chunk
+    if (this._onProgress) {
+      const currentFile = chunk[chunk.length - 1];
+      const fileName = currentFile ? path.basename(currentFile) : undefined;
+      this._onProgress('parsing', i + chunk.length, filesToIndex.length, fileName);
+    }
   }
   
   // Phase 4: Store symbols and collect fileId map for Phase 6
   let totalSymbols = 0;
   const fileIdMap = new Map<string, number>(); // filePath → fileId
+  let processedFiles = 0;
 
   for (const result of parseResults) {
     const fileId = await this._indexStore.upsertFile({
@@ -151,6 +170,12 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
     if (callRecords.length > 0) {
       await this._indexStore.upsertFunctionCalls(callRecords);
     }
+    
+    // Report indexing progress
+    processedFiles++;
+    if (this._onProgress) {
+      this._onProgress('indexing', processedFiles, parseResults.length);
+    }
   }
 
   // Rebuild FTS once after all symbols are committed (not per-file)
@@ -173,8 +198,20 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   
   // Phase 6: Generate embeddings (if provider available and under budget)
   let embeddingsGenerated = 0;
-
+  
+  // Count total embedding targets first for accurate progress
+  let totalEmbeddingTargets = 0;
   if (this._embeddingProvider && totalCost < budgetCap) {
+    for (const result of parseResults) {
+      const fileId = fileIdMap.get(result.filePath);
+      if (fileId == null) continue;
+      const dbSymbols = await this._indexStore.getSymbolsByFile(fileId);
+      const targets = dbSymbols.filter((s: { is_exported: number; docstring: string | null }) => s.is_exported && s.docstring);
+      totalEmbeddingTargets += targets.length;
+    }
+  }
+
+  if (this._embeddingProvider && totalCost < budgetCap && totalEmbeddingTargets > 0) {
     for (const result of parseResults) {
       const fileId = fileIdMap.get(result.filePath);
       if (fileId == null) continue;
@@ -198,6 +235,11 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
       for (let idx = 0; idx < targets.length; idx++) {
         await this._indexStore.storeEmbedding(targets[idx].symbolId, vectors[idx]);
         embeddingsGenerated++;
+        
+        // Report embedding progress
+        if (this._onProgress) {
+          this._onProgress('embedding', embeddingsGenerated, totalEmbeddingTargets);
+        }
       }
     }
   }
@@ -211,6 +253,11 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
       cost: totalCost,
       errors: errors.length
     });
+  }
+  
+  // Report completion
+  if (this._onProgress) {
+    this._onProgress('complete', 1, 1);
   }
   
   return {
