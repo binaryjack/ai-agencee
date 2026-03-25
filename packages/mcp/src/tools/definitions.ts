@@ -491,6 +491,10 @@ export const coderniceTools: Tool[] = [
           description: 'Maximum number of symbols to return (default: 40)',
           default: 40,
         },
+        conversationContext: {
+          type: 'string',
+          description: 'Optional conversation context summary to extract additional search keywords from (e.g., topics discussed, entities mentioned)',
+        },
       },
       required: ['query'],
     },

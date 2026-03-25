@@ -542,6 +542,7 @@ Status: Ready to validate
       case 'code-search-context': {
         const a = (args as Record<string, unknown> | undefined) ?? {}
         const query = typeof a.query === 'string' ? a.query : ''
+        const conversationContext = typeof a.conversationContext === 'string' ? a.conversationContext : ''
         const pr = typeof a.projectRoot === 'string' ? path.resolve(a.projectRoot) : findProjectRoot()
         const topK = typeof a.topK === 'number' ? a.topK : 40
 
@@ -554,16 +555,30 @@ Status: Ready to validate
 
         const store = await createCodebaseIndexStore({ dbPath, projectId: path.basename(pr) })
         try {
-          // Extract keywords for FTS5 (≥4 chars, max 6)
+          // Extract keywords from both query and conversation context
           const seenKw: Record<string, boolean> = {}
           const keywords: string[] = []
+          
+          // Extract from query (all 4+ char words)
           for (const w of query.split(/\W+/)) {
-            if (w.length >= 4 && !seenKw[w]) {
-              seenKw[w] = true
+            if (w.length >= 4 && !seenKw[w.toLowerCase()]) {
+              seenKw[w.toLowerCase()] = true
               keywords.push(w)
               if (keywords.length === 6) break
             }
           }
+          
+          // Extract from conversation context (capitalized 4+ char words = likely entities/topics)
+          if (conversationContext && keywords.length < 6) {
+            for (const w of conversationContext.split(/\W+/)) {
+              if (w.length >= 4 && /^[A-Z]/.test(w) && !seenKw[w.toLowerCase()]) {
+                seenKw[w.toLowerCase()] = true
+                keywords.push(w)
+                if (keywords.length === 6) break
+              }
+            }
+          }
+          
           const ftsQuery = keywords.join(' OR ')
           if (!ftsQuery) return { content: [{ type: 'text', text: '' }] }
 

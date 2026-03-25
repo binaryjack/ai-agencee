@@ -95,6 +95,18 @@ class NativeCodebaseIndexStore {
       );
       CREATE INDEX IF NOT EXISTS idx_deps_source ON codebase_dependencies(source_file_id);
       CREATE INDEX IF NOT EXISTS idx_deps_target ON codebase_dependencies(target_file_id);
+
+      CREATE TABLE IF NOT EXISTS codebase_function_calls (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        caller_symbol_id INTEGER NOT NULL,
+        callee_name TEXT NOT NULL,
+        callee_symbol_id INTEGER,
+        line_number INTEGER,
+        char_offset INTEGER,
+        FOREIGN KEY(caller_symbol_id) REFERENCES codebase_symbols(id) ON DELETE CASCADE
+      );
+      CREATE INDEX IF NOT EXISTS idx_fcalls_caller ON codebase_function_calls(caller_symbol_id);
+      CREATE INDEX IF NOT EXISTS idx_fcalls_callee_name ON codebase_function_calls(callee_name);
     `);
   }
 
@@ -176,6 +188,26 @@ class NativeCodebaseIndexStore {
         d.targetFileId ?? null,
         d.importSpecifier ?? null,
         d.type ?? null,
+      );
+    }
+  }
+
+  async upsertFunctionCalls(
+    calls: Array<{ callerSymbolId: number; calleeName: string; lineNumber?: number; charOffset?: number }>
+  ): Promise<void> {
+    if (calls.length === 0) return;
+
+    const insert = this._db!.prepare(`
+      INSERT INTO codebase_function_calls
+        (caller_symbol_id, callee_name, line_number, char_offset)
+      VALUES (?, ?, ?, ?)
+    `);
+    for (const call of calls) {
+      insert.run(
+        call.callerSymbolId,
+        call.calleeName,
+        call.lineNumber ?? null,
+        call.charOffset ?? null,
       );
     }
   }
