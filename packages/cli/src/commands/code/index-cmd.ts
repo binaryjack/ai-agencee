@@ -7,6 +7,7 @@ import { createCodebaseIndexer } from '@ai-agencee/engine/code-assistant';
 import { createParserRegistry, createTypeScriptParser } from '@ai-agencee/engine/code-assistant/parsers';
 import { createCodebaseIndexStore } from '@ai-agencee/engine/code-assistant/storage';
 import * as path from 'node:path';
+import { ProgressReporter } from './progress-reporter.js';
 
 export const checkIndexStatus = async function(projectRoot: string) {
   try {
@@ -36,6 +37,7 @@ type CodeIndexOptions = {
   exclude?: string;
   include?: string;
   verbose?: boolean;
+  json?: boolean;
 };
 
 export const runCodeIndex = async function(options: CodeIndexOptions = {}): Promise<void> {
@@ -46,14 +48,21 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     languages = 'typescript,javascript',
     exclude = 'node_modules,dist,build,.git,coverage',
     include = '',
-    verbose = false
+    verbose = false,
+    json = false
   } = options;
   
   const projectRoot = path.resolve(project);
   const dbPath = path.join(projectRoot, '.agencee', 'code-index.db');
   const projectId = path.basename(projectRoot);
   
-  console.log(`📇 Indexing codebase: ${projectRoot}\n`);
+  // Create progress reporter
+  const reporter = new ProgressReporter(json);
+  
+  // Only show header in non-JSON mode
+  if (!json) {
+    console.log(`📇 Indexing codebase: ${projectRoot}\n`);
+  }
   
   try {
     // Create parser registry with TypeScript parser
@@ -90,28 +99,44 @@ export const runCodeIndex = async function(options: CodeIndexOptions = {}): Prom
     // Close store
     await indexStore.close();
     
-    // Display results
-    console.log(`✅ Indexing complete\n`);
-    console.log(`📄 Files indexed: ${result.filesIndexed}`);
-    console.log(`🔍 Symbols extracted: ${result.symbolsExtracted}`);
-    console.log(`🔗 Dependencies tracked: ${result.dependenciesTracked}`);
-    console.log(`💰 Cost: $${result.cost.toFixed(4)}`);
-    console.log(`⏱️  Duration: ${result.duration.toFixed(2)}s`);
+    // Report completion with stats
+    reporter.complete({
+      files: result.filesIndexed,
+      symbols: result.symbolsExtracted,
+      deps: result.dependenciesTracked,
+      cost: result.cost,
+      duration: result.duration
+    });
     
+    // Report errors if any
     if (result.errors && result.errors.length > 0) {
-      console.log(`\n⚠️  Errors: ${result.errors.length}`);
-      if (verbose) {
-        result.errors.forEach(err => console.log(`  - ${err}`));
+      if (json) {
+        // In JSON mode, emit each error as a separate event
+        result.errors.forEach((err: string) => {
+          reporter.error(err);
+        });
+      } else {
+        console.log(`\n⚠️  Errors: ${result.errors.length}`);
+        if (verbose) {
+          result.errors.forEach(err => console.log(`  - ${err}`));
+        }
       }
     }
     
-    console.log(`\n💾 Index stored at: ${dbPath}`);
+    // Show storage location in non-JSON mode
+    if (json) {
+      // In JSON mode, no extra output
+    } else {
+      console.log(`\n💾 Index stored at: ${dbPath}`);
+    }
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error(`\n❌ Indexing failed: ${msg}`);
-    if (verbose) {
-      console.error(error instanceof Error ? error.stack : undefined);
+    reporter.error(msg);
+    
+    if (!json && verbose && error instanceof Error) {
+      console.error(error.stack);
     }
+    
     throw error;
   }
 };

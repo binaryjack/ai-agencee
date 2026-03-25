@@ -25,6 +25,7 @@ export const codeCommand = function() {
     .option('--languages <langs>', 'Comma-separated languages to index', 'typescript,javascript')
     .option('--exclude <patterns>', 'Comma-separated exclude patterns', 'node_modules,dist,build,.git,coverage')
     .option('--include <patterns>', 'Comma-separated include patterns (overrides .gitignore)')
+    .option('--json', 'Output progress as JSON (machine-readable)')
     .option('--verbose', 'Show detailed progress')
     .action(async (options) => {
       try {
