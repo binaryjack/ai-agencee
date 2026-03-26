@@ -3,13 +3,13 @@
  * Discovers files, parses them, extracts symbols and dependencies
  */
 
-import * as crypto from 'crypto';
-import * as fs from 'fs/promises';
-import { glob } from 'glob';
-import ignore from 'ignore';
-import * as os from 'os';
-import * as path from 'path';
-import type { CodebaseIndexerInstance, CodebaseIndexerOptions, DependencyGraph, FileParseResult, IndexProjectOptions, IndexResult } from './codebase-indexer.types';
+import * as crypto from 'crypto'
+import * as fs from 'fs/promises'
+import { glob } from 'glob'
+import ignore from 'ignore'
+import * as os from 'os'
+import * as path from 'path'
+import type { CodebaseIndexerInstance, CodebaseIndexerOptions, DependencyGraph, FileParseResult, IndexProjectOptions, IndexResult } from './codebase-indexer.types'
 
 export const CodebaseIndexer = function(this: CodebaseIndexerInstance, options: CodebaseIndexerOptions) {
   const {
@@ -357,14 +357,32 @@ CodebaseIndexer.prototype._detectChanges = async function(this: CodebaseIndexerI
   
   for (const filePath of files) {
     const fullPath = path.join(this._projectRoot, filePath);
-    const content = await fs.readFile(fullPath, 'utf-8');
-    const hash = this._hashContent(content);
     
-    // Check if file exists in index with same hash
-    const existing = await this._indexStore.getFileByPath(filePath);
+    // Skip directories to avoid EISDIR error
+    try {
+      const stats = await fs.stat(fullPath);
+      if (!stats.isFile()) {
+        console.warn(`[indexer] Skipping non-file path: ${filePath}`);
+        continue;
+      }
+    } catch (err) {
+      console.warn(`[indexer] Cannot access path: ${filePath}`, err instanceof Error ? err.message : '');
+      continue; // File doesn't exist or can't be accessed
+    }
     
-    if (!existing || existing.file_hash !== hash) {
-      changed.push(filePath);
+    try {
+      const content = await fs.readFile(fullPath, 'utf-8');
+      const hash = this._hashContent(content);
+      
+      // Check if file exists in index with same hash
+      const existing = await this._indexStore.getFileByPath(filePath);
+      
+      if (!existing || existing.file_hash !== hash) {
+        changed.push(filePath);
+      }
+    } catch (err) {
+      console.error(`[indexer] Error reading file: ${filePath}`, err instanceof Error ? err.message : '');
+      // Continue to next file
     }
   }
   
@@ -373,9 +391,15 @@ CodebaseIndexer.prototype._detectChanges = async function(this: CodebaseIndexerI
 
 CodebaseIndexer.prototype._parseFile = async function(this: CodebaseIndexerInstance, filePath: string): Promise<FileParseResult | null> {
   const fullPath = path.join(this._projectRoot, filePath);
+  
+  // Check if it's a file before attempting to read
+  const stats = await fs.stat(fullPath);
+  if (!stats.isFile()) {
+    return null; // Skip directories
+  }
+  
   const content = await fs.readFile(fullPath, 'utf-8');
   const hash = this._hashContent(content);
-  const stats = await fs.stat(fullPath);
   
   // Get parser for this file
   const parser = this._parserRegistry.getParser(filePath);
