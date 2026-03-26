@@ -557,12 +557,20 @@ Status: Ready to validate
         try {
           // Extract keywords from both query and conversation context
           const seenKw: Record<string, boolean> = {}
+          // Stopwords to exclude from FTS queries (common English words that won't match code symbols)
+          const stopwords = new Set([
+            'what', 'how', 'can', 'are', 'you', 'the', 'this', 'that', 'see', 'have',
+            'know', 'find', 'show', 'tell', 'explain', 'does', 'will', 'your', 'there',
+            'when', 'where', 'which', 'would', 'could', 'should', 'make', 'get', 'use'
+          ])
+          
           const keywords: string[] = []
           
-          // Extract from query (all 4+ char words)
+          // Extract from query (4+ char words, excluding stopwords)
           for (const w of query.split(/\W+/)) {
-            if (w.length >= 4 && !seenKw[w.toLowerCase()]) {
-              seenKw[w.toLowerCase()] = true
+            const lower = w.toLowerCase()
+            if (w.length >= 4 && !seenKw[lower] && !stopwords.has(lower)) {
+              seenKw[lower] = true
               keywords.push(w)
               if (keywords.length === 6) break
             }
@@ -571,15 +579,23 @@ Status: Ready to validate
           // Extract from conversation context (capitalized 4+ char words = likely entities/topics)
           if (conversationContext && keywords.length < 6) {
             for (const w of conversationContext.split(/\W+/)) {
-              if (w.length >= 4 && /^[A-Z]/.test(w) && !seenKw[w.toLowerCase()]) {
-                seenKw[w.toLowerCase()] = true
+              const lower = w.toLowerCase()
+              if (w.length >= 4 && /^[A-Z]/.test(w) && !seenKw[lower] && !stopwords.has(lower)) {
+                seenKw[lower] = true
                 keywords.push(w)
                 if (keywords.length === 6) break
               }
             }
           }
           
+          // Fallback: if no keywords extracted (all were stopwords), use broad technical query
+          if (keywords.length === 0) {
+            console.log('[MCP] No keywords extracted after stopword filtering, using broad query')
+            keywords.push('main', 'entry', 'point', 'function', 'class', 'component')
+          }
+          
           const ftsQuery = keywords.join(' OR ')
+          console.log(`[MCP] FTS query: "${ftsQuery}" (topK=${topK})`)
           if (!ftsQuery) return { content: [{ type: 'text', text: '' }] }
 
           type SymbolRow = { name: string; kind: string; signature: string | null; file_path: string; line_start: number }
@@ -594,14 +610,60 @@ Status: Ready to validate
             [ftsQuery, topK],
           )) as SymbolRow[]
 
-          if (symbols.length === 0) return { content: [{ type: 'text', text: '' }] }
-
-          const lines = ['### Relevant symbols\n']
-          for (const s of symbols) {
-            const sig = s.signature ? '\n  `' + s.signature + '`' : ''
-            lines.push('- **' + s.kind + '** `' + s.name + '` (' + s.file_path + ':' + s.line_start + ')' + sig)
+          console.log(`[MCP] Found ${symbols.length} symbols`)
+          if (symbols.length === 0) {
+            console.log('[MCP] WARNING: 0 symbols found despite index existing')
+            return { content: [{ type: 'text', text: '' }] }
           }
-          return { content: [{ type: 'text', text: lines.join('\n') }] }
+
+          // Read actual source code for each symbol (with context window)
+          const sections: string[] = []
+          const seenFiles: Record<string, string> = {} // Cache file contents
+          
+          for (const s of symbols) {
+            const filePath = path.join(pr, s.file_path)
+            
+            // Read file content (with caching to avoid multiple reads of same file)
+            let fileContent: string
+            if (seenFiles[s.file_path]) {
+              fileContent = seenFiles[s.file_path]
+            } else {
+              try {
+                fileContent = await fs.readFile(filePath, 'utf-8')
+                seenFiles[s.file_path] = fileContent
+              } catch {
+                // File not accessible, skip this symbol
+                continue
+              }
+            }
+            
+            // Split into lines and extract context window
+            const allLines = fileContent.split('\n')
+            const symbolLine = s.line_start - 1 // Convert to 0-indexed
+            const contextBefore = 5
+            const contextAfter = 15
+            const startLine = Math.max(0, symbolLine - contextBefore)
+            const endLine = Math.min(allLines.length, symbolLine + contextAfter)
+            const snippet = allLines.slice(startLine, endLine).join('\n')
+            
+            // Build section with file path, line numbers, and code
+            sections.push(
+              `#### ${s.file_path}:${s.line_start} - ${s.kind} \`${s.name}\`\n` +
+              '```\n' +
+              snippet +
+              '\n```\n'
+            )
+          }
+          
+          console.log(`[MCP] Read ${sections.length} code sections from ${Object.keys(seenFiles).length} files`)
+          if (sections.length === 0) return { content: [{ type: 'text', text: '' }] }
+          
+          return { 
+            content: [{ 
+              type: 'text', 
+              text: '### Codebase Context\n\n' + sections.join('\n')
+            }] 
+          }
         } finally {
           await store.close()
         }
