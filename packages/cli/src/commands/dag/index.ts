@@ -1,3 +1,4 @@
 export { printDagSummary } from './print-dag-summary.js';
+export { runDagStream } from './run-dag-stream.js';
 export { runDag } from './run-dag.js';
 

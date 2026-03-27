@@ -5,7 +5,7 @@ import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
 import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
-import { runDag } from '../src/commands/dag/index.js'
+import { runDag, runDagStream } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runDoctor } from '../src/commands/doctor/index.js'
 import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } from '../src/commands/import/index.js'
@@ -150,6 +150,20 @@ program
       budget: options.budget,
       provider: options.provider,
       json: options.json,
+    }),
+  );
+
+program
+  .command('agent:run-stream <dag-file>')
+  .description('Run a DAG and stream execution events as NDJSON (used by VS Code extension)')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--provider <name>', 'Override LLM provider for all lanes')
+  .option('--budget <usd>', 'Abort when estimated spend exceeds this USD amount')
+  .action(async (dagFile, options) =>
+    runDagStream(dagFile, {
+      project:  options.project,
+      provider: options.provider,
+      budget:   options.budget,
     }),
   );
 
