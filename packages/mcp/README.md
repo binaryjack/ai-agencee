@@ -5,6 +5,17 @@
 
 MCP (Model Context Protocol) server for the **AI Agencee** toolkit. Exposes DAG agent orchestration, project standard enforcement, and live event streaming directly to AI assistants — no API keys required when running through VS Code Copilot.
 
+> **⚠️ IMPORTANT ARCHITECTURE NOTE**  
+> This MCP server is designed for **cloud applications** and **remote access** to codebases (e.g., Claude Desktop, AI Agencee cloud app).  
+>   
+> **DO NOT** use this in the VS Code extension directly — the extension has native VS Code APIs (`workspace.findFiles()`, `workspace.symbols`, `workspace.fs`) for local codebase access.  
+> Using MCP from the extension spawns unnecessary subprocesses and adds architectural complexity.
+>   
+> **Use cases:**
+> - ✅ AI Agencee cloud app accessing remote workspace via MCP
+> - ✅ Claude Desktop MCP integration for local codebase queries
+> - ❌ VS Code extension (use native `vscode` API instead)
+
 ---
 
 ## Installation

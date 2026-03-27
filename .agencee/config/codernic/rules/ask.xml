@@ -47,6 +47,5 @@
     - For executing existing DAGs → @codernic /agent "DAG name"
     - For codebase questions → Provide analysis with file references
     - For missing agents → @codernic /create-agent
-    - For missing index → @codernic /index
   </guidance-for-recommendations>
 </system-instructions>
