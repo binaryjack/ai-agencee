@@ -4,7 +4,7 @@ import { Command } from 'commander'
 import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
-import { runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
+import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
 import { runDag } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runDoctor } from '../src/commands/doctor/index.js'
@@ -77,12 +77,14 @@ program
   .option('--limit <n>', 'Maximum results to return', '10')
   .option('--kind <kind>', 'Filter by symbol kind: function | class | interface | variable | import')
   .option('--json', 'Output machine-readable JSON')
+  .option('--with-deps', 'Include caller/callee relationships from dependency graph')
   .action(async (term, options) => {
     await runCodeSearch(term, {
       project: options.project,
       limit: parseInt(options.limit, 10),
       kind: options.kind,
       json: options.json,
+      withDeps: options.withDeps,
     });
   });
 
@@ -104,6 +106,28 @@ program
   .option('--json', 'Output machine-readable JSON')
   .action(async (options) => {
     await runCodeStats(options);
+  });
+
+program
+  .command('code:generate <task>')
+  .description('Generate or modify code from a natural-language task description')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--mode <mode>', 'Execution mode: quick-fix | feature | refactor | debug', 'feature')
+  .option('--dry-run', 'Preview planned changes without writing files')
+  .option('--auto-approve', 'Skip interactive confirmation prompts')
+  .option('--provider <name>', 'LLM provider override (anthropic | openai)', 'anthropic')
+  .option('--router <path>', 'Path to model-router.json config file')
+  .option('--emit-patches', 'Output file patches as NDJSON to stdout instead of writing to disk')
+  .action(async (task, options) => {
+    await runCodeGenerate(task, {
+      project: options.project,
+      mode: options.mode,
+      dryRun: options.dryRun,
+      autoApprove: options.autoApprove,
+      provider: options.provider,
+      router: options.router,
+      emitPatches: options.emitPatches,
+    });
   });
 
 // Agent commands

@@ -19,7 +19,23 @@ type GenerateOptions = {
   autoApprove?: boolean;
   provider?:    string;
   router?:      string;
+  emitPatches?: boolean;
 };
+
+function parsePatches(planText: string): Array<{ path: string; content?: string; delete?: boolean }> {
+  const patches: Array<{ path: string; content?: string; delete?: boolean }> = [];
+  const deleteRe = /^## DELETE:\s*(.+)$/gm;
+  let m: RegExpExecArray | null;
+  while ((m = deleteRe.exec(planText)) !== null) {
+    patches.push({ path: m[1].trim(), delete: true });
+  }
+  // Regex to capture fenced code blocks: ## FILE: <path>\n```lang\ncontent```
+  const fileRe = /^## FILE:\s*(.+?)\n```[^\n]*\n([\s\S]*?)```/gm;
+  while ((m = fileRe.exec(planText)) !== null) {
+    patches.push({ path: m[1].trim(), content: m[2] });
+  }
+  return patches;
+}
 
 export const runCodeGenerate = async function(
   task:    string,
@@ -78,6 +94,30 @@ export const runCodeGenerate = async function(
     projectRoot,
     modelRouter,
   });
+
+  // ── emit-patches mode: output NDJSON events to stdout (extension reads these) ──
+  if (options.emitPatches) {
+    const patchResult = await orchestrator.execute({ task, mode, dryRun: true });
+    if (!patchResult.success) {
+      process.stdout.write(JSON.stringify({ type: 'error', message: patchResult.error ?? 'Generation failed' }) + '\n');
+      process.exit(1);
+    }
+    const planText = String(patchResult.plan ?? '');
+    if (dryRun) {
+      process.stdout.write(JSON.stringify({ type: 'plan', plan: planText, cost: patchResult.totalCost, duration: patchResult.duration }) + '\n');
+      return;
+    }
+    const patches = parsePatches(planText);
+    for (const patch of patches) {
+      if (patch.delete) {
+        process.stdout.write(JSON.stringify({ type: 'delete', path: patch.path }) + '\n');
+      } else {
+        process.stdout.write(JSON.stringify({ type: 'patch', path: patch.path, content: patch.content }) + '\n');
+      }
+    }
+    process.stdout.write(JSON.stringify({ type: 'result', cost: patchResult.totalCost, duration: patchResult.duration, patchCount: patches.length }) + '\n');
+    return;
+  }
 
   const result = await orchestrator.execute({ task, mode, dryRun, autoApprove: options.autoApprove });
 
