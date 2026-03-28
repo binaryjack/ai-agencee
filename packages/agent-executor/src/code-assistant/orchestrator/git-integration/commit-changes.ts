@@ -8,8 +8,8 @@
  * - Returns commit hash for tracking
  */
 
-import { spawn } from 'child_process';
-import type { GitCommitResult } from './git-integration.types.js';
+import { spawn } from 'child_process'
+import type { GitCommitResult } from './git-integration.types.js'
 
 /**
  * Commit staged changes with message

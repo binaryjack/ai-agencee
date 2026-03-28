@@ -6,10 +6,10 @@
  * Performance optimization: Parallel execution for independent test suites
  */
 
-import { spawn } from 'child_process';
-import * as path from 'path';
-import type { FrameworkDetection, TestRunnerConfig, TestRunResult } from './test-runner.types.js';
-import { parseTestOutput } from './parse-results.js';
+import { spawn } from 'child_process'
+import * as path from 'path'
+import { parseTestOutput } from './parse-results.js'
+import type { FrameworkDetection, TestRunnerConfig, TestRunResult } from './test-runner.types.js'
 
 /**
  * Run tests using detected framework

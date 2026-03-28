@@ -24,9 +24,9 @@
  * ```
  */
 
-import { detectFramework } from './detect-framework.js';
-import { runTests } from './run-tests.js';
-import type { TestRunnerConfig, TestRunResult } from './test-runner.types.js';
+import { detectFramework } from './detect-framework.js'
+import { runTests } from './run-tests.js'
+import type { TestRunnerConfig, TestRunResult } from './test-runner.types.js'
 
 /**
  * Execute tests for a project
@@ -76,7 +76,8 @@ export async function executeTests(config: TestRunnerConfig): Promise<TestRunRes
 }
 
 // Re-export types and utilities
-export * from './test-runner.types.js';
-export { detectFramework } from './detect-framework.js';
-export { runTests } from './run-tests.js';
-export { parseTestOutput } from './parse-results.js';
+export { detectFramework } from './detect-framework.js'
+export { parseTestOutput } from './parse-results.js'
+export { runTests } from './run-tests.js'
+export * from './test-runner.types.js'
+

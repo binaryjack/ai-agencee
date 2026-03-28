@@ -6,9 +6,9 @@
  * Detection strategy: Check package.json scripts, config files, directory structure
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import type { FrameworkDetection, TestFramework } from './test-runner.types.js';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { FrameworkDetection, TestFramework } from './test-runner.types.js'
 
 /**
  * Detect test framework in a project

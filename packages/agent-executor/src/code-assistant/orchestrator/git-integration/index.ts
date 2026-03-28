@@ -27,12 +27,12 @@
  */
 
 import type { IModelRouter } from '../../../lib/model-router/index.js';
+import { commitChanges } from './commit-changes.js';
 import { detectGitChanges, stageFiles } from './detect-changes.js';
 import { generateCommitMessage } from './generate-commit-message.js';
-import { commitChanges } from './commit-changes.js';
 import type {
-  GitIntegrationConfig,
-  GitCommitResult,
+    GitCommitResult,
+    GitIntegrationConfig,
 } from './git-integration.types.js';
 
 /**
@@ -135,7 +135,8 @@ export async function executeGitCommit(
 }
 
 // Re-export types and utilities
-export * from './git-integration.types.js';
+export { commitChanges, getCurrentBranch, hasUncommittedChanges } from './commit-changes.js';
 export { detectGitChanges, stageFiles } from './detect-changes.js';
 export { generateCommitMessage } from './generate-commit-message.js';
-export { commitChanges, hasUncommittedChanges, getCurrentBranch } from './commit-changes.js';
+export * from './git-integration.types.js';
+

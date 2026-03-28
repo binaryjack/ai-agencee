@@ -10,12 +10,12 @@
  * 5. Format using conventional commits standard
  */
 
-import * as path from 'path';
-import type { IModelRouter } from '../../../lib/model-router/index.js';
+import * as path from 'path'
+import type { IModelRouter } from '../../../lib/model-router/index.js'
 import type {
-  CommitMessageConfig,
-  CommitMessageResult,
-} from './git-integration.types.js';
+    CommitMessageConfig,
+    CommitMessageResult,
+} from './git-integration.types.js'
 
 /**
  * Generate commit message from changes

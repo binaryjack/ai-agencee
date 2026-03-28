@@ -9,7 +9,7 @@
  * - RSpec: Text output with color codes
  */
 
-import type { TestFramework, TestResult } from './test-runner.types.js';
+import type { TestFramework, TestResult } from './test-runner.types.js'
 
 export interface ParsedTestOutput {
   totalTests: number;

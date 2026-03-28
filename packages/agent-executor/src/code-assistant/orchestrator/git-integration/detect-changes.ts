@@ -5,9 +5,8 @@
  * Uses `git status --porcelain` for reliable change detection
  */
 
-import { spawn } from 'child_process';
-import * as path from 'path';
-import type { GitChangesResult } from './git-integration.types.js';
+import { spawn } from 'child_process'
+import type { GitChangesResult } from './git-integration.types.js'
 
 /**
  * Detect changes in git working directory

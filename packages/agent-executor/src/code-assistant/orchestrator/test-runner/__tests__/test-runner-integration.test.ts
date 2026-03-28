@@ -3,11 +3,11 @@
  * @description Integration tests for test runner module
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as os from 'os';
-import { executeTests } from '../index.js';
+import * as fs from 'fs/promises'
+import * as os from 'os'
+import * as path from 'path'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { executeTests } from '../index.js'
 
 describe('Test Runner Integration', () => {
   let tmpDir: string;

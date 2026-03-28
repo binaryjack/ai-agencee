@@ -5,11 +5,11 @@
  * callers can import these types without pulling in SQLite or the model router.
  */
 
-import type { IModelRouter } from '../lib/model-router/index.js';
-import type { EmbeddingProvider } from './embeddings/embedding-provider.types.js';
-import type { IIndexerAuditLog } from './indexer/codebase-indexer.types';
-import type { ParserRegistryInstance } from './parsers/parser-registry';
-import type { CodebaseIndexStoreInstance } from './storage/codebase-index-store.types';
+import type { IModelRouter } from '../lib/model-router/index.js'
+import type { EmbeddingProvider } from './embeddings/embedding-provider.types.js'
+import type { IIndexerAuditLog } from './indexer/codebase-indexer.types'
+import type { ParserRegistryInstance } from './parsers/parser-registry'
+import type { CodebaseIndexStoreInstance } from './storage/codebase-index-store.types'
 
 // ─── Options ─────────────────────────────────────────────────────────────────
 
