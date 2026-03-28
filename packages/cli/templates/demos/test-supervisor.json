@@ -1,0 +1,19 @@
+{
+  "laneId": "test",
+  "retryBudget": 2,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "quality-gate",
+      "expect": { "noErrorFindings": true },
+      "onFail": "RETRY",
+      "retryInstructions": "Fix code to pass all tests"
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "auto-approve",
+      "expect": { "noErrorFindings": true },
+      "onFail": "APPROVE"
+    }
+  ]
+}

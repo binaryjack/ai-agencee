@@ -1,0 +1,22 @@
+{
+  "name": "Security Scanner (Demo)",
+  "icon": "🔐",
+  "description": "Demonstrates FTS5 zero-hallucination security analysis with mock provider",
+  "checks": [
+    {
+      "type": "file-exists",
+      "path": "package.json",
+      "pass": "✅ package.json found",
+      "fail": "❌ No package.json",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "run-command",
+      "command": "echo 'Mock security scan complete'",
+      "passPattern": "complete",
+      "pass": "✅ Security scan passed (mock)",
+      "fail": "❌ Security scan failed",
+      "failSeverity": "info"
+    }
+  ]
+}

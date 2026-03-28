@@ -1,0 +1,29 @@
+{
+  "defaultProvider": "mock",
+  "taskProfiles": {
+    "file-analysis": { "family": "haiku", "maxTokens": 1024 },
+    "security-analysis": { "family": "sonnet", "maxTokens": 2048 },
+    "code-generation": { "family": "sonnet", "maxTokens": 4096 },
+    "refactoring": { "family": "sonnet", "maxTokens": 4096 },
+    "test-execution": { "family": "haiku", "maxTokens": 1024 },
+    "deployment": { "family": "opus", "maxTokens": 2048 }
+  },
+  "providers": {
+    "mock": {
+      "models": {
+        "haiku": "mock-haiku",
+        "sonnet": "mock-sonnet",
+        "opus": "mock-opus"
+      },
+      "costs": {
+        "inputPerMillion": 0,
+        "outputPerMillion": 0
+      }
+    }
+  },
+  "budgetCap": {
+    "perRun": 0.00,
+    "perLane": 0.00,
+    "currency": "USD"
+  }
+}

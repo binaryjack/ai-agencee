@@ -1,0 +1,15 @@
+{
+  "name": "Frontend Agent (Demo)",
+  "icon": "🎨",
+  "description": "Parallel lane demonstrating frontend development",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock frontend build complete'",
+      "passPattern": "complete",
+      "pass": "✅ Frontend ready (mock)",
+      "fail": "❌ Frontend failed",
+      "failSeverity": "info"
+    }
+  ]
+}

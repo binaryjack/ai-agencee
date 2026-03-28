@@ -1,0 +1,15 @@
+{
+  "name": "Code Analyzer (Demo)",
+  "icon": "🔍",
+  "description": "Analyzes code quality and refactoring opportunities",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock analysis complete'",
+      "passPattern": "complete",
+      "pass": "✅ Analysis passed (mock)",
+      "fail": "❌ Analysis failed",
+      "failSeverity": "info"
+    }
+  ]
+}

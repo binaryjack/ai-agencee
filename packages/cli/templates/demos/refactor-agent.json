@@ -1,0 +1,15 @@
+{
+  "name": "Refactoring Agent (Demo)",
+  "icon": "♻️",
+  "description": "Demonstrates quality-gated refactoring with model routing",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock refactoring complete'",
+      "passPattern": "complete",
+      "pass": "✅ Refactoring passed (mock)",
+      "fail": "❌ Refactoring failed",
+      "failSeverity": "info"
+    }
+  ]
+}

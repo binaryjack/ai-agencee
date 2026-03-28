@@ -1,0 +1,15 @@
+{
+  "name": "Integration Test Agent (Demo)",
+  "icon": "🔗",
+  "description": "Demonstrates barrier coordination and integration testing",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock integration tests passed'",
+      "passPattern": "passed",
+      "pass": "✅ Integration tests passed (mock)",
+      "fail": "❌ Integration failed",
+      "failSeverity": "error"
+    }
+  ]
+}

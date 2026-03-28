@@ -1,0 +1,23 @@
+{
+  "laneId": "security-scan",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "self",
+      "expect": {
+        "noErrorFindings": false
+      },
+      "onFail": "RETRY",
+      "retryInstructions": "Re-run security checks"
+    },
+    {
+      "checkpointId": "step-1",
+      "mode": "auto-approve",
+      "expect": {
+        "noErrorFindings": true
+      },
+      "onFail": "APPROVE"
+    }
+  ]
+}

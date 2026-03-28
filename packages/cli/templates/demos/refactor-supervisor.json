@@ -1,0 +1,12 @@
+{
+  "laneId": "refactor",
+  "retryBudget": 1,
+  "checkpoints": [
+    {
+      "checkpointId": "step-0",
+      "mode": "auto-approve",
+      "expect": { "noErrorFindings": true },
+      "onFail": "APPROVE"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { runCheck } from '../src/commands/check/index.js'
 import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
 import { runDag, runDagStream } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
+import { runDemo } from '../src/commands/demo/index.js'
 import { runDoctor } from '../src/commands/doctor/index.js'
 import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } from '../src/commands/import/index.js'
 import { runInit } from '../src/commands/init/index.js'
@@ -51,6 +52,20 @@ program
   .command('mcp')
   .description('Start MCP server for AI assistant integration')
   .action(runMcp);
+
+// Demo command (Phase 1.1 - Zero-config demo mode)
+program
+  .command('demo [scenario]')
+  .description('Run zero-config demo with MockProvider (no API keys, no cost)')
+  .option('-v, --verbose', 'Show detailed execution logs')
+  .option('-i, --interactive', 'Pause at human-review gates')
+  .action(async (scenario, options) => {
+    await runDemo({
+      scenario,
+      verbose: options.verbose,
+      interactive: options.interactive,
+    });
+  });
 
 // Code commands (E14 - Coding Assistant)
 program

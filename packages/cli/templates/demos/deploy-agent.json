@@ -1,0 +1,15 @@
+{
+  "name": "Deployment Agent (Demo)",
+  "icon": "🚀",
+  "description": "Demonstrates approval gate and deployment coordination",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock deployment successful'",
+      "passPattern": "successful",
+      "pass": "✅ Deployment complete (mock)",
+      "fail": "❌ Deployment failed",
+      "failSeverity": "error"
+    }
+  ]
+}

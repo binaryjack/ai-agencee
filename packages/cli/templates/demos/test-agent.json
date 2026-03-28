@@ -1,0 +1,15 @@
+{
+  "name": "Test Runner (Demo)",
+  "icon": "🧪",
+  "description": "Demonstrates quality checkpoint with test runner integration",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock tests passed'",
+      "passPattern": "passed",
+      "pass": "✅ Tests passed (mock)",
+      "fail": "❌ Tests failed",
+      "failSeverity": "error"
+    }
+  ]
+}

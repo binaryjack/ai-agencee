@@ -1,0 +1,19 @@
+{
+  "name": "Demo — FTS5 Zero-Hallucination Security Scan",
+  "description": "Demonstrates FTS5 SQLite index for sub-10ms precise code search (zero hallucinations). Single-lane security scan using mock provider.",
+  "lanes": [
+    {
+      "id": "security-scan",
+      "agentFile": "security-agent.json",
+      "supervisorFile": "security-supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["security-analysis", "vulnerability-detection"]
+    }
+  ],
+  "globalBarriers": [],
+  "capabilityRegistry": {
+    "security-analysis": ["security-scan"],
+    "vulnerability-detection": ["security-scan"]
+  },
+  "modelRouterFile": "mock-router.json"
+}

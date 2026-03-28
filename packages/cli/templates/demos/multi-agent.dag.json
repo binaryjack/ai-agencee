@@ -1,0 +1,54 @@
+{
+  "name": "Demo — Parallel Agent Orchestra",
+  "description": "Demonstrates DAG parallel execution, barriers, handoffs, and supervisor approval gates. Four lanes running in coordinated parallel.",
+  "lanes": [
+    {
+      "id": "frontend",
+      "agentFile": "frontend-agent.json",
+      "supervisorFile": "frontend-supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["frontend-development"]
+    },
+    {
+      "id": "backend",
+      "agentFile": "backend-agent.json",
+      "supervisorFile": "backend-supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["backend-development"]
+    },
+    {
+      "id": "integration",
+      "agentFile": "integration-agent.json",
+      "supervisorFile": "integration-supervisor.json",
+      "dependsOn": ["frontend", "backend"],
+      "capabilities": ["integration-testing"]
+    },
+    {
+      "id": "deploy",
+      "agentFile": "deploy-agent.json",
+      "supervisorFile": "deploy-supervisor.json",
+      "dependsOn": ["integration"],
+      "capabilities": ["deployment", "quality-approval"]
+    }
+  ],
+  "globalBarriers": [
+    {
+      "name": "development-complete",
+      "participants": ["frontend", "backend"],
+      "timeoutMs": 120000
+    },
+    {
+      "name": "deployment-gate",
+      "participants": ["integration", "deploy"],
+      "timeoutMs": 60000
+    }
+  ],
+  "capabilityRegistry": {
+    "frontend-development": ["frontend"],
+    "backend-development": ["backend"],
+    "integration-testing": ["integration"],
+    "deployment": ["deploy"],
+    "quality-approval": ["deploy"]
+  },
+  "modelRouterFile": "mock-router.json"
+}

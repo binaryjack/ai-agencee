@@ -1,0 +1,15 @@
+{
+  "name": "Backend Agent (Demo)",
+  "icon": "⚙️",
+  "description": "Parallel lane demonstrating backend development",
+  "checks": [
+    {
+      "type": "run-command",
+      "command": "echo 'Mock backend build complete'",
+      "passPattern": "complete",
+      "pass": "✅ Backend ready (mock)",
+      "fail": "❌ Backend failed",
+      "failSeverity": "info"
+    }
+  ]
+}

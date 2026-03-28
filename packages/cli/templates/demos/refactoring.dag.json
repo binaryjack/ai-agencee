@@ -1,0 +1,42 @@
+{
+  "name": "Demo — Quality-Gated Refactoring with Rollback",
+  "description": "Demonstrates multi-LLM routing (Haiku/Sonnet/Opus by task), quality checkpoints, test runner integration, and git rollback system.",
+  "lanes": [
+    {
+      "id": "analyze",
+      "agentFile": "analyze-agent.json",
+      "supervisorFile": "analyze-supervisor.json",
+      "dependsOn": [],
+      "capabilities": ["code-analysis"]
+    },
+    {
+      "id": "refactor",
+      "agentFile": "refactor-agent.json",
+      "supervisorFile": "refactor-supervisor.json",
+      "dependsOn": ["analyze"],
+      "capabilities": ["code-generation", "refactoring"]
+    },
+    {
+      "id": "test",
+      "agentFile": "test-agent.json",
+      "supervisorFile": "test-supervisor.json",
+      "dependsOn": ["refactor"],
+      "capabilities": ["test-execution", "quality-gate"]
+    }
+  ],
+  "globalBarriers": [
+    {
+      "name": "quality-checkpoint",
+      "participants": ["refactor", "test"],
+      "timeoutMs": 60000
+    }
+  ],
+  "capabilityRegistry": {
+    "code-analysis": ["analyze"],
+    "code-generation": ["refactor"],
+    "refactoring": ["refactor"],
+    "test-execution": ["test"],
+    "quality-gate": ["test"]
+  },
+  "modelRouterFile": "mock-router.json"
+}
