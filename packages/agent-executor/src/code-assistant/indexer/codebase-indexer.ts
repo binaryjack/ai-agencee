@@ -72,7 +72,7 @@ CodebaseIndexer.prototype.indexProject = async function(this: CodebaseIndexerIns
   
   const {
     incremental = true,
-    languages = ['typescript', 'javascript', 'python'],
+    languages = ['typescript', 'javascript', 'python', 'go', 'java', 'rust', 'csharp', 'ruby', 'kotlin', 'sql'],
     excludePatterns = ['node_modules', 'dist', 'build', '.git', 'coverage'],
     includePatterns = [],
     respectGitignore = true,
@@ -527,7 +527,11 @@ CodebaseIndexer.prototype._getExtensions = function(this: CodebaseIndexerInstanc
     python: ['py'],
     java: ['java'],
     go: ['go'],
-    rust: ['rs']
+    rust: ['rs'],
+    csharp: ['cs'],
+    ruby: ['rb'],
+    kotlin: ['kt'],
+    sql: ['sql', 'ddl', 'dml', 'pls', 'pkb', 'pks']
   };
   
   return languages.flatMap(lang => extensionMap[lang] || []);
@@ -545,7 +549,16 @@ CodebaseIndexer.prototype._detectLanguage = function(this: CodebaseIndexerInstan
     py: 'python',
     java: 'java',
     go: 'go',
-    rs: 'rust'
+    rs: 'rust',
+    cs: 'csharp',
+    rb: 'ruby',
+    kt: 'kotlin',
+    sql: 'sql',
+    ddl: 'sql',
+    dml: 'sql',
+    pls: 'sql',
+    pkb: 'sql',
+    pks: 'sql'
   };
   
   return languageMap[ext] || 'unknown';

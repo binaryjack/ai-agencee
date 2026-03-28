@@ -34,12 +34,21 @@ import type {
 import type { CodebaseIndexStoreInstance } from '../../storage/codebase-index-store.types.js';
 import type { ICodeAssistantOrchestrator } from '../code-assistant-orchestrator.js';
 import { MODE_TASK_TYPE, SYSTEM_PROMPT } from './constants.js';
+import { executeTests } from '../test-runner/index.js';
+import { executeGitCommit } from '../git-integration/index.js';
 
 export async function execute(
   this: ICodeAssistantOrchestrator,
   req:  ExecutionRequest,
 ): Promise<ExecutionResult> {
-  const start = Date.now();
+  const st
+    task, 
+    dryRun = false, 
+    mode = 'feature',
+    runTests = false,
+    testTimeout = 60000,
+    collectCoverage = false,
+ 
   const { task, dryRun = false, mode = 'feature' } = req;
 
   // ── 1. Open index store ───────────────────────────────────────────────────
@@ -48,6 +57,14 @@ export async function execute(
   try {
     store = await this._openStore();
   } catch {
+    return {
+      success:       false,
+      filesModified: [],
+      totalCost:     0,
+      duration:      Date.now() - start,
+      error:         'Index not found. Run: ai-kit code index first.',
+    };
+  }
     return {
       success:       false,
       filesModified: [],
@@ -169,12 +186,59 @@ export async function execute(
         success:       false,
         filesModified,
         newFiles,
+  // ── 8. Run tests if requested ─────────────────────────────────────────────
+
+  let testResults: ExecutionResult['testResults'];
+
+  if (runTests && (filesModified.length > 0 || newFiles.length > 0)) {
+    try {
+      const testRun = await executeTests({
+        projectRoot: this._options.projectRoot,
+        modifiedFiles: [...filesModified, ...(newFiles || [])],
+        timeout: testTimeout,
+        collectCoverage,
+      });
+
+      testResults = {
+        framework: testRun.framework,
+        totalTests: testRun.totalTests,
+        passedTests: testRun.passedTests,
+        failedTests: testRun.failedTests,
+        testsPassed: testRun.success,
+        duration: testRun.duration,
+      };
+
+      // If tests failed, mark execution as failed
+      if (!testRun.success) {
+        return {
+          success: false,
+          filesModified,
+          newFiles,
+          totalCost,
+          duration: Date.now() - start,
+          testResults,
+          error: `Tests failed: ${testRun.failedTests}/${testRun.totalTests} tests failed. ${testRun.error || ''}`,
+        };
+      }
+    } catch (testError: unknown) {
+      return {
+        success: false,
+        filesModified,
+        newFiles,
         totalCost,
-        duration:      Date.now() - start,
-        error:         'Failed to write ' + patch.relativePath + ': ' + String(writeErr),
+        duration: Date.now() - start,
+        error: `Test execution error: ${String(testError)}`,
       };
     }
   }
+
+  return {
+    success:       true,
+    filesModified,
+    newFiles,
+    totalCost,
+    duration:      Date.now() - start,
+    testResults
 
   return {
     success:       true,

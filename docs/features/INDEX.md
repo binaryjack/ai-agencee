@@ -58,6 +58,7 @@ Welcome to the comprehensive feature documentation for ai-agencee/ai-kit. This d
 - [Domain Agents — Production Ready (IP-09)](./37-domain-agents.md) — 6 agents: security-review, dependency-audit, pr-description, docs, a11y, database
 - [Visual DAG Editor (IP-10)](./38-dag-editor.md) — AI compose, template gallery, version history, simulation mode, live overlay
 - [Observability Surface (IP-11)](./39-observability-surface.md) — Flame chart, token heatmap, cost drill-down, OTLP export
+- [VS Code Extension](./40-vscode-extension.md) — Commander mode, Codernic (ASK/PLAN/AGENT), visual editors, code intelligence, chat participants
 
 ---
 
@@ -104,6 +105,7 @@ Welcome to the comprehensive feature documentation for ai-agencee/ai-kit. This d
 | Domain Agents (6 production) | [37](./37-domain-agents.md) | ✅ Documented | P1 | IP-09 |
 | Visual DAG Editor | [38](./38-dag-editor.md) | ✅ Documented | P1 | IP-10 |
 | Observability Surface | [39](./39-observability-surface.md) | ✅ Documented | P1 | IP-11 |
+| VS Code Extension | [40](./40-vscode-extension.md) | ✅ Documented | P0 | Core |
 
 ---
 

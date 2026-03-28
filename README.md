@@ -1,8 +1,8 @@
 # AI Agencee
 
-> **Enterprise-grade multi-agent orchestration engine** — DAG-supervised parallel agents with streaming LLM output, intelligent model routing, resilience patterns, cost tracking, RBAC, audit logging, and a zero-API-key demo mode.
+> **Enterprise-grade multi-agent orchestration engine** — DAG-supervised parallel agents with streaming LLM output, intelligent model routing, resilience patterns, cost tracking, RBAC, audit logging, VS Code integration with Commander mode and Codernic intelligence, and a zero-API-key demo mode.
 
-**Status**: ✅ Production-Ready | **Tests**: 588 passing | **Enterprise Features**: 14 completed (E1–E14)
+**Status**: ✅ Production-Ready | **Tests**: 588 passing | **Enterprise Features**: 14 completed (E1–E14) | **VS Code Extension**: v0.6.57
 
 ---
 
@@ -10,9 +10,9 @@
 
 | Audience | Why they use it |
 |----------|-----------------|
-| **Individual developers** | Run the full AI-assisted development loop — from idea to wired sprint plan — without leaving the terminal and without paying for API calls during exploration |
-| **Feature squads (2–8 people)** | Coordinate parallel workstreams with hard sync points, automated handoffs between agents, and supervisor-gated quality checks |
-| **Platform / enterprise teams** | Roll out AI-assisted workflows to multiple squads with RBAC, multi-tenant isolation, audit trails, cost controls, and CI integration — all enforced at the engine level |
+| **Individual developers** | Run the full AI-assisted development loop — from idea to wired sprint plan — with Commander mode in VS Code, Codernic's codebase intelligence, and zero API costs during exploration |
+| **Feature squads (2–8 people)** | Coordinate parallel workstreams with hard sync points, automated handoffs between agents, supervisor-gated quality checks, and visual DAG execution in VS Code |
+| **Platform / enterprise teams** | Roll out AI-assisted workflows to multiple squads with RBAC, multi-tenant isolation, audit trails, cost controls, VS Code integration, and CI — all enforced at the engine level |
 | **AI tooling builders** | Use the DAG engine, MCP bridge, plugin system, and TypeScript Builder API as infrastructure for custom AI products |
 
 ---
@@ -119,9 +119,9 @@ Multi-agent workflows with configurable retry budgets, circuit breakers, OIDC JW
 - **[Authentication & RBAC](docs/features/09-rbac-auth.md)** — Role-based access control with OIDC JWT support
 - **[Audit Logging](docs/features/10-audit-logging.md)** — Immutable hash-chained audit trails for compliance
 - **[Multi-Tenant Isolation](docs/features/11-multi-tenant.md)** — Per-tenant data isolation and run sandboxing
-- **PII Scrubbing** — Automatic detection and redaction of sensitive data
+- **[PII Scrubbing](docs/features/12-pii-security.md)** — Automatic detection and redaction of sensitive data
 - **Rate Limiting** — Token budget and concurrent run limits per principal
-- **[Codernic (E14)](docs/features/28-code-assistant.md)** — Codebase-aware coding agent (449 files/1s), symbol extraction, dependency graphs, write code that actually compiles
+- **[Codernic (E14)](docs/features/28-code-assistant.md)** — Codebase-aware coding agent (449 files/1.03s), symbol extraction, dependency graphs, write code that compiles on first try
 
 ### 📊 Observability
 - **[Event Bus](docs/features/08-event-bus.md)** — Typed real-time event subscriptions for lane status, tokens, costs
@@ -129,6 +129,8 @@ Multi-agent workflows with configurable retry budgets, circuit breakers, OIDC JW
 - **Cost Analytics** — Per-run and per-principal cost breakdowns
 
 ### 👨‍💻 Developer Experience
+- **[VS Code Extension](docs/features/40-vscode-extension.md)** — Commander mode for workflows, Codernic (ASK/PLAN/AGENT), visual editors, code intelligence (@ai-kit and @codernic chat participants)
+- **[Codernic Intelligence](docs/features/28-code-assistant.md)** — Codebase-aware assistant with FTS5 indexing (449 files/1.03s), hybrid context strategy, three-mode operation
 - **[TypeScript Builder API](docs/features/13-dag-builder-api.md)** — Fluent, type-safe DSL for DAG construction
 - **[CLI Commands](docs/features/15-cli-commands.md)** — Full command reference with examples
 - **[MCP Integration](docs/features/16-mcp-integration.md)** — VS Code and Claude Desktop support
@@ -141,6 +143,7 @@ Multi-agent workflows with configurable retry budgets, circuit breakers, OIDC JW
 |---|---|---|
 | `packages/agent-executor` | Core engine: DAG orchestrator, supervised agents, model router, resilience, RBAC, audit logging | [Agent Executor Docs](docs/features/01-dag-orchestration.md) |
 | `packages/cli` | `ai-kit` CLI — `init`, `sync`, `check`, `agent:dag`, `plan`, `visualize`, `data` | [CLI Reference](docs/features/15-cli-commands.md) |
+| `_private/ai-agencee-ext` | VS Code Extension — Commander mode, Codernic, visual editors, code intelligence | [VS Code Extension](docs/features/40-vscode-extension.md) |
 | `packages/core` | Shared filesystem utilities, template scaffolding, event types | [Features Index](docs/features/INDEX.md) |
 | `packages/mcp` | VS Code MCP bridge, OIDC auth middleware, SSE server, GitHub Copilot routing | [MCP Integration](docs/features/16-mcp-integration.md) |
 

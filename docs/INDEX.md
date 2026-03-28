@@ -39,8 +39,21 @@ Welcome to the **Multi-Agent Orchestration System** for the AI Starter Kit! This
 ### ✅ **Enterprise Feature Status** (10 minutes)
 - **File**: [enterprise-readiness.md](enterprise-readiness.md)
 - **Best for**: Project review, acceptance criteria verification
-- **Covers**: All E1–E13 features, compliance status, SOC2 path
+- **Covers**: All E1–E14 features, compliance status, SOC2 path
 - **Time**: ~10 minutes for status overview
+
+### 🖥️ **VS Code Extension** (20 minutes)
+- **File**: [features/40-vscode-extension.md](features/40-vscode-extension.md)
+- **Best for**: Developers who want IDE-integrated orchestration
+- **Covers**: Commander mode, Codernic (ASK/PLAN/AGENT), visual editors, code intelligence, chat participants (@ai-kit, @codernic)
+- **Time**: ~20 minutes to understand capabilities
+
+### 🧠 **Codernic Intelligence** (25 minutes)
+- **File**: [features/28-code-assistant.md](features/28-code-assistant.md)
+- **Best for**: Understanding codebase-aware code generation
+- **Covers**: FTS5 indexing, symbol extraction, hybrid context strategy, three-mode operation, DAG composition
+- **Time**: ~25 minutes for deep dive
+
 ### ⚡ **Quickies — Copy-Paste Recipes** (5 minutes)
 - **File**: [docs/quickies.md](quickies.md)
 - **Best for**: Anyone who wants a specific result *right now*, without reading full guides

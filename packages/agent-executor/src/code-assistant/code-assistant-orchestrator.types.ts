@@ -38,6 +38,20 @@ export type ExecutionRequest = {
   dryRun?: boolean;
   autoApprove?: boolean;
   mode?: 'quick-fix' | 'feature' | 'refactor' | 'debug';
+  /** Run tests after applying patches (default: false) */
+  runTests?: boolean;
+  /** Timeout for test execution in milliseconds (default: 60000) */
+  testTimeout?: number;
+  /** Collect code coverage during test run (default: false) */
+  collectCoverage?: boolean;
+  /** Commit changes after successful execution (default: false) */
+  autoCommit?: boolean;
+  /** Commit only if tests pass (requires runTests: true, default: true) */
+  commitOnlyIfTestsPass?: boolean;
+  /** Custom commit message (if not provided, will be generated) */
+  commitMessage?: string;
+  /** Use conventional commits format (default: true) */
+  useConventionalCommits?: boolean;
 };
 
 export type ExecutionResult = {
@@ -45,6 +59,15 @@ export type ExecutionResult = {
   filesModified: string[];
   newFiles?: string[];
   totalCost: number;
+  /** Test execution results if runTests was enabled */
+  testResults?: {
+    framework: string;
+    totalTests: number;
+    passedTests: number;
+    failedTests: number;
+    testsPassed: boolean;
+    duration: number;
+  };
   duration: number;
   plan?: unknown;
   planId?: string;
