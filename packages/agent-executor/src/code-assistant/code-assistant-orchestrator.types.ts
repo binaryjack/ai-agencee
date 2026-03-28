@@ -38,6 +38,18 @@ export type ExecutionRequest = {
   dryRun?: boolean;
   autoApprove?: boolean;
   mode?: 'quick-fix' | 'feature' | 'refactor' | 'debug';
+  /** Run validation before applying patches (default: true) */
+  runValidation?: boolean;
+  /** Skip syntax validation (default: false) */
+  skipSyntaxValidation?: boolean;
+  /** Skip import validation (default: false) */
+  skipImportValidation?: boolean;
+  /** Skip type validation (default: false) */
+  skipTypeValidation?: boolean;
+  /** Treat warnings as errors in validation (default: false) */
+  strictValidation?: boolean;
+  /** Timeout for validation in milliseconds (default: 30000) */
+  validationTimeout?: number;
   /** Run tests after applying patches (default: false) */
   runTests?: boolean;
   /** Timeout for test execution in milliseconds (default: 60000) */
@@ -59,6 +71,13 @@ export type ExecutionResult = {
   filesModified: string[];
   newFiles?: string[];
   totalCost: number;
+  /** Validation results if runValidation was enabled */
+  validationResult?: {
+    passed: boolean;
+    totalErrors: number;
+    totalWarnings: number;
+    duration: number;
+  };
   /** Test execution results if runTests was enabled */
   testResults?: {
     framework: string;
@@ -67,6 +86,13 @@ export type ExecutionResult = {
     failedTests: number;
     testsPassed: boolean;
     duration: number;
+  };
+  /** Git commit result if autoCommit was enabled */
+  commitResult?: {
+    success: boolean;
+    commitHash?: string;
+    message?: string;
+    filesCommitted: number;
   };
   duration: number;
   plan?: unknown;
