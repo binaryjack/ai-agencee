@@ -168,7 +168,7 @@ async function validatePythonSyntax(
           
           resolve(issues);
         });
-      } catch (err) {
+      } catch (err: unknown) {
         // If python not available, skip validation
         resolve([]);
       }

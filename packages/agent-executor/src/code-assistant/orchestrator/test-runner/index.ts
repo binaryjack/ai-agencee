@@ -60,7 +60,7 @@ export async function executeTests(config: TestRunnerConfig): Promise<TestRunRes
 
     return result;
 
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       framework: 'unknown',
       success: false,

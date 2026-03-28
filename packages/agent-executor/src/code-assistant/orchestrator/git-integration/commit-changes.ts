@@ -77,7 +77,7 @@ export async function commitChanges(
       duration: Date.now() - start,
     };
 
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       message,

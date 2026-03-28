@@ -211,7 +211,7 @@ async function runTypeCheck(
         
         resolve([]);
       });
-    } catch (err) {
+    } catch (err: unknown) {
       // Cleanup temp directory
       if (tempDir) {
         await cleanupTemp(tempDir);

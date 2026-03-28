@@ -8,6 +8,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
+import { ORCHESTRATOR_DEFAULTS } from '../config/defaults.js'
 import type { FrameworkDetection, TestFramework } from './test-runner.types.js'
 
 /**
@@ -39,7 +40,7 @@ async function detectFromPackageJson(projectRoot: string): Promise<FrameworkDete
       if (testScript.includes('vitest')) {
         return {
           framework: 'vitest',
-          confidence: 0.95,
+          confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.PACKAGE_JSON,
           command: 'npm',
           args: ['run', 'test'],
           configFile: await findConfigFile(projectRoot, ['vitest.config.ts', 'vitest.config.js']),
@@ -48,7 +49,7 @@ async function detectFromPackageJson(projectRoot: string): Promise<FrameworkDete
       if (testScript.includes('jest')) {
         return {
           framework: 'jest',
-          confidence: 0.95,
+          confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.PACKAGE_JSON,
           command: 'npm',
           args: ['run', 'test'],
           configFile: await findConfigFile(projectRoot, ['jest.config.js', 'jest.config.ts']),
@@ -57,7 +58,7 @@ async function detectFromPackageJson(projectRoot: string): Promise<FrameworkDete
       if (testScript.includes('mocha')) {
         return {
           framework: 'mocha',
-          confidence: 0.95,
+          confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.PACKAGE_JSON,
           command: 'npm',
           args: ['run', 'test'],
         };
@@ -73,7 +74,7 @@ async function detectFromPackageJson(projectRoot: string): Promise<FrameworkDete
     if (allDeps.vitest) {
       return {
         framework: 'vitest',
-        confidence: 0.8,
+        confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.CONFIG_FILE,
         command: 'npx',
         args: ['vitest', 'run'],
         configFile: await findConfigFile(projectRoot, ['vitest.config.ts', 'vitest.config.js']),
@@ -83,7 +84,7 @@ async function detectFromPackageJson(projectRoot: string): Promise<FrameworkDete
     if (allDeps.jest) {
       return {
         framework: 'jest',
-        confidence: 0.8,
+        confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.CONFIG_FILE,
         command: 'npx',
         args: ['jest'],
         configFile: await findConfigFile(projectRoot, ['jest.config.js', 'jest.config.ts']),
@@ -93,7 +94,7 @@ async function detectFromPackageJson(projectRoot: string): Promise<FrameworkDete
     if (allDeps.mocha) {
       return {
         framework: 'mocha',
-        confidence: 0.8,
+        confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.CONFIG_FILE,
         command: 'npx',
         args: ['mocha'],
       };
@@ -147,7 +148,7 @@ async function detectFromConfigFiles(projectRoot: string): Promise<FrameworkDete
     if (configFile) {
       return {
         framework: check.framework,
-        confidence: 0.7,
+        confidence: ORCHESTRATOR_DEFAULTS.TEST_RUNNER.CONFIDENCE.FALLBACK,
         command: check.command,
         args: check.args,
         configFile,

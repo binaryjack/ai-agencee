@@ -74,9 +74,9 @@ export async function _gatherContext(
       )) as SymbolRow[];
 
       merger.addMany(ftsResults.map(r => ({ ...r, source: 'fts' as const })));
-    } catch (error) {
+    } catch (error: unknown) {
       // Index not built yet or FTS table absent — log and continue gracefully
-      console.warn('[gather-context] FTS search failed:', error);
+      console.warn('[gather-context] FTS search failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -103,9 +103,9 @@ export async function _gatherContext(
         score: r.score, // Semantic search provides similarity score
         source: 'semantic' as const
       })));
-    } catch (error) {
+    } catch (error: unknown) {
       // Embedding provider unavailable or vectors not yet generated — log and continue
-      console.warn('[gather-context] Semantic search failed:', error);
+      console.warn('[gather-context] Semantic search failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -158,9 +158,9 @@ export async function _gatherContext(
           }
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       // Call graph not built, symbol not found, or error in traversal — log and continue
-      console.warn('[gather-context] Graph traversal failed for symbol:', symbol.name, error);
+      console.warn('[gather-context] Graph traversal failed for symbol:', symbol.name, error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -190,9 +190,9 @@ export async function _gatherContext(
         ? '\n... (' + (lines.length - MAX_FILE_LINES) + ' more lines)\n'
         : '';
       blocks.push('\n### FILE: ' + fp + '\n```\n' + snippet + truncated + '\n```');
-    } catch (error) {
+    } catch (error: unknown) {
       // File removed between index time and now — log and skip
-      console.warn('[gather-context] Failed to read file:', fp, error);
+      console.warn('[gather-context] Failed to read file:', fp, error instanceof Error ? error.message : String(error));
     }
   }
 

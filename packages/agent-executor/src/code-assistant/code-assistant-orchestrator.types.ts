@@ -10,6 +10,10 @@ import type { EmbeddingProvider } from './embeddings/embedding-provider.types.js
 import type { IIndexerAuditLog } from './indexer/codebase-indexer.types'
 import type { ParserRegistryInstance } from './parsers/parser-registry'
 import type { CodebaseIndexStoreInstance } from './storage/codebase-index-store.types'
+import type { ApprovalHandler } from './orchestrator/approval/approval.types.js'
+import type { RollbackOrchestrator } from './orchestrator/rollback/index.js'
+import type { LearningOrchestrator } from './orchestrator/learning/index.js'
+import type { IContextIntelligence } from './orchestrator/context/index.js'
 
 // ─── Options ─────────────────────────────────────────────────────────────────
 
@@ -31,6 +35,14 @@ export type CodeAssistantOptions = {
    * Use TransformersEmbeddingProvider for a fully local, zero-cost option.
    */
   embeddingProvider?: EmbeddingProvider;
+  /** Approval handler for human-in-the-loop approval gates */
+  approvalHandler?: ApprovalHandler;
+  /** Rollback orchestrator for snapshot and undo functionality */
+  rollbackOrchestrator?: RollbackOrchestrator;
+  /** Learning orchestrator for correction tracking and learning */
+  learningOrchestrator?: LearningOrchestrator;
+  /** Context intelligence for smart context prioritization */
+  contextIntelligence?: IContextIntelligence;
 };
 
 export type ExecutionRequest = {
@@ -38,6 +50,16 @@ export type ExecutionRequest = {
   dryRun?: boolean;
   autoApprove?: boolean;
   mode?: 'quick-fix' | 'feature' | 'refactor' | 'debug';
+  /** Approval trust level: preview (always ask), approve-each (conditional), auto (never ask) */
+  approvalTrustLevel?: 'preview' | 'approve-each' | 'auto';
+  /** Auto-approve if validation passes (default: false) */
+  autoApproveIfValidationPasses?: boolean;
+  /** File patterns to auto-approve (e.g., ['**/*.test.ts']) */
+  autoApprovePatterns?: string[];
+  /** File patterns that always require approval (e.g., ['**/*.config.js']) */
+  alwaysRequireApprovalPatterns?: string[];
+  /** Timeout for approval in milliseconds (default: 300000 = 5 minutes) */
+  approvalTimeout?: number;
   /** Run validation before applying patches (default: true) */
   runValidation?: boolean;
   /** Skip syntax validation (default: false) */
@@ -64,6 +86,26 @@ export type ExecutionRequest = {
   commitMessage?: string;
   /** Use conventional commits format (default: true) */
   useConventionalCommits?: boolean;
+  /** Create snapshot before execution for rollback (default: true) */
+  createSnapshot?: boolean;
+  /** Snapshot strategy: 'git-stash' | 'git-branch' | 'git-commit' | 'none' (default: 'git-stash') */
+  snapshotStrategy?: 'git-stash' | 'git-branch' | 'git-commit' | 'none';
+  /** Include untracked files in snapshot (default: true) */
+  snapshotIncludeUntracked?: boolean;
+  /** Enable learning from corrections (default: true) */
+  enableLearning?: boolean;
+  /** Maximum learning examples to include in prompt (default: 5) */
+  maxLearningExamples?: number;
+  /** Enable context intelligence (default: true) */
+  enableContextIntelligence?: boolean;
+  /** Maximum context tokens (default: 8000) */
+  maxContextTokens?: number;
+  /** Context prioritization keywords (auto-extracted from task if not provided) */
+  contextKeywords?: string[];
+  /** Files to always include in context */
+  alwaysIncludeInContext?: string[];
+  /** Time window to detect corrections after execution (default: 1 hour) */
+  correctionDetectionWindow?: number;
 };
 
 export type ExecutionResult = {
@@ -71,6 +113,15 @@ export type ExecutionResult = {
   filesModified: string[];
   newFiles?: string[];
   totalCost: number;
+  /** Approval result if approval gate was used */
+  approvalResult?: {
+    approved: boolean;
+    approvalDuration: number;
+    patchesApproved: number;
+    patchesRejected: number;
+    patchesEdited: number;
+    rejectionReason?: string;
+  };
   /** Validation results if runValidation was enabled */
   validationResult?: {
     passed: boolean;
@@ -93,6 +144,28 @@ export type ExecutionResult = {
     commitHash?: string;
     message?: string;
     filesCommitted: number;
+  };
+  /** Snapshot result if createSnapshot was enabled */
+  snapshotResult?: {
+    success: boolean;
+    snapshotId?: string;
+    strategy: string;
+    error?: string;
+  /** Context intelligence result if enableContextIntelligence was enabled */
+  contextResult?: {
+    totalSymbols: number;
+    selectedSymbols: number;
+    filesIncluded: number;
+    estimatedTokens: number;
+    compressionRatio: number;
+  };
+    duration: number;
+  };
+  /** Learning result if enableLearning was enabled */
+  learningResult?: {
+    correctionsDetected: number;
+    examplesUsed: number;
+    accuracyImprovement?: number;
   };
   duration: number;
   plan?: unknown;

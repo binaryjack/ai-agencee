@@ -8,6 +8,7 @@
 
 import { spawn } from 'child_process'
 import * as path from 'path'
+import { ORCHESTRATOR_DEFAULTS } from '../config/defaults.js'
 import { parseTestOutput } from './parse-results.js'
 import type { FrameworkDetection, TestRunnerConfig, TestRunResult } from './test-runner.types.js'
 
@@ -28,7 +29,7 @@ export async function runTests(
     detection.command,
     args,
     config.projectRoot,
-    config.timeout ?? 60000,
+    config.timeout ?? ORCHESTRATOR_DEFAULTS.TEST_RUNNER.TIMEOUT_MS,
     config.env,
   );
 

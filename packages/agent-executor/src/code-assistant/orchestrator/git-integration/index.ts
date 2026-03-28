@@ -123,7 +123,7 @@ export async function executeGitCommit(
 
     return commitResult;
 
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       success: false,
       message: '',
