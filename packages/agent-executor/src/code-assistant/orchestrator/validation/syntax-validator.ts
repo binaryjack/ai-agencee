@@ -10,13 +10,13 @@
  * Prevents broken code from reaching the filesystem.
  */
 
-import { spawn } from 'child_process';
-import * as path from 'path';
+import { spawn } from 'child_process'
+import * as path from 'path'
+import type { FilePatch } from '../../code-assistant-orchestrator.types.js'
 import type {
-  ValidationIssue,
-  ValidatorResult,
-} from './validation.types.js';
-import type { FilePatch } from '../../code-assistant-orchestrator.types.js';
+    ValidationIssue,
+    ValidatorResult,
+} from './validation.types.js'
 
 /**
  * Language of the file based on extension

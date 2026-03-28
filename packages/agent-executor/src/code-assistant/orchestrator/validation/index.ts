@@ -8,15 +8,15 @@
  * reaching the filesystem, reducing human correction burden.
  */
 
-import type { FilePatch } from '../../code-assistant-orchestrator.types.js';
+import type { FilePatch } from '../../code-assistant-orchestrator.types.js'
+import { validateImports } from './import-validator.js'
+import { validateSyntax } from './syntax-validator.js'
+import { validateTypes } from './type-validator.js'
 import type {
-  ValidationConfig,
-  ValidationResult,
-  ValidatorResult,
-} from './validation.types.js';
-import { validateSyntax } from './syntax-validator.js';
-import { validateImports } from './import-validator.js';
-import { validateTypes } from './type-validator.js';
+    ValidationConfig,
+    ValidationResult,
+    ValidatorResult,
+} from './validation.types.js'
 
 /**
  * Run all validators in parallel

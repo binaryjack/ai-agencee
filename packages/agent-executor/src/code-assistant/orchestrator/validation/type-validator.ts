@@ -13,14 +13,14 @@
  * Only runs for TypeScript files in TypeScript projects.
  */
 
-import { spawn } from 'child_process';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { spawn } from 'child_process'
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { FilePatch } from '../../code-assistant-orchestrator.types.js'
 import type {
-  ValidationIssue,
-  ValidatorResult,
-} from './validation.types.js';
-import type { FilePatch } from '../../code-assistant-orchestrator.types.js';
+    ValidationIssue,
+    ValidatorResult,
+} from './validation.types.js'
 
 /**
  * Check if project is a TypeScript project

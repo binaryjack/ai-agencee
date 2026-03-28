@@ -11,13 +11,13 @@
  * 4. Suggest alternatives for hallucinated imports using fuzzy matching
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import type { FilePatch } from '../../code-assistant-orchestrator.types.js'
 import type {
-  ValidationIssue,
-  ValidatorResult,
-} from './validation.types.js';
-import type { FilePatch } from '../../code-assistant-orchestrator.types.js';
+    ValidationIssue,
+    ValidatorResult,
+} from './validation.types.js'
 
 /**
  * Import statement parsed from code
