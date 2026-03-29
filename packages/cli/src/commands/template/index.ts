@@ -1,15 +1,30 @@
 /**
  * Template Management Commands — Phase 2.1
+ * REFACTORED: Phase 1 - Foundation improvements
  * 
  * Provides DAG template library with install, list, and info commands.
  * 
  * Philosophy: "Start with proven patterns, customize as needed"
+ * 
+ * Improvements:
+ * - Uses @cli/constants for template paths
+ * - Uses @cli/services/logger instead of console.log
+ * - Uses @cli/types for TemplateOptions
+ * - Uses @cli/errors for proper error handling
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import prompts from 'prompts';
-import { enrichError, ErrorCategory, exitWithError } from '../../utils/error-formatter.js';
+
+// Phase 1: Use centralized constants and types
+import { PATHS, getPath } from '../../constants/index.js';
+import { createLogger } from '../../services/logger/index.js';
+import type { TemplateOptions } from '../../types/index.js';
+import { FileNotFoundError, FileReadError } from '../../errors/index.js';
+
+// Create namespaced logger
+const logger = createLogger('template');
 
 /**
  * Template metadata structure
@@ -37,43 +52,13 @@ interface TemplateMetadata {
 }
 
 /**
- * Get templates directory path
- */
-function getTemplatesDir(): string {
-  // Templates are in packages/cli/templates/
-  // This file is in packages/cli/src/commands/template/index.ts
-  // At runtime (compiled): packages/cli/dist/src/commands/template/index.js
-  // Need to go up to packages/cli/ and then into templates/
-  
-  // __dirname at runtime:
-  // - Development: packages/cli/src/commands/template/
-  // - Production: packages/cli/dist/src/commands/template/
-  
-  // Go up from dist/src/commands/template/ to cli/, then into templates/
-  // Or from src/commands/template/ to cli/, then into templates/
-  
-  const templatesDirFromDist = path.resolve(__dirname, '../../../../templates');
-  const templatesDirFromSrc = path.resolve(__dirname, '../../../templates');
-  
-  // Check which one exists
-  try {
-    const fs = require('fs');
-    if (fs.existsSync(templatesDirFromDist)) {
-      return templatesDirFromDist;
-    }
-  } catch {
-    // Ignore
-  }
-  
-  return templatesDirFromSrc;
-}
-
-/**
- * List all available templates
+ * List all available templates (Phase 1: Use constants for paths)
  */
 export async function listTemplates(): Promise<void> {
+  logger.debug('Listing templates');
+  
   try {
-    const templatesDir = getTemplatesDir();
+    const templatesDir = PATHS.TEMPLATES_ROOT;
     const entries = await fs.readdir(templatesDir, { withFileTypes: true });
     
     // Filter out non-template directories (demos, README.md, etc.)
@@ -84,7 +69,7 @@ export async function listTemplates(): Promise<void> {
     );
 
     if (templateDirs.length === 0) {
-      console.log('\n📦 No templates available yet.\n');
+      logger.info('No templates available yet.');
       return;
     }
 
@@ -121,26 +106,24 @@ export async function listTemplates(): Promise<void> {
     }
 
     console.log('\n' + '═'.repeat(70));
-    console.log('\n💡 Install a template:');
-    console.log('   ai-kit template:install <template-id>\n');
-    console.log('📖 View template details:');
-    console.log('   ai-kit template:info <template-id>\n');
-  } catch (err) {
-    const richError = enrichError(err, ErrorCategory.FILE_SYSTEM, [
-      'Ensure CLI package is installed correctly',
-      'Check templates directory exists',
-    ]);
-    exitWithError(richError);
+    logger.info('💡 Install a template:');
+    logger.info('   ai-kit template:install <template-id>');
+    logger.info('📚 View template details:');
+    logger.info('   ai-kit template:info <template-id>');
+  } catch (error) {
+    logger.error('Failed to list templates', { error });
+    throw error;
   }
 }
 
 /**
- * Show detailed information about a template
+ * Show detailed information about a template (Phase 1: Use constants)
  */
 export async function showTemplateInfo(templateId: string): Promise<void> {
+  logger.debug('Showing template info', { templateId });
+  
   try {
-    const templatesDir = getTemplatesDir();
-    const templatePath = path.join(templatesDir, templateId);
+    const templatePath = getPath('TEMPLATES_ROOT', templateId);
     const metadataPath = path.join(templatePath, 'template.json');
     const readmePath = path.join(templatePath, 'README.md');
 
@@ -148,14 +131,15 @@ export async function showTemplateInfo(templateId: string): Promise<void> {
     try {
       await fs.access(templatePath);
     } catch {
-      console.error(`\n❌ Template not found: ${templateId}\n`);
-      console.log('Run "ai-kit template:list" to see available templates.\n');
-      process.exit(1);
+      logger.error(`Template not found: ${templateId}`);
+      logger.info('Run "ai-kit template:list" to see available templates.');
+      throw new FileNotFoundError(templatePath);
     }
 
     // Load metadata
-    const metadataContent = await fs.readFile(metadataPath, 'utf-8');
-    const metadata: TemplateMetadata = JSON.parse(metadataContent);
+    try {
+      const metadataContent = await fs.readFile(metadataPath, 'utf-8');
+      const metadata: TemplateMetadata = JSON.parse(metadataContent);
 
     // Display info
     console.log('\n📦 Template Information\n');
@@ -187,47 +171,44 @@ export async function showTemplateInfo(templateId: string): Promise<void> {
     }
 
     console.log('\n' + '═'.repeat(70));
-    console.log(`\n💡 Install this template:`);
-    console.log(`   ai-kit template:install ${templateId}\n`);
-  } catch (err) {
-    const richError = enrichError(err, ErrorCategory.FILE_SYSTEM);
-    exitWithError(richError);
+    logger.info(`💡 Install this template:`);
+    logger.info(`   ai-kit template:install ${templateId}`);
+  } catch (error) {
+    logger.error('Failed to show template info', { error });
+    throw error;
   }
 }
 
 /**
- * Install a template to the current project
+ * Install a template to the current project (Phase 1: Use constants)
  */
 export async function installTemplate(
   templateId: string,
-  options: {
-    dir?: string;
-    name?: string;
-    force?: boolean;
-  } = {}
+  options: TemplateOptions = {}
 ): Promise<void> {
+  logger.info('Installing template', { templateId, options });
+  
   try {
-    const templatesDir = getTemplatesDir();
-    const templatePath = path.join(templatesDir, templateId);
+    const templatePath = getPath('TEMPLATES_ROOT', templateId);
     const metadataPath = path.join(templatePath, 'template.json');
 
     // Check if template exists
     try {
       await fs.access(templatePath);
     } catch {
-      console.error(`\n❌ Template not found: ${templateId}\n`);
-      console.log('Run "ai-kit template:list" to see available templates.\n');
-      process.exit(1);
+      logger.error(`Template not found: ${templateId}`);
+      logger.info('Run "ai-kit template:list" to see available templates.');
+      throw new FileNotFoundError(templatePath);
     }
 
     // Load metadata
     const metadataContent = await fs.readFile(metadataPath, 'utf-8');
     const metadata: TemplateMetadata = JSON.parse(metadataContent);
 
-    // Determine target directory
+    // Determine target directory (Phase 1: Use PATHS constant)
     const targetDir = options.dir 
       ? path.resolve(process.cwd(), options.dir)
-      : path.join(process.cwd(), 'agents');
+      : path.join(process.cwd(), PATHS.PROJECT_AGENTS_DIR);
 
     // Check if target directory exists
     try {
