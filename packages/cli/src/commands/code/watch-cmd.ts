@@ -3,7 +3,8 @@
  * Watch a project directory and automatically re-index on changes
  */
 
-import * as fs from 'node:fs';
+import chokidar from 'chokidar';
+import chalk from 'chalk';
 import * as path from 'node:path';
 import { runCodeIndex } from './index-cmd.js';
 
@@ -14,22 +15,6 @@ type WatchOptions = {
   include?: string;
   verbose?: boolean;
 };
-
-/** Patterns that should never trigger a re-index */
-const ALWAYS_IGNORE = new Set([
-  'node_modules',
-  'dist',
-  'build',
-  '.git',
-  'coverage',
-  '.agencee', // the db itself
-  '.DS_Store',
-]);
-
-function shouldIgnore(relativePath: string): boolean {
-  const parts = relativePath.replaceAll('\\', '/').split('/');
-  return parts.some(p => ALWAYS_IGNORE.has(p));
-}
 
 function isSupportedExtension(filename: string, languages: string): boolean {
   const ext = path.extname(filename).slice(1).toLowerCase();
@@ -54,12 +39,15 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
 
   const projectRoot = path.resolve(project);
 
-  console.log(`👁️  Watching: ${projectRoot}`);
-  console.log(`   Languages: ${languages}`);
-  console.log(`   Press Ctrl+C to stop.\n`);
+  console.log(chalk.bold(`👁️  Watching: ${projectRoot}`));
+  console.log(chalk.dim(`   Languages: ${languages}`));
+  console.log(chalk.dim(`   Press Ctrl+C to stop.\n`));
 
   // Initial full index
   await runCodeIndex({ project, languages, exclude, include, verbose, incremental: true });
+
+  console.log(chalk.green('\n📁 File watcher active'));
+  console.log(chalk.dim('   Your codebase index is always up-to-date.\n'));
 
   const changedFiles = new Set<string>();
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -79,45 +67,64 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
 
       if (files.length === 0) return;
 
-      console.log(`\n🔄 ${files.length} file(s) changed, re-indexing...`);
-      if (verbose) {
-        files.forEach(f => console.log(`   · ${f}`));
-      }
-
-      reindexing = true;
-      try {
-        await runCodeIndex({ project, languages, exclude, include, verbose, incremental: true });
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error(`❌ Re-index failed: ${msg}`);
-      } finally {
-        reindexing = false;
+      // Re-index with timing per file
+      for (const file of files) {
+        const startTime = performance.now();
+        try {
+          reindexing = true;
+          await runCodeIndex({ project, languages, exclude, include, verbose: false, incremental: true });
+          const duration = Math.round(performance.now() - startTime);
+          console.log(chalk.cyan(`  ${file} changed → Re-indexed (${duration}ms)`));
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error(chalk.red(`  ${file} → Re-index failed: ${msg}`));
+        } finally {
+          reindexing = false;
+        }
       }
     }, 400);
   };
 
-  let watcher: fs.FSWatcher;
-  try {
-    watcher = fs.watch(projectRoot, { recursive: true }, (_event, filename) => {
-      if (!filename) return;
-      if (shouldIgnore(filename)) return;
-      if (!isSupportedExtension(filename, languages)) return;
+  // Build ignore patterns from exclude option
+  const ignorePatterns = exclude.split(',').map(p => `**/${p.trim()}/**`);
+  ignorePatterns.push('**/.agencee/**'); // Always ignore the database itself
 
-      changedFiles.add(filename);
-      scheduleReindex();
-    });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`❌ Cannot watch directory: ${msg}`);
-    console.error(`   Try running with --no-watch on systems where recursive watch is unsupported.`);
-    process.exit(1);
-  }
+  // Setup chokidar watcher
+  const watcher = chokidar.watch(projectRoot, {
+    ignored: ignorePatterns,
+    persistent: true,
+    ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 300,
+      pollInterval: 100
+    }
+  });
+
+  watcher.on('change', (filePath: string) => {
+    const relativePath = path.relative(projectRoot, filePath);
+    if (!isSupportedExtension(relativePath, languages)) return;
+
+    changedFiles.add(relativePath);
+    scheduleReindex();
+  });
+
+  watcher.on('add', (filePath: string) => {
+    const relativePath = path.relative(projectRoot, filePath);
+    if (!isSupportedExtension(relativePath, languages)) return;
+
+    changedFiles.add(relativePath);
+    scheduleReindex();
+  });
+
+  watcher.on('error', (err: Error) => {
+    console.error(chalk.red(`❌ Watcher error: ${err.message}`));
+  });
 
   // Keep process alive and handle graceful shutdown
-  const shutdown = (): void => {
-    console.log('\n\n👋 Stopping watcher...');
+  const shutdown = async (): Promise<void> => {
+    console.log(chalk.yellow('\n\n👋 Stopping watcher...'));
     if (debounceTimer) clearTimeout(debounceTimer);
-    watcher.close();
+    await watcher.close();
     process.exit(0);
   };
 
@@ -125,6 +132,11 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
   process.on('SIGTERM', shutdown);
 
   // Prevent Node from exiting while watcher is active (no-op keep-alive)
+  await new Promise<void>(() => {
+    // Intentionally never resolves — process exits via SIGINT/SIGTERM handlers
+  });
+};
+
   await new Promise<void>(() => {
     // Intentionally never resolves — process exits via SIGINT/SIGTERM handlers
   });
