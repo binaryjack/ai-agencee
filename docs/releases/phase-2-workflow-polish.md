@@ -1,7 +1,7 @@
 # Phase 2: Workflow Polish - Implementation Summary
 
 **Goal:** Make daily usage delightful  
-**Status:** Phase 2.1 complete (public repo), Phase 2.2 complete (private repo)
+**Status:** Phase 2.1 complete, Phase 2.2 complete (private), Phase 2.6 complete
 
 ---
 
@@ -146,6 +146,85 @@ Comprehensive 30-day sustainability metrics dashboard for cost, energy, quality,
 
 ---
 
+### ✅ Phase 2.6: ASK Mode Instant FTS5 Results
+**Commit:** 3b5ea7f  
+**Status:** Shipped in `packages/cli`
+
+Implements zero-cost, instant code exploration using FTS5 full-text search. No LLM calls, no API costs, no hallucinations.
+
+**Features:**
+- Natural language queries: "Show me all API endpoints", "authentication logic"
+- Zero cost: $0.00, 0 Wh, instant results (<100ms)
+- File grouping: Results organized by file for easy navigation
+- Smart term extraction: Filters stop words ("show", "me", "the") from natural language queries
+- Pretty formatting: Color-coded symbols (function, class, interface), line numbers, signatures
+
+**Command:**
+```bash
+ai-kit ask "search functions" --limit 30
+ai-kit ask "authentication logic"
+ai-kit ask "database connection"
+```
+
+**Philosophy:**
+- **ASK** = Read-only exploration (zero cost, instant, FTS5 search)
+- **PLAN** = Preview changes (low cost, safe, shows intent before execution)
+- **AGENT** = Execute changes (full cost, production, makes actual modifications)
+
+**Mode Comparison:**
+
+| Mode   | Purpose           | Cost    | Speed    | Changes | LLM |
+|--------|-------------------|---------|----------|---------|-----|
+| ASK    | Code exploration  | $0.00   | <100ms   | None    | No  |
+| PLAN   | Preview changes   | $0.05+  | 5-30s    | Preview | Yes |
+| AGENT  | Execute changes   | $0.10+  | 30-300s  | Write   | Yes |
+
+**Impact:**
+- Reduces exploration time from minutes (manual grep) to seconds (instant FTS5)
+- Enables free code discovery for users with no API keys
+- Complements paid AGENT mode with zero-cost lookups
+- Supports onboarding: "What's in this codebase?" → ASK mode answers instantly
+
+**Implementation:**
+- FTS5 full-text search over code index (same index as `code:search`)
+- Term extraction from natural language (removes stop words, splits on spaces)
+- Results grouped by file, sorted by FTS5 rank
+- Color-coded by symbol kind (function=magenta, class=blue, variable=yellow)
+
+**Files Created:**
+- `packages/cli/src/commands/ask/index.ts` (260 lines)
+- Updated: `packages/cli/bin/ai-kit.ts` (command registration)
+
+**Example Output:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ASK MODE — Zero-cost instant search
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Query: search functions
+  Terms: search OR functions
+
+  ✓ Found 3 result(s) in 1 file(s)
+
+  📄 src\commands\ask\index.ts
+     [function]   extractSearchTerms L110
+                  function extractSearchTerms(query: string): string
+     [function]   runAsk L64
+                  export async function runAsk(query: string, options: AskO...
+     [function]   performFtsSearch L126
+                  async function performFtsSearch(store: Awaited<Return...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  💚 ZERO COST
+     • No LLM calls ($0.00)
+     • No API requests (0 Wh)
+     • No hallucinations (FTS5 search only)
+     • Instant results (<100ms)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
 ## Remaining Phase 2 Items (Private Codebase)
 
 **Note:** These are in `_private/` (gitignored) and won't appear in public commits.
@@ -165,11 +244,6 @@ Comprehensive 30-day sustainability metrics dashboard for cost, energy, quality,
 **Scope:** Real-time streaming UI for agent execution (SSE already implemented, need UI polish)  
 **Status:** Not started
 
-### Phase 2.6: ASK Mode Instant FTS5 Results
-**Location:** `packages/cli/` or `_private/ai-agencee-ext/`  
-**Scope:** Instant FTS5 search results in ASK mode (read-only, no execution)  
-**Status:** Not started
-
 ---
 
 ## Outcome
@@ -180,6 +254,7 @@ Comprehensive 30-day sustainability metrics dashboard for cost, energy, quality,
 - ✅ Daily workflow is smooth (6 ready-to-use templates reduce setup from 30min to 5min)
 - ✅ Costs are transparent (per-template estimates, sustainability dashboard shows 30-day aggregate)
 - ✅ Quality is visible (sustainability dashboard shows hallucinations prevented, bugs caught, pass rate)
+- ✅ Zero-cost exploration enabled (ASK mode provides instant FTS5 search with no API costs)
 
 **Next Steps:**
 - Phase 2.3-2.6 (private codebase): VS Code quick start, quality gate viz, streaming UI, ASK mode FTS5
@@ -199,6 +274,18 @@ Yes! After Phase 2.1 commit:
 pnpm --filter @ai-agencee/cli build
 node packages/cli/dist/bin/ai-kit.js template:list
 node packages/cli/dist/bin/ai-kit.js template:install security-scan --dir test-agents
+```
+
+**Can I test ASK mode?**
+Yes! After Phase 2.6 commit:
+```bash
+# Index your codebase first (one-time setup)
+node packages/cli/dist/bin/ai-kit.js code:index
+
+# Then use ASK mode for instant, zero-cost searches
+node packages/cli/dist/bin/ai-kit.js ask "search functions"
+node packages/cli/dist/bin/ai-kit.js ask "authentication logic"
+node packages/cli/dist/bin/ai-kit.js ask "database connection" --limit 10
 ```
 
 **Template customization:**
