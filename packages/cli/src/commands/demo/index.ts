@@ -2,29 +2,30 @@
  * Demo Command — Zero-config demo mode with mock provider
  * 
  * Phase 1.1: Essential UX — Create 5-minute "aha moment"
+ * REFACTORED: Phase 1 - Foundation improvements
  * 
  * Runs curated demo scenarios using the built-in MockProvider.
  * No API keys, no configuration, no cost.
+ * 
+ * Improvements:
+ * - Uses @cli/constants for template paths
+ * - Uses @cli/services/logger instead of console.log
+ * - Uses @cli/types for DemoOptions
+ * - Uses @cli/errors for proper error handling
  */
 
 import * as path from 'path'
 import prompts from 'prompts'
-import { enrichError, ErrorCategory, exitWithError } from '../../utils/error-formatter.js'
 import { runDag } from '../dag/index.js'
 
-// Get templates directory
-const getTemplatesDir = (): string => {
-  // Templates are in packages/cli/templates/demos
-  // This file is in packages/cli/src/commands/demo/index.ts
-  // So templates are at ../../templates/demos relative to src root
-  return path.resolve(process.cwd(), 'packages', 'cli', 'templates', 'demos')
-}
+// Phase 1: Use centralized constants and types
+import { PATHS, getPath } from '../../constants/index.js'
+import { createLogger } from '../../services/logger/index.js'
+import type { DemoOptions } from '../../types/index.js'
+import { UserCancelledError } from '../../errors/index.js'
 
-interface DemoOptions {
-  scenario?: string
-  verbose?: boolean
-  interactive?: boolean
-}
+// Create namespaced logger
+const logger = createLogger('demo')
 
 const DEMO_SCENARIOS = [
   {
@@ -58,6 +59,8 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
   console.log('No API keys • No configuration • No cost\n')
   console.log('Codernic runs on quality + sustainability + transparency.\n')
   console.log('See how we overpass Copilot/Cursor/Claude on values, not features.\n')
+  
+  logger.debug('Starting demo mode', { scenario: options.scenario, verbose: options.verbose })
 
   // Scenario selection
   let selectedScenario = options.scenario
@@ -76,8 +79,8 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
     })
 
     if (!response.scenario) {
-      console.log('\n✋ Demo cancelled.\n')
-      process.exit(0)
+      logger.info('Demo cancelled')
+      throw new UserCancelledError('demo')
     }
 
     selectedScenario = response.scenario
@@ -86,12 +89,12 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
   const scenario = DEMO_SCENARIOS.find((s) => s.id === selectedScenario)
 
   if (!scenario) {
-    console.error(`\n❌ Unknown scenario: ${selectedScenario}\n`)
-    console.log('Available scenarios:')
+    logger.error(`Unknown scenario: ${selectedScenario}`)
+    logger.info('Available scenarios:')
     DEMO_SCENARIOS.forEach((s) => {
-      console.log(`  • ${s.id} — ${s.name}`)
+      logger.info(`  • ${s.id} — ${s.name}`)
     })
-    process.exit(1)
+    throw new Error(`Unknown demo scenario: ${selectedScenario}`)
   }
 
   // Show scenario header
@@ -105,12 +108,11 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
   console.log(`  • Real quality checkpoints (supervisor gates)`)
   console.log(`  • Real cost tracking ($0.00 with mock)\n`)
 
-  // Path to demo DAG templates
-  const templatesDir = getTemplatesDir()
-  const dagFilePath = path.join(templatesDir, scenario.dagFile)
+  // Path to demo DAG templates (Phase 1: Use constants)
+  const dagFilePath = getPath('TEMPLATES_DEMOS', scenario.dagFile)
 
   // Run the DAG with mock provider
-  console.log('▶️  Starting demo...\n')
+  logger.info('Starting demo...');
 
   try {
     await runDag(dagFilePath, {
@@ -123,28 +125,24 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
     })
 
     // Success message
-    console.log('\n✅ Demo complete!\n')
-    console.log('━'.repeat(60))
+    logger.success('Demo complete!');
+    console.log('\n' + '━'.repeat(60))
     console.log('\n🎯 Next steps:\n')
-    console.log('  1. Run with real provider:')
-    console.log('     ANTHROPIC_API_KEY=sk-ant-... ai-kit agent:dag agents/dag.json\n')
-    console.log('  2. Try the live dashboard:')
-    console.log('     ai-kit agent:dag agents/dag.json --dashboard\n')
-    console.log('  3. Interactive setup wizard:')
-    console.log('     ai-kit setup\n')
-    console.log('  4. Explore more demos:')
-    console.log('     ai-kit demo\n')
-    console.log('━'.repeat(60))
+    logger.info('  1. Run with real provider:')
+    logger.info('     ANTHROPIC_API_KEY=sk-ant-... ai-kit agent:dag agents/dag.json')
+    logger.info('  2. Try the live dashboard:')
+    logger.info('     ai-kit agent:dag agents/dag.json --dashboard')
+    logger.info('  3. Interactive setup wizard:')
+    logger.info('     ai-kit setup')
+    logger.info('  4. Explore more demos:')
+    logger.info('     ai-kit demo')
+    console.log('\n' + '━'.repeat(60))
     console.log('\nMission: Quality code that lasts. Sustainable AI. Full transparency.')
     console.log('Codernic doesn\'t compete with GitHub Copilot — it overpasses them.\n')
   } catch (error) {
-    const richError = enrichError(error, ErrorCategory.RUNTIME, [
-      'Check if project is initialized (run "ai-kit init")',
-      'Ensure demo DAG files exist',
-      'Try a different demo scenario',
-      'Run "ai-kit doctor" to diagnose issues',
-    ]);
-    exitWithError(richError, { verbose: options.verbose });
+    // Let errors bubble up to be handled by CLI error formatter
+    logger.error('Demo failed', { error });
+    throw error;
   }
 }
 

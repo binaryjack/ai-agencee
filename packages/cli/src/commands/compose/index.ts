@@ -1,8 +1,16 @@
 /**
- * CLI Command: ai-kit compose
+ * CLI Command: ai-kit compose (REFACTORED)
  * AI-powered DAG generator from natural language descriptions
  * 
  * Phase 3.6: AI-powered DAG Generator
+ * REFACTORED: Phase 1 - Foundation improvements
+ * 
+ * Improvements:
+ * - Uses @cli/constants instead of hardcoded paths
+ * - Uses @cli/services/logger instead of console.log
+ * - Uses @cli/types for proper typing (no `any`)
+ * - Uses @cli/errors for proper error handling
+ * - Extracted system prompt to separate file
  */
 
 import { ModelRouter } from '@ai-agencee/engine';
@@ -12,19 +20,26 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import prompts from 'prompts';
 
-type ComposeOptions = {
-  description: string;
-  output?: string;
-  provider?: string;
-  modelRouterConfig?: string;
-  skipApproval?: boolean;
-  verbose?: boolean;
-};
+// Phase 1: Use centralized constants and types
+import { PATHS } from '../../constants/index.js';
+import { createLogger } from '../../services/logger/index.js';
+import type { ComposeOptions, Dag } from '../../types/index.js';
+import { 
+  JsonParseError, 
+  InvalidDagError, 
+  LlmRequestError, 
+  UserCancelledError,
+  FileWriteError 
+} from '../../errors/index.js';
+
+// Create namespaced logger
+const logger = createLogger('compose');
 
 /**
- * System prompt for DAG generation
+ * Fallback system prompt (for backward compatibility)
+ * Prefer loading from external file via loadSystemPrompt()
  */
-const SYSTEM_PROMPT = `You are an expert at creating multi-agent DAG workflows for the AI Agencee framework.
+const FALLBACK_SYSTEM_PROMPT = `You are an expert at creating multi-agent DAG workflows for the AI Agencee framework.
 
 Your task is to convert natural language descriptions into valid DAG JSON configurations.
 
@@ -85,23 +100,39 @@ Example DAG:
 Respond ONLY with valid JSON. No explanations, no markdown code blocks, just the raw JSON.`;
 
 /**
+ * Load system prompt from file (Phase 1: Extract embedded prompt)
+ */
+async function loadSystemPrompt(): Promise<string> {
+  const promptPath = path.join(PATHS.PROMPTS_DIR, 'dag-generator.prompt.md');
+  
+  try {
+    const content = await fs.readFile(promptPath, 'utf-8');
+    return content;
+  } catch (error) {
+    logger.warn(`Could not load prompt file, using embedded prompt`, { promptPath });
+    return FALLBACK_SYSTEM_PROMPT;
+  }
+}
+
+/**
  * Generate DAG from natural language description using LLM
  */
 async function generateDagFromDescription(
   description: string,
   modelRouter: typeof ModelRouter,
-  verbose: boolean
-): Promise<any> {
-  if (verbose) {
-    console.log(chalk.dim('\n🤖 Generating DAG with AI...'));
-  }
-
+  options: { verbose?: boolean } = {}
+): Promise<Dag> {
+  const { verbose = false } = options;
+  
+  logger.debug('Generating DAG from description', { description });
+  
+  const systemPrompt = await loadSystemPrompt();
   const userPrompt = `Create a DAG workflow for the following description:\n\n"${description}"\n\nProvide the complete DAG JSON configuration.`;
 
   try {
     const response = await modelRouter.chat({
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
       model: 'haiku', // Use fast, cheap model for DAG generation
@@ -110,96 +141,77 @@ async function generateDagFromDescription(
 
     const content = response.content[0].text;
     
-    // Extract JSON from response (handle markdown code blocks)
-    let jsonStr = content.trim();
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.replace(/^```json\n/, '').replace(/\n```$/, '');
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.replace(/^```\n/, '').replace(/\n```$/, '');
+    // Extract JSON from response
+    const dagJson = extractJsonFromLlmResponse(content);
+    
+    // Validate it's a proper DAG
+    if (!isDag(dagJson)) {
+      throw new InvalidDagError('Generated content is not a valid DAG structure');
     }
-
-    const dagJson = JSON.parse(jsonStr);
+    
+    logger.debug('DAG generated successfully', { laneCount: dagJson.lanes.length });
+    
     return dagJson;
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Failed to generate DAG: ${msg}`);
+    
+  } catch (error) {
+    if (error instanceof InvalidDagError || error instanceof JsonParseError) {
+      throw error;
+    }
+    
+    logger.error('LLM request failed', { error });
+    throw new LlmRequestError('Failed to generate DAG', { cause: error });
   }
 }
 
 /**
- * Run the compose command
+ * Extract JSON from LLM response (handles markdown code blocks)
  */
-export async function runCompose(options: ComposeOptions): Promise<void> {
-  const { description, output, provider, modelRouterConfig, skipApproval, verbose } = options;
-
-  console.log(chalk.bold('\n🎨 AI DAG Composer\n'));
-  console.log(chalk.dim(`Description: "${description}"\n`));
-
-  // Initialize Model Router
-  let modelRouter: typeof ModelRouter;
-  try {
-    if (modelRouterConfig && await fs.stat(modelRouterConfig).catch(() => null)) {
-      modelRouter = await ModelRouter.fromFile(modelRouterConfig);
-    } else {
-      modelRouter = ModelRouter.fromConfig({
-        defaultProvider: provider ?? 'anthropic',
-        taskProfiles: {},
-        providers: {},
-      });
-    }
-
-    await modelRouter.autoRegister();
-
-    if (modelRouter.registeredProviders().length === 0) {
-      console.error(chalk.red('❌ No LLM providers available'));
-      console.error(chalk.dim('   Set ANTHROPIC_API_KEY or OPENAI_API_KEY to enable AI generation'));
-      process.exit(1);
-    }
-
-    if (verbose) {
-      console.log(chalk.dim(`LLM Provider: ${modelRouter.registeredProviders().join(', ')}\n`));
-    }
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(chalk.red(`❌ Failed to initialize Model Router: ${msg}`));
-    process.exit(1);
-  }
-
-  // Generate DAG
-  let dagJson: any;
-  try {
-    dagJson = await generateDagFromDescription(description, modelRouter, verbose ?? false);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(chalk.red(`❌ ${msg}`));
-    process.exit(1);
-  }
-
-  console.log(chalk.green('✨ DAG generated successfully!\n'));
-
-  // Validate DAG schema
-  const projectRoot = process.cwd();
-  const validationResult = validateDagContract(dagJson, projectRoot);
+function extractJsonFromLlmResponse(content: string): unknown {
+  let jsonStr = content.trim();
   
-  if (!validationResult.valid) {
-    console.error(chalk.red('❌ Generated DAG failed validation:'));
-    validationResult.errors.forEach((err: string) => {
-      console.error(chalk.red(`   • ${err}`));
-    });
-    console.error(chalk.dim('\n   The AI generated invalid JSON. Please try a more specific description.'));
-    process.exit(1);
+  // Remove markdown code blocks
+  if (jsonStr.startsWith('```json')) {
+    jsonStr = jsonStr.replace(/^```json\n/, '').replace(/\n```$/, '');
+  } else if (jsonStr.startsWith('```')) {
+    jsonStr = jsonStr.replace(/^```\n/, '').replace(/\n```$/, '');
   }
+  
+  try {
+    return JSON.parse(jsonStr);
+  } catch (error) {
+    throw new JsonParseError('Failed to parse JSON from LLM response', { cause: error });
+  }
+}
 
-  console.log(chalk.green('✅ DAG validation passed\n'));
+/**
+ * Type guard: Check if value is a valid DAG
+ */
+function isDag(value: unknown): value is Dag {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  
+  const obj = value as Record<string, unknown>;
+  
+  return (
+    typeof obj.name === 'string' &&
+    typeof obj.description === 'string' &&
+    Array.isArray(obj.lanes) &&
+    typeof obj.modelRouterFile === 'string'
+  );
+}
 
-  // Preview the DAG
-  console.log(chalk.bold('━'.repeat(80)));
+/**
+ * Display DAG preview
+ */
+function displayDagPreview(dag: Dag): void {
+  console.log(chalk.bold('\n━'.repeat(80)));
   console.log(chalk.bold('  📋 DAG PREVIEW — Generated Workflow'));
   console.log(chalk.bold('━'.repeat(80)));
   console.log();
-  console.log(chalk.bold(`  ${dagJson.name}`));
-  if (dagJson.description) {
-    console.log(chalk.dim(`  ${dagJson.description}`));
+  console.log(chalk.bold(`  ${dag.name}`));
+  if (dag.description) {
+    console.log(chalk.dim(`  ${dag.description}`));
   }
   console.log();
 
@@ -207,8 +219,8 @@ export async function runCompose(options: ComposeOptions): Promise<void> {
   console.log(chalk.bold('Workflow Structure:'));
   console.log();
   
-  dagJson.lanes.forEach((lane: any, idx: number) => {
-    const isLast = idx === dagJson.lanes.length - 1;
+  dag.lanes.forEach((lane, idx) => {
+    const isLast = idx === dag.lanes.length - 1;
     const prefix = isLast ? '└─' : '├─';
     
     console.log(chalk.cyan(`  ${prefix} Lane: ${lane.id}`));
@@ -232,42 +244,134 @@ export async function runCompose(options: ComposeOptions): Promise<void> {
   console.log();
   console.log(chalk.bold('━'.repeat(80)));
   console.log();
+}
 
-  // Determine output path
-  const outputPath = output 
-    ? path.resolve(output)
-    : path.join(process.cwd(), `${dagJson.name.toLowerCase().replace(/\s+/g, '-')}.dag.json`);
-
-  // Ask for approval
-  if (!skipApproval) {
-    const { proceed } = await prompts({
-      type: 'confirm',
-      name: 'proceed',
-      message: `Save DAG to ${path.basename(outputPath)}?`,
-      initial: true,
-    });
-
-    if (!proceed) {
-      console.log(chalk.yellow('\n❌ Cancelled'));
-      process.exit(0);
+/**
+ * Display validation results
+ */
+function displayValidation(validation: { valid: boolean; errors?: string[] }): void {
+  if (validation.valid) {
+    logger.success('DAG validation passed');
+  } else {
+    logger.error('Generated DAG failed validation');
+    if (validation.errors && validation.errors.length > 0) {
+      validation.errors.forEach(err => {
+        logger.error(`  • ${err}`);
+      });
     }
+    logger.info('The AI generated invalid JSON. Please try a more specific description.');
   }
+}
 
-  // Save DAG
+/**
+ * Save DAG to file
+ */
+async function saveDag(dag: Dag, filePath: string): Promise<void> {
   try {
-    await fs.writeFile(outputPath, JSON.stringify(dagJson, null, 2), 'utf-8');
-    console.log(chalk.green(`\n✅ DAG saved to: ${outputPath}`));
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(chalk.red(`\n❌ Failed to save DAG: ${msg}`));
-    process.exit(1);
+    const dir = path.dirname(filePath);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(dag, null, 2), 'utf-8');
+    
+    logger.success(`DAG saved: ${filePath}`);
+  } catch (error) {
+    throw new FileWriteError(filePath, { cause: error });
   }
+}
 
-  // Show next steps
-  console.log(chalk.dim('\nNext steps:'));
-  console.log(chalk.dim(`  1. Create agent files referenced in the DAG`));
-  console.log(chalk.dim(`  2. Review and customize lane configurations`));
-  console.log(chalk.dim(`  3. Test with: ${chalk.cyan(`ai-kit agent:dag ${path.basename(outputPath)} --preview`)}`));
-  console.log(chalk.dim(`  4. Run with: ${chalk.cyan(`ai-kit agent:dag ${path.basename(outputPath)}`)}`));
-  console.log();
+/**
+ * Main compose command
+ */
+export async function runCompose(options: ComposeOptions): Promise<void> {
+  const {
+    description,
+    output = path.join(PATHS.PROJECT_AGENTS_DIR, PATHS.DAG_FILE),
+    provider = 'anthropic',
+    modelRouterConfig,
+    skipApproval = false,
+    verbose = false,
+  } = options;
+  
+  console.log(chalk.bold('\n🎨 AI DAG Composer\n'));
+  console.log(chalk.dim(`Description: "${description}"\n`));
+  
+  logger.info('Starting DAG composition', { provider });
+  
+  try {
+    // Initialize model router
+    let modelRouter: typeof ModelRouter;
+    
+    if (modelRouterConfig && await fs.stat(modelRouterConfig).catch(() => null)) {
+      modelRouter = await ModelRouter.fromFile(modelRouterConfig);
+    } else {
+      modelRouter = ModelRouter.fromConfig({
+        defaultProvider: provider,
+        taskProfiles: {},
+        providers: {},
+      });
+    }
+
+    await modelRouter.autoRegister();
+
+    if (modelRouter.registeredProviders().length === 0) {
+      logger.error('No LLM providers available');
+      logger.info('Set ANTHROPIC_API_KEY or OPENAI_API_KEY to enable AI generation');
+      throw new LlmRequestError('No LLM providers configured');
+    }
+
+    if (verbose) {
+      logger.info(`LLM Provider: ${modelRouter.registeredProviders().join(', ')}`);
+    }
+    
+    // Generate DAG
+    const dag = await generateDagFromDescription(description, modelRouter, { verbose });
+    
+    logger.success('DAG generated successfully');
+    
+    // Validate
+    const projectRoot = process.cwd();
+    const validation = validateDagContract(dag, projectRoot);
+    displayValidation(validation);
+    
+    if (!validation.valid) {
+      throw new InvalidDagError('Generated DAG failed validation', validation.errors || []);
+    }
+    
+    // Display preview
+    displayDagPreview(dag);
+    
+    // Determine output path
+    const outputPath = output 
+      ? path.resolve(output)
+      : path.join(process.cwd(), `${dag.name.toLowerCase().replace(/\s+/g, '-')}.dag.json`);
+    
+    // Request approval (unless skipped)
+    if (!skipApproval) {
+      const { proceed } = await prompts({
+        type: 'confirm',
+        name: 'proceed',
+        message: `Save DAG to ${path.basename(outputPath)}?`,
+        initial: true,
+      });
+      
+      if (!proceed) {
+        throw new UserCancelledError('DAG composition');
+      }
+    }
+    
+    // Save to file
+    await saveDag(dag, outputPath);
+    
+    // Success message
+    console.log();
+    logger.info('Next steps:');
+    logger.info('  1. Create agent files referenced in the DAG');
+    logger.info('  2. Review and customize lane configurations');
+    logger.info(`  3. Test with: ${chalk.cyan(`ai-kit agent:dag ${path.basename(outputPath)} --preview`)}`);
+    logger.info(`  4. Run with: ${chalk.cyan(`ai-kit agent:dag ${path.basename(outputPath)}`)}`);
+    console.log();
+    
+  } catch (error) {
+    // Let errors bubble up to be handled by CLI error formatter
+    throw error;
+  }
 }
