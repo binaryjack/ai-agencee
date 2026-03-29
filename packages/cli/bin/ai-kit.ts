@@ -157,6 +157,7 @@ program
   .option('--provider <name>', 'Override the LLM provider for all lanes (e.g. anthropic, openai, mock)')
   .option('--json', 'Output machine-readable JSON (suppresses human-friendly progress text)')
   .option('--dashboard', 'Show live agent dashboard (Phase 1.2 - terminal UI with ink)')
+  .option('-y, --yes', 'Skip pre-flight cost confirmation prompt')
   .action((dagFile, options) =>
     runDag(dagFile ?? `${AGENTS_DIR}/dag.json`, {
       project: options.project,
@@ -167,6 +168,7 @@ program
       provider: options.provider,
       json: options.json,
       dashboard: options.dashboard,
+      yes: options.yes,
     }),
   );
 

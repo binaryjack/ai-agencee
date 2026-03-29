@@ -118,6 +118,7 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
       interactive: options.interactive ?? false,
       dryRun: false,
       dashboard: true, // Always show dashboard in demo mode
+      yes: true,       // Skip cost confirmation for demo (mock is free)
     })
 
     // Success message
