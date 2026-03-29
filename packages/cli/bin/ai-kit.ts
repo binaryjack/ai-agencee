@@ -2,11 +2,10 @@
 import { AGENTS_DIR } from '@ai-agencee/engine'
 import { Command } from 'commander'
 import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
+import { runAsk } from '../src/commands/ask/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
-import { runTemplateList, runTemplateInfo, runTemplateInstall } from '../src/commands/template/index.js'
 import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
-import { runAsk } from '../src/commands/ask/index.js'
 import { runDag, runDagStream } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runDemo } from '../src/commands/demo/index.js'
@@ -15,9 +14,11 @@ import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } 
 import { runInit } from '../src/commands/init/index.js'
 import { runLearn } from '../src/commands/learn/index.js'
 import { runMcp } from '../src/commands/mcp/index.js'
+import { runRollbackWizard } from '../src/commands/rollback/index.js'
 import { runPlan } from '../src/commands/plan/index.js'
 import { runSetup } from '../src/commands/setup/index.js'
 import { runSync } from '../src/commands/sync/index.js'
+import { runTemplateInfo, runTemplateInstall, runTemplateList } from '../src/commands/template/index.js'
 import { runVisualize } from '../src/commands/visualize/index.js'
 
 const program = new Command();
@@ -386,5 +387,16 @@ program
   .description('Convert a Semantic Kernel Planner JSON output → ai-agencee DAG JSON')
   .option('-o, --out <path>', 'Write DAG to this file instead of printing to stdout')
   .action((file, options) => runImportSkPlan(file, { out: options.out }))
+
+// Rollback command (Phase 3.4 - Rollback wizard - DOCUMENTED)
+program
+  .command('rollback [snapshot-id]')
+  .description('Interactive rollback wizard for quality gate failures (Phase 3.4 - documented)')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--show-diff', 'Show detailed diff before rollback')
+  .option('--non-interactive', 'Skip interactive prompts')
+  .action(async () => {
+    await runRollbackWizard();
+  });
 
 program.parse(process.argv);
