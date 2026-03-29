@@ -10,8 +10,8 @@
  * Reinforces BYOK transparency philosophy: "Know the cost before you run"
  */
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 /**
  * Estimated token usage by task type (conservative estimates)

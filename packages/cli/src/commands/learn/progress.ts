@@ -4,9 +4,9 @@
  * Persists tutorial completion state across sessions.
  */
 
+import { AGENCEE_DIR } from '@ai-agencee/engine'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
-import { AGENCEE_DIR } from '@ai-agencee/engine'
 import type { TutorialProgress } from './tutorials.js'
 
 /**

@@ -6,6 +6,7 @@ import { runAsk } from '../src/commands/ask/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
 import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
+import { runCompose } from '../src/commands/compose/index.js'
 import { runDag, runDagStream } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runDemo } from '../src/commands/demo/index.js'
@@ -14,8 +15,8 @@ import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } 
 import { runInit } from '../src/commands/init/index.js'
 import { runLearn } from '../src/commands/learn/index.js'
 import { runMcp } from '../src/commands/mcp/index.js'
-import { runRollbackWizard } from '../src/commands/rollback/index.js'
 import { runPlan } from '../src/commands/plan/index.js'
+import { runRollbackWizard } from '../src/commands/rollback/index.js'
 import { runSetup } from '../src/commands/setup/index.js'
 import { runSync } from '../src/commands/sync/index.js'
 import { runTemplateInfo, runTemplateInstall, runTemplateList } from '../src/commands/template/index.js'
@@ -397,6 +398,26 @@ program
   .option('--non-interactive', 'Skip interactive prompts')
   .action(async () => {
     await runRollbackWizard();
+  });
+
+// Compose command (Phase 3.6 - AI-powered DAG generator)
+program
+  .command('compose <description>')
+  .description('Generate DAG workflow from natural language description (Phase 3.6)')
+  .option('-o, --output <path>', 'Output file path for generated DAG')
+  .option('-p, --provider <provider>', 'LLM provider (anthropic, openai, gemini, mock)', 'anthropic')
+  .option('--model-router-config <path>', 'Path to model-router.json')
+  .option('--skip-approval', 'Skip approval prompt and save directly')
+  .option('-v, --verbose', 'Show detailed generation process')
+  .action(async (description, options) => {
+    await runCompose({
+      description,
+      output: options.output,
+      provider: options.provider,
+      modelRouterConfig: options.modelRouterConfig,
+      skipApproval: options.skipApproval,
+      verbose: options.verbose,
+    });
   });
 
 program.parse(process.argv);

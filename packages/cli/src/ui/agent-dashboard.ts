@@ -7,7 +7,7 @@
  * Uses simple text rendering to avoid ESM/CommonJS compatibility issues.
  */
 
-import type { DagEventBus, LaneStartEvent, LaneEndEvent, LlmCallEvent, CheckpointEvent, TokenStreamEvent } from '@ai-agencee/engine'
+import type { CheckpointEvent, DagEventBus, LaneEndEvent, LaneStartEvent, LlmCallEvent, TokenStreamEvent } from '@ai-agencee/engine'
 
 // Lane status type
 type LaneStatus = 'pending' | 'running' | 'success' | 'failed' | 'escalated'

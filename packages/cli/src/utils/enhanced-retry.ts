@@ -5,10 +5,10 @@
  */
 
 import {
-  diagnoseError,
-  formatRetryMessage,
-  countdownWithProgress,
-  calculateBackoffDelays,
+    calculateBackoffDelays,
+    countdownWithProgress,
+    diagnoseError,
+    formatRetryMessage,
 } from './retry-formatter.js'
 
 export interface EnhancedRetryConfig {

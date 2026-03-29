@@ -11,12 +11,12 @@
  * Philosophy: "Zero friction from install to first success"
  */
 
-import prompts from 'prompts'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { runInit } from '../init/index.js'
+import prompts from 'prompts'
+import { enrichError, ErrorCategory, exitWithError } from '../../utils/error-formatter.js'
 import { runDemo } from '../demo/index.js'
-import { enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js'
+import { runInit } from '../init/index.js'
 
 interface SetupOptions {
   verbose?: boolean

@@ -7,10 +7,10 @@
  * No API keys, no configuration, no cost.
  */
 
-import prompts from 'prompts'
-import { runDag } from '../dag/index.js'
 import * as path from 'path'
-import { enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js'
+import prompts from 'prompts'
+import { enrichError, ErrorCategory, exitWithError } from '../../utils/error-formatter.js'
+import { runDag } from '../dag/index.js'
 
 // Get templates directory
 const getTemplatesDir = (): string => {

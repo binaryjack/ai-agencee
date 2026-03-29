@@ -5,12 +5,12 @@
 
 ## TL;DR
 
-AI Agencee's **Codernic** is architected differently from GitHub Copilot, Claude Code, Cursor, and other coding assistants. Instead of a cloud-hosted autocomplete or chat interface, Codernic is:
+AI Agencee's **Codernic** is the orchestration brain of the ai-agencee system — not just a coding assistant, but a BA agent that understands your project, decomposes work into specialized agents, composes them into executable DAGs, and runs those workflows to completion.
 
-- **A local-first module** you own and can call from any script, agent, or CI pipeline
-- **An FTS5-indexed codebase map** that prevents hallucinated imports and functions
-- **Three distinct modes** (ASK/PLAN/AGENT) instead of a single chat interface
-- **DAG-composable** — wire it into supervised multi-agent workflows with retry, budget caps, and audit logs
+- **The BA/orchestrator brain** — conducts multi-phase discovery, selects agents, composes DAGs, and runs them
+- **An FTS5-indexed codebase map** that feeds every agent with accurate context (no hallucinated imports)
+- **Five AI-native modes** (ASK / PLAN / AGENT / JOURNEY / ANALYSE) each with a distinct role
+- **DAG composer and executor** — Codernic *creates and runs* multi-agent workflows; other agents are its participants
 
 **What this means for you:**
 
@@ -18,9 +18,12 @@ AI Agencee's **Codernic** is architected differently from GitHub Copilot, Claude
 |----------------|-------------------------------|--------------|
 | Autocomplete while typing | ✅ Excellent | ❌ Not designed for this |
 | Chat-based "explain this code" | ✅ Works well | ✅ ASK mode (faster, FTS5-backed) |
-| Plan a feature without executing it | ⚠️ Requires prompting discipline | ✅ Built-in PLAN mode |
+| BA-led project discovery (5-phase) | ❌ Not possible | ✅ JOURNEY mode (reads codebase, asks the right questions) |
+| Automated codebase intelligence scan | ❌ Not possible | ✅ ANALYSE mode (generates tech-registry, conventions, agent-hints) |
+| Plan a feature without executing it | ⚠️ Requires prompting discipline | ✅ PLAN mode (selects agents, generates DAG spec) |
+| Hire specialized agents and compose them into a workflow | ❌ Not possible | ✅ PLAN mode (dag-generator identifies + wires agents) |
 | Multi-file atomic refactors | ⚠️ Limited, manual review required | ✅ Transactional FILE:/DELETE: protocol |
-| Orchestrate with other agents (Backend/Frontend/QA) | ❌ Not possible | ✅ Codernic is a DAG lane |
+| Run multi-lane DAG with live progress | ❌ Not possible | ✅ AGENT mode (executor + dag-runner) |
 | Run in CI (no IDE) | ❌ IDE-only | ✅ Node module, callable anywhere |
 | Air-gapped / offline environments | ❌ Requires cloud | ✅ SQLite + Ollama = fully local |
 | Enterprise RBAC, audit, multi-tenant | ❌ Consumer tools | ✅ E1–E14 enterprise features |
@@ -63,9 +66,15 @@ AI Agencee's **Codernic** is architected differently from GitHub Copilot, Claude
 ### Codernic (ai-agencee)
 - **Model:** Any (Anthropic, OpenAI, Ollama, Mock, Bedrock, Gemini) via pluggable providers
 - **Context:** **FTS5 SQLite index** — full AST parse of every file, <10ms symbol lookup
+- **Role:** **Orchestration brain** — acts as BA agent, composes and runs multi-agent DAGs
 - **Strengths:**
-  - **Three modes** (ASK/PLAN/AGENT) instead of one chat interface
-  - **DAG-composable** — call from any lane with supervisor retry + cost caps
+  - **Five modes** — not one chat interface:
+    - 🗺️ **Journey** — BA-driven 5-phase discovery (reads codebase, asks the right questions, produces a DAG + agent list)
+    - 🔬 **Analyse** — automated codebase intelligence extraction (tech-registry, conventions, agent-hints)
+    - 📋 **Plan** — decomposes features into specialized agents, assembles a `DagSpecification` (identifies affected components → selects agents → wires dependencies)
+    - ⚡ **Agent** — executes the multi-lane DAG with live lane progress, checkpoints, and cost tracking
+    - 💬 **Ask** — FTS5-backed Q&A with full codebase context
+  - **DAG composer + executor** — Codernic *creates* DAGs (Plan mode), *hires* specialized agents (database/backend/frontend/testing/docs), and *runs* them (Agent mode)
   - **Local-first** — SQLite + Ollama = zero cloud dependency
   - **Atomic multi-file patches** — all changes applied transactionally or rolled back
   - **Enterprise-ready** — RBAC, audit logging, multi-tenant isolation, PII scrubbing, GDPR compliance
@@ -111,11 +120,53 @@ AI Agencee's **Codernic** is architected differently from GitHub Copilot, Claude
 
 | Feature | GitHub Copilot | Claude Code | Cursor | Tabnine | CodeWhisperer | **Codernic** |
 |---------|:--------------:|:-----------:|:------:|:-------:|:-------------:|:------------:|
-| **Three-mode operation** (ASK/PLAN/AGENT) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **Five-mode operation** (ASK/PLAN/AGENT/JOURNEY/ANALYSE) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Atomic multi-file refactor** | ❌ | ⚠️ Partial | ⚠️ Partial | ❌ | ❌ | ✅ |
 | **Real imports** (never hallucinates) | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ✅ |
 | **Live context** (sees previous agent's work) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Transactional file writes** (all-or-nothing) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+
+**Example: JOURNEY mode (BA discovery)**
+```
+You: /journey
+
+Codernic (reads codebase, then asks):
+[Phase 1 — Discovery]
+I've scanned your workspace. I can see a Node.js API with Prisma and Redis.
+What is the primary goal of this feature?
+
+... (5 phases: Discovery → Architecture → Decomposition → Wiring → Validation)
+
+[PHASE_COMPLETE: 5]
+✅ Generated: backend-agent.agent.json, frontend-agent.agent.json, testing-agent.agent.json
+✅ Generated: add-rate-limiting.dag.json
+```
+
+**Example: PLAN mode (agent composition)**
+```bash
+You: "plan: add rate limiting to /api/users"
+
+Codernic (dag-generator — selects agents, wires dependencies):
+🔍 Affected components: backend, testing
+🤝 Hiring: backend-agent.agent.json, testing-agent.agent.json
+📋 Generated: add-rate-limiting.dag.json
+  Lane 1 [backend]: Install express-rate-limit, create middleware, apply to routes
+  Lane 2 [testing]: Add rate-limit tests (dependsOn: backend)
+```
+
+**Example: AGENT mode (DAG execution)**
+```bash
+You: "run add-rate-limiting.dag.json"
+
+Codernic (executor — runs the multi-lane DAG):
+⚡ Lane [backend]: running...
+  ✅ Installed express-rate-limit
+  ✅ Created src/middleware/rate-limit.ts
+  ✅ Updated src/server.ts
+⚡ Lane [testing]: running...
+  ✅ Created tests/rate-limit.spec.ts
+DAG completed in 12.4s · 4 files modified
+```
 
 **Example: ASK mode**
 ```bash
@@ -125,29 +176,6 @@ Codernic (FTS5 query, <10ms):
 - checkAccess (src/auth/check-access.ts:34)
 - validateToken (src/auth/jwt.ts:12)
 - assertRole (src/auth/roles.ts:18)
-```
-
-**Example: PLAN mode**
-```bash
-You: "plan: add rate limiting to /api/users"
-
-Codernic:
-1. Install express-rate-limit
-2. Create src/middleware/rate-limit.ts
-3. Apply middleware in src/server.ts
-4. Add tests in tests/rate-limit.spec.ts
-```
-
-**Example: AGENT mode**
-```bash
-You: "add rate limiting to /api/users"
-
-Codernic (executes the plan via DAG):
-✅ Installed express-rate-limit
-✅ Created src/middleware/rate-limit.ts
-✅ Updated src/server.ts
-✅ 3 files modified successfully
-DAG execution completed in 12.4s
 ```
 
 ---
@@ -162,18 +190,20 @@ DAG execution completed in 12.4s
 | **MCP server** (Claude Desktop) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Python SDK** (LangChain/LangGraph) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
-**DAG composition example:**
+**Codernic as orchestrator — DAG it generates in PLAN/JOURNEY mode:**
 ```json
 {
+  "name": "add-oauth-flow",
   "lanes": [
-    { "id": "codernic-index", "agentFile": "agents/codernic.agent.json" },
-    { "id": "backend",        "agentFile": "agents/backend.agent.json", "dependsOn": ["codernic-index"] },
-    { "id": "frontend",       "agentFile": "agents/frontend.agent.json", "dependsOn": ["codernic-index"] }
+    { "id": "backend",   "agentFile": "agents/backend-agent.agent.json",   "dependsOn": [] },
+    { "id": "frontend",  "agentFile": "agents/frontend-agent.agent.json",  "dependsOn": ["backend"] },
+    { "id": "testing",   "agentFile": "agents/testing-agent.agent.json",   "dependsOn": ["backend", "frontend"] },
+    { "id": "docs",      "agentFile": "agents/documentation-agent.agent.json", "dependsOn": ["testing"] }
   ]
 }
 ```
 
-Backend and Frontend agents query the Codernic index before generating code — guarantees real imports and symbol references.
+Codernic **generates** this DAG (Plan mode), selects and wires these agents, then **runs** the whole workflow (Agent mode). The agents in the lanes are specialists Codernic hired — Codernic itself is the director, not a participant.
 
 ---
 
@@ -259,8 +289,10 @@ Backend and Frontend agents query the Codernic index before generating code — 
 
 ### Use Codernic if:
 - ✅ You need **real imports** — no hallucinated paths or symbols
-- ✅ You want to **compose code generation with other agents** (Backend/Frontend/QA in a DAG)
-- ✅ You need **three modes** (ASK = query, PLAN = design, AGENT = execute)
+- ✅ You want **BA-driven discovery** — Journey mode reads your codebase, asks the right questions, and produces a ready-to-run DAG
+- ✅ You want Codernic to **hire and compose specialized agents** for you (Plan mode selects backend/frontend/testing/docs agents automatically)
+- ✅ You need **five modes** (ASK = query, ANALYSE = scan, JOURNEY = BA discover, PLAN = design + compose, AGENT = execute)
+- ✅ You need to **run multi-lane DAGs** with live checkpoint progress
 - ✅ You need to **run in CI** or call from scripts (no IDE required)
 - ✅ You need **enterprise features** (RBAC, audit, multi-tenant, GDPR, budget caps)
 - ✅ You want **fully local** operation (SQLite + Ollama, air-gapped compliant)
@@ -274,20 +306,22 @@ Backend and Frontend agents query the Codernic index before generating code — 
 **Best of both worlds:**
 
 1. **Use Copilot for autocomplete** — it's excellent at inline suggestions while typing
-2. **Use Codernic for multi-file planning + execution:**
-   - `@codernic find all authentication functions` (ASK mode)
-   - `@plan add OAuth flow to the API` (PLAN mode)
-   - `@agent add OAuth flow to the API` (AGENT mode — plan + execute atomically)
+2. **Use Codernic as your BA + orchestrator:**
+   - `@codernic /journey` — Codernic reads your codebase, conducts a 5-phase BA discovery, and generates a DAG + agent list
+   - `@codernic /analyse` — automated stack + convention scan (produces tech-registry.json, conventions.json)
+   - `@plan add OAuth flow to the API` — Codernic selects the right agents, wires them into a DAG spec
+   - `@agent run add-oauth-flow.dag.json` — Codernic executes the multi-lane workflow with live progress
+   - `@codernic find all authentication functions` — FTS5-backed Q&A in ASK mode
 3. **Use Codernic in CI:**
    ```bash
-   # DAG lane that runs after PR merge
-   ai-kit run ./agents/post-merge.dag.json
+   # DAG Codernic generated and can re-run after PR merge
+   ai-kit run ./.agencee/config/agents/post-merge.dag.json
    ```
-   - Lane 1: Codernic updates README with new API routes
-   - Lane 2: Codernic adds JSDoc to public functions
-   - Lane 3: Codernic generates PR description with findings
+   - Lane 1 [codernic]: Updates README with new API routes
+   - Lane 2 [codernic]: Adds JSDoc to public functions
+   - Lane 3 [codernic]: Generates PR description with findings
 
-This gives you **autocomplete UX** from Copilot and **orchestrated multi-agent workflows** from Codernic.
+This gives you **autocomplete UX** from Copilot and **BA-led, orchestrated multi-agent workflows** from Codernic.
 
 ---
 
@@ -298,7 +332,7 @@ This gives you **autocomplete UX** from Copilot and **orchestrated multi-agent w
 | **Architecture** | Cloud-hosted IDE plugins | Local-first TypeScript module |
 | **Context** | File-local or embeddings (uploaded) | FTS5 SQLite index (local) |
 | **Speed** | ~200–500ms (cloud round-trip) | <10ms (FTS5 query) |
-| **Modes** | Single chat interface | Three modes (ASK/PLAN/AGENT) |
+| **Modes** | Single chat interface | Five modes (ASK/PLAN/AGENT/JOURNEY/ANALYSE) |
 | **Multi-file edits** | Manual or chat-driven | Atomic FILE:/DELETE: protocol |
 | **Real imports** | Hallucinations common | 100% accurate (FTS5-backed) |
 | **CI integration** | ❌ IDE-only | ✅ Node module, callable anywhere |
@@ -324,7 +358,7 @@ A: **100%** — it's a direct AST parse of every file. If a symbol exists, Coder
 A: Yes. The `@ai-agencee/mcp` package exposes Codernic as MCP tools (`@init`, `@check`, `@patterns`). Add to `claude_desktop_config.json`.
 
 **Q: What languages does Codernic support?**  
-A: Built-in: TypeScript, JavaScript, Python, Go. Extensible via `LanguageParser` plugin (30 lines to add Rust, C#, Java, etc.).
+A: Built-in: TypeScript, JavaScript, Python, Go, **Java, Rust, C#, Ruby, Kotlin, SQL** (T-SQL/PL-SQL/PL-pgSQL/DB2). Extensible via the `LanguageParser` plugin interface.
 
 **Q: Does AGENT mode run tests automatically?**  
 A: Not currently. AGENT mode executes file changes atomically via the `## FILE:`/`## DELETE:` protocol. Test execution and git commits can be added to DAG lanes post-execution. Roadmap: v0.7.0 will add optional test-then-commit workflow.

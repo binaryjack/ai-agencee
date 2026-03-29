@@ -137,4 +137,5 @@ async function main() {
 // Export for testing (no auto-run to avoid CommonJS issues)
 // To run: node --loader ts-node/esm demo-retry.ts
 
-export { demoRateLimit, demoTimeout, demoConnection }
+export { demoConnection, demoRateLimit, demoTimeout }
+

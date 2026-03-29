@@ -6,13 +6,13 @@
 
 import prompts from 'prompts'
 import { findProjectRoot } from '../dag/find-project-root.js'
-import { TUTORIALS, getTutorial, checkPrerequisites, type Tutorial, type TutorialStep } from './tutorials.js'
 import {
-  getTutorialProgress,
-  markStepComplete,
-  markTutorialComplete,
-  getCompletedTutorials,
+    getCompletedTutorials,
+    getTutorialProgress,
+    markStepComplete,
+    markTutorialComplete,
 } from './progress.js'
+import { TUTORIALS, checkPrerequisites, getTutorial, type Tutorial, type TutorialStep } from './tutorials.js'
 
 interface LearnOptions {
   tutorial?: string

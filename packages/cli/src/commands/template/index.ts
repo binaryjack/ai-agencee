@@ -9,7 +9,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import prompts from 'prompts';
-import { enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js';
+import { enrichError, ErrorCategory, exitWithError } from '../../utils/error-formatter.js';
 
 /**
  * Template metadata structure
@@ -302,6 +302,5 @@ export async function installTemplate(
 }
 
 // Exports for CLI registration
-export { listTemplates as runTemplateList };
-export { showTemplateInfo as runTemplateInfo };
-export { installTemplate as runTemplateInstall };
+export { showTemplateInfo as runTemplateInfo, installTemplate as runTemplateInstall, listTemplates as runTemplateList };
+
