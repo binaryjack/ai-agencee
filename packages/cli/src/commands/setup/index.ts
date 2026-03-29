@@ -1,5 +1,6 @@
 /**
  * Interactive setup wizard — Phase 1.4
+ * REFACTORED: Phase 1 - Foundation improvements
  * 
  * Guided onboarding for first-time users:
  * - Detects if project is initialized
@@ -9,18 +10,29 @@
  * - Runs a test execution to verify setup
  * 
  * Philosophy: "Zero friction from install to first success"
+ * 
+ * Improvements:
+ * - Uses @cli/constants for provider configuration and paths
+ * - Uses @cli/services/logger instead of console.log
+ * - Uses @cli/types for SetupOptions
+ * - Uses @cli/errors for proper error handling
+ * - No process.exit() calls
  */
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import prompts from 'prompts'
-import { enrichError, ErrorCategory, exitWithError } from '../../utils/error-formatter.js'
 import { runDemo } from '../demo/index.js'
 import { runInit } from '../init/index.js'
 
-interface SetupOptions {
-  verbose?: boolean
-}
+// Phase 1: Use centralized constants and types
+import { PATHS, PROVIDERS, getProviderConfig } from '../../constants/index.js'
+import { createLogger } from '../../services/logger/index.js'
+import type { SetupOptions } from '../../types/index.js'
+import { UserCancelledError, FileWriteError } from '../../errors/index.js'
+
+// Create namespaced logger
+const logger = createLogger('setup')
 
 /**
  * Use case templates with pre-configured DAGs
@@ -78,11 +90,12 @@ export async function runSetup(options: SetupOptions = {}): Promise<void> {
   console.log('║     🚀  AI Agencee — Interactive Setup Wizard           ║')
   console.log('╚══════════════════════════════════════════════════════════╝\n')
 
-  console.log('Welcome! Let\'s set up your AI agent workspace.\n')
+  logger.info('Welcome! Let\'s set up your AI agent workspace.');
+  logger.debug('Setup options', { verbose: options.verbose });
 
   // Step 1: Check if already initialized
   const cwd = process.cwd()
-  const agentsDir = path.join(cwd, 'agents')
+  const agentsDir = path.join(cwd, PATHS.PROJECT_AGENTS_DIR)
   
   let isInitialized = false
   try {
@@ -101,8 +114,8 @@ export async function runSetup(options: SetupOptions = {}): Promise<void> {
     })
 
     if (!reinit) {
-      console.log('\n✅ Setup cancelled. Existing configuration preserved.\n')
-      return
+      logger.success('Setup cancelled. Existing configuration preserved.');
+      throw new UserCancelledError('setup');
     }
   }
 
@@ -119,39 +132,41 @@ export async function runSetup(options: SetupOptions = {}): Promise<void> {
   })
 
   if (!useCase) {
-    console.log('\n❌ Setup cancelled.\n')
-    return
+    logger.info('Setup cancelled');
+    throw new UserCancelledError('setup');
   }
 
   const template = USE_CASE_TEMPLATES.find(t => t.id === useCase)!
 
-  // Step 3: Choose provider
+  // Step 3: Choose provider (Phase 1: Use provider constants)
+  const providerChoices = [
+    { title: '🎭  Mock (free, demo mode)', value: 'mock' },
+    { title: '🤖  Anthropic Claude', value: 'anthropic' },
+    { title: '🧠  OpenAI GPT', value: 'openai' },
+    { title: '🏠  Ollama (local)', value: 'ollama' },
+    { title: '⚙️   Configure later', value: 'none' },
+  ];
+  
   const { provider } = await prompts({
     type: 'select',
     name: 'provider',
     message: 'Which LLM provider would you like to use?',
-    choices: [
-      { title: '🎭  Mock (free, demo mode)', value: 'mock' },
-      { title: '🤖  Anthropic Claude', value: 'anthropic' },
-      { title: '🧠  OpenAI GPT', value: 'openai' },
-      { title: '🏠  Ollama (local)', value: 'ollama' },
-      { title: '⚙️   Configure later', value: 'none' },
-    ],
+    choices: providerChoices,
   })
 
   if (!provider) {
-    console.log('\n❌ Setup cancelled.\n')
-    return
-  }
+    logger.info('Setup cancelled');
+    throw new UserCancelledError('setup');  }
 
-  // Step 4: API key configuration (if needed)
+  // Step 4: API key configuration (Phase 1: Use provider constants)
   let apiKeyConfigured = false
   if (provider === 'anthropic' || provider === 'openai') {
-    const envPath = path.join(cwd, '.env')
-    const envVarName = provider === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY'
+    const providerConfig = getProviderConfig(provider);
+    const envPath = path.join(cwd, PATHS.ENV_FILE);
+    const envVarName = providerConfig.envVar;
     
-    console.log(`\n📝 To use ${provider}, you need an API key.`)
-    console.log(`   Create one at: ${provider === 'anthropic' ? 'https://console.anthropic.com' : 'https://platform.openai.com'}\n`)
+    logger.info(`To use ${provider}, you need an API key.`);
+    logger.info(`Create one at: ${providerConfig.signupUrl}`);
     
     const { configureKey } = await prompts({
       type: 'confirm',
@@ -184,46 +199,42 @@ export async function runSetup(options: SetupOptions = {}): Promise<void> {
           envContent += `\n${envVarName}=${apiKey}\n`
         }
 
-        await fs.writeFile(envPath, envContent.trim() + '\n', 'utf-8')
-        apiKeyConfigured = true
-        console.log(`\n✅ API key saved to .env\n`)
+        try {
+          await fs.writeFile(envPath, envContent.trim() + '\n', 'utf-8');
+          apiKeyConfigured = true;
+          logger.success('API key saved to .env');
+        } catch (error) {
+          throw new FileWriteError(envPath, { cause: error });
+        }
       }
     } else {
-      console.log(`\n⚠️  You can add the API key later to .env:`)
-      console.log(`   ${envVarName}=your-api-key-here\n`)
+      logger.warn(`You can add the API key later to .env:`);
+      logger.info(`   ${envVarName}=your-api-key-here`);
     }
   }
 
   // Step 5: Initialize project structure
-  console.log('\n📦 Setting up project structure...\n')
+  logger.info('Setting up project structure...');
   
   try {
-    await runInit({ strict: false })
-  } catch (err) {
-    const richError = enrichError(err, ErrorCategory.FILE_SYSTEM, [
-      'Ensure you have write permissions',
-      'Check disk space is available',
-      'Try running in a different directory',
-    ]);
-    exitWithError(richError);
+    await runInit({ strict: false });
+  } catch (error) {
+    logger.error('Failed to initialize project structure', { error });
+    throw error;
   }
 
   // Step 6: Generate use case template files
   if (template.dagFile && useCase !== 'custom') {
-    console.log(`\n📝 Generating ${template.title} configuration...\n`)
+    logger.info(`Generating ${template.title} configuration...`);
     
-    // Copy template files from demo templates
-    const templateDir = path.join(process.cwd(), 'packages', 'cli', 'templates', 'demos')
-    const targetDir = path.join(cwd, 'agents')
+    const targetDir = path.join(cwd, PATHS.PROJECT_AGENTS_DIR);
 
     try {
-      // For now, just generate a simple DAG based on the use case
-      // In a full implementation, we'd copy from templates
-      await generateUseCaseDAG(targetDir, useCase, provider)
-      console.log(`✅ Generated ${template.title} configuration in agents/\n`)
-    } catch (err) {
-      console.warn(`⚠️  Could not generate template files: ${err}`)
-      console.log('   You can configure agents manually in agents/\n')
+      await generateUseCaseDAG(targetDir, useCase, provider);
+      logger.success(`Generated ${template.title} configuration in ${PATHS.PROJECT_AGENTS_DIR}/`);
+    } catch (error) {
+      logger.warn(`Could not generate template files: ${error}`);
+      logger.info(`You can configure agents manually in ${PATHS.PROJECT_AGENTS_DIR}/`);
     }
   }
 
@@ -273,15 +284,30 @@ export async function runSetup(options: SetupOptions = {}): Promise<void> {
 }
 
 /**
- * Generate a use case DAG file
+ * Generate a use case DAG file (Phase 1: Type-safe without any)
  */
+interface DagTemplate {
+  name: string;
+  description: string;
+  lanes: Array<{
+    id: string;
+    agentFile: string;
+    supervisorFile: string;
+    dependsOn: string[];
+    capabilities: string[];
+  }>;
+  globalBarriers: unknown[];
+  capabilityRegistry: Record<string, string[]>;
+  modelRouterFile: string;
+}
+
 async function generateUseCaseDAG(
   targetDir: string,
   useCase: string,
   provider: string
 ): Promise<void> {
   // Simple DAG templates based on use case
-  const dagTemplates: Record<string, any> = {
+  const dagTemplates: Record<string, DagTemplate> = {
     'security-scan': {
       name: 'Security Scan',
       description: 'Automated security vulnerability scan',
