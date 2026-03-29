@@ -13,6 +13,7 @@ import { runDemo } from '../src/commands/demo/index.js'
 import { runDoctor } from '../src/commands/doctor/index.js'
 import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } from '../src/commands/import/index.js'
 import { runInit } from '../src/commands/init/index.js'
+import { runLearn } from '../src/commands/learn/index.js'
 import { runMcp } from '../src/commands/mcp/index.js'
 import { runPlan } from '../src/commands/plan/index.js'
 import { runSetup } from '../src/commands/setup/index.js'
@@ -88,6 +89,20 @@ program
       project: options.project,
       limit: parseInt(options.limit, 10),
       json: options.json,
+    });
+  });
+
+// Learn command (Phase 3.2 - Interactive tutorials)
+program
+  .command('learn [tutorial]')
+  .description('Interactive tutorials to master ai-starter-kit modes and features')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--reset', 'Reset all tutorial progress')
+  .action(async (tutorial, options) => {
+    await runLearn({
+      tutorial,
+      project: options.project,
+      reset: options.reset,
     });
   });
 
