@@ -1,0 +1,12 @@
+{
+  "name": "Integration Supervisor",
+  "approvalCriteria": [
+    "E2E tests cover critical workflows",
+    "All integration tests pass",
+    "Full stack works end-to-end"
+  ],
+  "reviewPrompt": "Review integration tests. Verify full-stack functionality.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

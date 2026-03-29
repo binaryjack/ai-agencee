@@ -1,0 +1,11 @@
+{
+  "name": "Integration Agent",
+  "role": "qa_engineer",
+  "checks": [
+    {"id": "e2e", "name": "E2E Tests", "severity": "critical", "enabled": true},
+    {"id": "api-integration", "name": "API Integration", "severity": "critical", "enabled": true}
+  ],
+  "systemPrompt": "You are a QA engineer. Write end-to-end tests and verify full-stack integration.",
+  "taskPrompt": "Create integration tests:\\n1. E2E tests (Playwright/Cypress)\\n2. API integration tests\\n3. User workflows\\n\\nUse FTS5 to find existing test patterns.",
+  "capabilities": ["integration-testing", "e2e-testing"]
+}

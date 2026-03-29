@@ -1,0 +1,11 @@
+{
+  "name": "Test Runner Agent",
+  "role": "test_executor",
+  "checks": [
+    {"id": "run-tests", "name": "Run Tests", "severity": "critical", "enabled": true},
+    {"id": "coverage", "name": "Coverage Report", "severity": "warning", "enabled": true}
+  ],
+  "systemPrompt": "You are a test execution specialist. Run tests and report results. Identify failures and coverage gaps.",
+  "taskPrompt": "Run all generated tests and:\\n1. Execute test suite\\n2. Report pass/fail results\\n3. Generate coverage report\\n4. Identify failing tests and suggest fixes",
+  "capabilities": ["test-execution", "validation"]
+}

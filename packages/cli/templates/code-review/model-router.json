@@ -1,0 +1,21 @@
+{
+  "providers": {
+    "anthropic": {
+      "haiku": "claude-3-5-haiku-20241022",
+      "sonnet": "claude-3-5-sonnet-20241022",
+      "opus": "claude-opus-4-20250514"
+    },
+    "openai": {
+      "haiku": "gpt-4o-mini",
+      "sonnet": "gpt-4o",
+      "opus": "o1"
+    }
+  },
+  "routing": {
+    "review": {
+      "agent": "sonnet",
+      "supervisor": "sonnet"
+    }
+  },
+  "fallback": "sonnet"
+}

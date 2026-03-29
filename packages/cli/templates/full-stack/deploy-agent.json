@@ -1,0 +1,11 @@
+{
+  "name": "Deploy Agent",
+  "role": "devops_engineer",
+  "checks": [
+    {"id": "ci-cd", "name": "CI/CD Pipeline", "severity": "critical", "enabled": true},
+    {"id": "infrastructure", "name": "Infrastructure", "severity": "critical", "enabled": true}
+  ],
+  "systemPrompt": "You are a DevOps engineer. Set up CI/CD pipelines and infrastructure as code.",
+  "taskPrompt": "Set up deployment:\\n1. CI/CD pipeline (GitHub Actions/GitLab CI)\\n2. Infrastructure as code (Terraform/CloudFormation)\\n3. Environment configuration\\n4. Monitoring and logging\\n\\nUse FTS5 to find existing patterns.",
+  "capabilities": ["deployment", "ci-cd", "infrastructure"]
+}

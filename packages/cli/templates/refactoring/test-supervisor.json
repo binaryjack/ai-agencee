@@ -1,0 +1,12 @@
+{
+  "name": "Test Supervisor",
+  "approvalCriteria": [
+    "All refactored code is tested",
+    "Tests are comprehensive and pass",
+    "Test code follows project conventions"
+  ],
+  "reviewPrompt": "Review test coverage. Verify tests exist and cover refactored code. Approve if adequate coverage.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

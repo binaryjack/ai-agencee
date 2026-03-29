@@ -1,0 +1,15 @@
+{
+  "name": "Code Review Workflow",
+  "lanes": [
+    {
+      "id": "review",
+      "name": "review",
+      "agent": "review-agent.json",
+      "supervisor": "review-supervisor.json",
+      "dependencies": [],
+      "capabilities": ["code-review", "static-analysis", "architecture-review"]
+    }
+  ],
+  "barriers": [],
+  "modelRouter": "model-router.json"
+}

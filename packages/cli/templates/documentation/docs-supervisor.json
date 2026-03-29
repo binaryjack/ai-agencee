@@ -1,0 +1,14 @@
+{
+  "name": "Documentation Supervisor",
+  "approvalCriteria": [
+    "API documentation is complete and accurate",
+    "README is clear and helpful",
+    "Architecture diagrams are correct",
+    "All code references are verified via FTS5",
+    "Documentation follows project style"
+  ],
+  "reviewPrompt": "Review generated documentation. Verify all code references via FTS5. Ensure examples are correct and helpful.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Backend Supervisor",
+  "approvalCriteria": [
+    "API endpoints are RESTful and well-designed",
+    "Database schema is normalized and efficient",
+    "Authentication is secure",
+    "Error handling is comprehensive",
+    "All code verified via FTS5"
+  ],
+  "reviewPrompt": "Review backend implementation. Verify API design, security, and code quality.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

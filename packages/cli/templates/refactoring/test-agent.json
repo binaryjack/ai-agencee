@@ -1,0 +1,11 @@
+{
+  "name": "Test Agent",
+  "role": "test_engineer",
+  "checks": [
+    {"id": "unit-tests", "name": "Unit Tests", "severity": "critical", "enabled": true},
+    {"id": "integration-tests", "name": "Integration Tests", "severity": "warning", "enabled": true}
+  ],
+  "systemPrompt": "You are a test engineer. Write comprehensive unit tests to verify refactored code works correctly. Use FTS5 to find existing tests and code.",
+  "taskPrompt": "Write unit tests for all refactored code. Ensure:\\n1. All public methods are tested\\n2. Edge cases are covered\\n3. Tests pass\\n\\nUse existing test patterns (find via FTS5). Provide complete test files.",
+  "capabilities": ["testing", "validation"]
+}

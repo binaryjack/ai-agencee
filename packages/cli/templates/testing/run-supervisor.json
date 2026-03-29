@@ -1,0 +1,12 @@
+{
+  "name": "Test Runner Supervisor",
+  "approvalCriteria": [
+    "All tests pass",
+    "Coverage meets project threshold (e.g., 80%)",
+    "No flaky tests"
+  ],
+  "reviewPrompt": "Review test results. Verify all tests pass and coverage is adequate.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

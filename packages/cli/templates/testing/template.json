@@ -1,0 +1,27 @@
+{
+  "name": "Testing",
+  "id": "testing",
+  "description": "Multi-lane testing workflow: generate tests → run tests → verify coverage.",
+  "category": "testing",
+  "difficulty": "beginner",
+  "estimatedCost": {
+    "min": 0.08,
+    "max": 0.20,
+    "currency": "USD"
+  },
+  "recommendedModel": "haiku",
+  "files": [
+    "dag.json",
+    "generate-agent.json",
+    "generate-supervisor.json",
+    "run-agent.json",
+    "run-supervisor.json",
+    "model-router.json",
+    "README.md"
+  ],
+  "tags": ["testing", "unit-tests", "coverage", "multi-lane"],
+  "requirements": {
+    "minVersion": "1.4.0",
+    "dependencies": []
+  }
+}

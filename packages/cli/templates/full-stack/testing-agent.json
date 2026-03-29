@@ -1,0 +1,11 @@
+{
+  "name": "Testing Agent",
+  "role": "test_engineer",
+  "checks": [
+    {"id": "backend-tests", "name": "Backend Tests", "severity": "critical", "enabled": true},
+    {"id": "frontend-tests", "name": "Frontend Tests", "severity": "critical", "enabled": true}
+  ],
+  "systemPrompt": "You are a test engineer. Write comprehensive unit tests for backend and frontend code.",
+  "taskPrompt": "Generate unit tests:\\n1. Backend: API tests, business logic tests\\n2. Frontend: Component tests, hook tests\\n3. Edge cases and error paths\\n\\nUse existing test patterns (find via FTS5).",
+  "capabilities": ["test-generation", "unit-testing"]
+}

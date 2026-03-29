@@ -1,0 +1,25 @@
+{
+  "name": "Security Scan",
+  "id": "security-scan",
+  "description": "Static analysis and security vulnerability detection. Finds SQL injection, XSS, leaked secrets, insecure dependencies, and more.",
+  "category": "security",
+  "difficulty": "beginner",
+  "estimatedCost": {
+    "min": 0.05,
+    "max": 0.15,
+    "currency": "USD"
+  },
+  "recommendedModel": "sonnet",
+  "files": [
+    "dag.json",
+    "security-agent.json",
+    "security-supervisor.json",
+    "model-router.json",
+    "README.md"
+  ],
+  "tags": ["security", "static-analysis", "vulnerabilities", "single-lane"],
+  "requirements": {
+    "minVersion": "1.4.0",
+    "dependencies": []
+  }
+}

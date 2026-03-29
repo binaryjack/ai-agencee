@@ -4,6 +4,7 @@ import { Command } from 'commander'
 import { runAgentInstall, runAgentList } from '../src/commands/agents/index.js'
 import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
+import { runTemplateList, runTemplateInfo, runTemplateInstall } from '../src/commands/template/index.js'
 import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
 import { runDag, runDagStream } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
@@ -212,6 +213,31 @@ program
   .option('--registry <url>', 'Registry URL (default: https://raw.githubusercontent.com/binaryjack/ai-agencee-ressources/main)')
   .action((name, options) =>
     runAgentInstall(name, { project: options.project, registry: options.registry }),
+  );
+
+// Template commands (Phase 2.1 - DAG templates library)
+program
+  .command('template:list')
+  .description('List all available DAG templates with cost estimates')
+  .action(() => runTemplateList());
+
+program
+  .command('template:info <template-id>')
+  .description('Show detailed information about a template')
+  .action((templateId) => runTemplateInfo(templateId));
+
+program
+  .command('template:install <template-id>')
+  .description('Install a template to the current project')
+  .option('-d, --dir <path>', 'Target directory (default: agents/)')
+  .option('-n, --name <name>', 'Custom name for the template')
+  .option('-f, --force', 'Overwrite existing files without prompting')
+  .action((templateId, options) =>
+    runTemplateInstall(templateId, {
+      dir: options.dir,
+      name: options.name,
+      force: options.force,
+    }),
   );
 
 // Plan commands

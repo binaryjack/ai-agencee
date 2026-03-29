@@ -1,0 +1,14 @@
+{
+  "name": "Frontend Supervisor",
+  "approvalCriteria": [
+    "Components are reusable and well-structured",
+    "State management is clean",
+    "UI is accessible (WCAG 2.1)",
+    "API integration works correctly",
+    "All code verified via FTS5"
+  ],
+  "reviewPrompt": "Review frontend implementation. Verify component design, accessibility, and integration.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

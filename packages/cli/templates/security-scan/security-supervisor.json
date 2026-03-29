@@ -1,0 +1,17 @@
+{
+  "name": "security-supervisor",
+  "description": "Quality gate for security findings. Ensures findings are accurate (no false positives via FTS5 verification) and properly categorized by severity.",
+  "approvalCriteria": [
+    "All findings have exact file paths and line numbers",
+    "Findings verified via FTS5 search (no hallucinations)",
+    "Severity correctly assigned (critical vs warning)",
+    "Remediation suggestions are actionable",
+    "No false positives (findings exist in actual code)"
+  ],
+  "prompts": {
+    "system": "You are a security supervisor reviewing vulnerability findings. Your job is to verify accuracy using FTS5 search and eliminate false positives. Only approve findings that are real and verified.",
+    "review": "Review security findings:\n1. Verify each finding exists in actual code (use FTS5 search)\n2. Check severity is correct (critical for exploitable, warning for low-risk)\n3. Ensure remediation is actionable\n4. Reject any hallucinated findings\n5. Approve if all findings are real and properly categorized\n\nVERDICT OPTIONS:\n- PASS: All findings verified and categorized correctly\n- RETRY: Contains false positives or incorrect severity\n- FAIL: Too many false positives, agent needs improvement"
+  },
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

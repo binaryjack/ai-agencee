@@ -1,0 +1,15 @@
+{
+  "name": "Review Supervisor",
+  "approvalCriteria": [
+    "All findings have exact file paths and line numbers",
+    "Findings verified via FTS5 search (no hallucinations)",
+    "Severity correctly assigned (critical vs warning vs info)",
+    "Remediation suggestions are actionable and specific",
+    "No false positives (findings exist in actual code)",
+    "Feedback is constructive and focuses on improvement"
+  ],
+  "reviewPrompt": "Review the code review findings. Verify each finding exists in actual code (use FTS5 search). Ensure recommendations are constructive and actionable. Reject findings that are vague, unhelpful, or hallucinated.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

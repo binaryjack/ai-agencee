@@ -1,0 +1,29 @@
+{
+  "name": "Refactoring",
+  "id": "refactoring",
+  "description": "Multi-lane refactoring workflow: analyze → refactor → test. Improves code quality while maintaining functionality.",
+  "category": "code-quality",
+  "difficulty": "intermediate",
+  "estimatedCost": {
+    "min": 0.15,
+    "max": 0.40,
+    "currency": "USD"
+  },
+  "recommendedModel": "sonnet",
+  "files": [
+    "dag.json",
+    "analyze-agent.json",
+    "analyze-supervisor.json",
+    "refactor-agent.json",
+    "refactor-supervisor.json",
+    "test-agent.json",
+    "test-supervisor.json",
+    "model-router.json",
+    "README.md"
+  ],
+  "tags": ["refactoring", "code-quality", "multi-lane", "testing"],
+  "requirements": {
+    "minVersion": "1.4.0",
+    "dependencies": []
+  }
+}

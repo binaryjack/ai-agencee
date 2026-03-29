@@ -1,0 +1,12 @@
+{
+  "name": "Deploy Supervisor",
+  "approvalCriteria": [
+    "CI/CD pipeline is configured correctly",
+    "Infrastructure is production-ready",
+    "Monitoring and logging are set up"
+  ],
+  "reviewPrompt": "Review deployment configuration. Verify pipeline and infrastructure.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

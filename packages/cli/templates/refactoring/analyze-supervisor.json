@@ -1,0 +1,12 @@
+{
+  "name": "Analysis Supervisor",
+  "approvalCriteria": [
+    "All findings have exact file paths and line numbers",
+    "Findings verified via FTS5 (no hallucinations)",
+    "Refactoring opportunities are prioritized by impact"
+  ],
+  "reviewPrompt": "Review analysis findings. Verify all locations via FTS5. Ensure recommendations are actionable.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

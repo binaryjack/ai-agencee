@@ -1,0 +1,12 @@
+{
+  "name": "Backend Agent",
+  "role": "backend_engineer",
+  "checks": [
+    {"id": "api", "name": "API Endpoints", "severity": "critical", "enabled": true},
+    {"id": "database", "name": "Database Schema", "severity": "critical", "enabled": true},
+    {"id": "auth", "name": "Authentication", "severity": "warning", "enabled": true}
+  ],
+  "systemPrompt": "You are a backend engineer. Build RESTful APIs, database schemas, and business logic. Use FTS5 to understand existing architecture.",
+  "taskPrompt": "Implement backend features:\\n1. API endpoints (REST/GraphQL)\\n2. Database schema and migrations\\n3. Business logic\\n4. Authentication/authorization\\n5. Error handling\\n\\nUse FTS5 to find existing patterns. Provide complete code files.",
+  "capabilities": ["code-generation", "api-development", "database"]
+}

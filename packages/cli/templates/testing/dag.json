@@ -1,0 +1,29 @@
+{
+  "name": "Testing Workflow",
+  "lanes": [
+    {
+      "id": "generate",
+      "name": "generate",
+      "agent": "generate-agent.json",
+      "supervisor": "generate-supervisor.json",
+      "dependencies": [],
+      "capabilities": ["test-generation", "code-analysis"]
+    },
+    {
+      "id": "run",
+      "name": "run",
+      "agent": "run-agent.json",
+      "supervisor": "run-supervisor.json",
+      "dependencies": ["generate"],
+      "capabilities": ["test-execution", "validation"]
+    }
+  ],
+  "barriers": [
+    {
+      "afterLanes": ["generate"],
+      "waitForAll": true,
+      "humanReview": false
+    }
+  ],
+  "modelRouter": "model-router.json"
+}

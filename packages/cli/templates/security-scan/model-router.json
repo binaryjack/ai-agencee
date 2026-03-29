@@ -1,0 +1,29 @@
+{
+  "providers": [
+    {
+      "type": "anthropic",
+      "apiKeyEnv": "ANTHROPIC_API_KEY",
+      "models": {
+        "haiku": "claude-3-5-haiku-20241022",
+        "sonnet": "claude-3-5-sonnet-20241022",
+        "opus": "claude-opus-4-20250514"
+      }
+    },
+    {
+      "type": "openai",
+      "apiKeyEnv": "OPENAI_API_KEY",
+      "models": {
+        "haiku": "gpt-4o-mini",
+        "sonnet": "gpt-4o",
+        "opus": "o1"
+      }
+    }
+  ],
+  "routing": {
+    "security-scan": {
+      "agent": "sonnet",
+      "supervisor": "sonnet"
+    }
+  },
+  "fallback": "sonnet"
+}

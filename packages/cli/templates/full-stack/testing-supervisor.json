@@ -1,0 +1,12 @@
+{
+  "name": "Testing Supervisor",
+  "approvalCriteria": [
+    "All code is tested",
+    "Coverage meets threshold (80%)",
+    "Tests pass"
+  ],
+  "reviewPrompt": "Review test coverage and quality.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

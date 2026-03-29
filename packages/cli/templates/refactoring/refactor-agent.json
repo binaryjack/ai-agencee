@@ -1,0 +1,12 @@
+{
+  "name": "Refactor Agent",
+  "role": "code_refactorer",
+  "checks": [
+    {"id": "extract-method", "name": "Extract Method", "severity": "info", "enabled": true},
+    {"id": "extract-class", "name": "Extract Class", "severity": "info", "enabled": true},
+    {"id": "simplify", "name": "Simplify Logic", "severity": "info", "enabled": true}
+  ],
+  "systemPrompt": "You are a refactoring specialist. Apply clean code principles: extract methods/classes, simplify logic, reduce coupling. Preserve existing functionality. Use FTS5 to verify code exists.",
+  "taskPrompt": "Based on the analysis findings, apply refactorings:\\n1. Extract methods from complex functions\\n2. Extract classes from large modules\\n3. Simplify conditional logic\\n4. Reduce coupling\\n\\nProvide full code diffs. Verify all changes via FTS5.",
+  "capabilities": ["code-generation", "refactoring"]
+}

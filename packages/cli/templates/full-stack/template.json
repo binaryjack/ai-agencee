@@ -1,0 +1,33 @@
+{
+  "name": "Full-Stack Development",
+  "id": "full-stack",
+  "description": "Enterprise 5-lane parallel workflow: backend, frontend, testing, integration, deploy. Complete end-to-end development.",
+  "category": "full-stack",
+  "difficulty": "advanced",
+  "estimatedCost": {
+    "min": 0.30,
+    "max": 0.80,
+    "currency": "USD"
+  },
+  "recommendedModel": "sonnet",
+  "files": [
+    "dag.json",
+    "backend-agent.json",
+    "backend-supervisor.json",
+    "frontend-agent.json",
+    "frontend-supervisor.json",
+    "testing-agent.json",
+    "testing-supervisor.json",
+    "integration-agent.json",
+    "integration-supervisor.json",
+    "deploy-agent.json",
+    "deploy-supervisor.json",
+    "model-router.json",
+    "README.md"
+  ],
+  "tags": ["full-stack", "enterprise", "multi-lane", "parallel", "ci-cd"],
+  "requirements": {
+    "minVersion": "1.4.0",
+    "dependencies": []
+  }
+}

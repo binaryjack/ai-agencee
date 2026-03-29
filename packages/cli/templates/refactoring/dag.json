@@ -1,0 +1,42 @@
+{
+  "name": "Refactoring Workflow",
+  "lanes": [
+    {
+      "id": "analyze",
+      "name": "analyze",
+      "agent": "analyze-agent.json",
+      "supervisor": "analyze-supervisor.json",
+      "dependencies": [],
+      "capabilities": ["static-analysis", "code-review"]
+    },
+    {
+      "id": "refactor",
+      "name": "refactor",
+      "agent": "refactor-agent.json",
+      "supervisor": "refactor-supervisor.json",
+      "dependencies": ["analyze"],
+      "capabilities": ["code-generation", "refactoring"]
+    },
+    {
+      "id": "test",
+      "name": "test",
+      "agent": "test-agent.json",
+      "supervisor": "test-supervisor.json",
+      "dependencies": ["refactor"],
+      "capabilities": ["testing", "validation"]
+    }
+  ],
+  "barriers": [
+    {
+      "afterLanes": ["analyze"],
+      "waitForAll": true,
+      "humanReview": false
+    },
+    {
+      "afterLanes": ["refactor"],
+      "waitForAll": true,
+      "humanReview": true
+    }
+  ],
+  "modelRouter": "model-router.json"
+}

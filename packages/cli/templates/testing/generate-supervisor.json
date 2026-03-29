@@ -1,0 +1,13 @@
+{
+  "name": "Test Generation Supervisor",
+  "approvalCriteria": [
+    "All public APIs have tests",
+    "Edge cases are covered",
+    "Tests follow project conventions",
+    "All code references verified via FTS5"
+  ],
+  "reviewPrompt": "Review generated tests. Verify coverage and quality. Approve if comprehensive.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

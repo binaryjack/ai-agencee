@@ -1,0 +1,25 @@
+{
+  "name": "Code Review",
+  "id": "code-review",
+  "description": "Automated code review for best practices, architecture, maintainability, and performance.",
+  "category": "quality",
+  "difficulty": "beginner",
+  "estimatedCost": {
+    "min": 0.08,
+    "max": 0.20,
+    "currency": "USD"
+  },
+  "recommendedModel": "sonnet",
+  "files": [
+    "dag.json",
+    "review-agent.json",
+    "review-supervisor.json",
+    "model-router.json",
+    "README.md"
+  ],
+  "tags": ["quality", "code-review", "best-practices", "single-lane"],
+  "requirements": {
+    "minVersion": "1.4.0",
+    "dependencies": []
+  }
+}

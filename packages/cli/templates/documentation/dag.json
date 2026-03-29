@@ -1,0 +1,15 @@
+{
+  "name": "Documentation Workflow",
+  "lanes": [
+    {
+      "id": "docs",
+      "name": "docs",
+      "agent": "docs-agent.json",
+      "supervisor": "docs-supervisor.json",
+      "dependencies": [],
+      "capabilities": ["documentation", "code-analysis", "diagram-generation"]
+    }
+  ],
+  "barriers": [],
+  "modelRouter": "model-router.json"
+}

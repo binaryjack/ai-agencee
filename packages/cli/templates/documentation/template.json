@@ -1,0 +1,25 @@
+{
+  "name": "Documentation",
+  "id": "documentation",
+  "description": "Generate comprehensive documentation: API docs, README, inline comments, architecture diagrams.",
+  "category": "documentation",
+  "difficulty": "beginner",
+  "estimatedCost": {
+    "min": 0.10,
+    "max": 0.25,
+    "currency": "USD"
+  },
+  "recommendedModel": "sonnet",
+  "files": [
+    "dag.json",
+    "docs-agent.json",
+    "docs-supervisor.json",
+    "model-router.json",
+    "README.md"
+  ],
+  "tags": ["documentation", "api-docs", "readme", "single-lane"],
+  "requirements": {
+    "minVersion": "1.4.0",
+    "dependencies": []
+  }
+}

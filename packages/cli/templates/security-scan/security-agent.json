@@ -1,0 +1,47 @@
+{
+  "name": "security-agent",
+  "description": "Static security analysis agent. Scans code for vulnerabilities, leaked secrets, insecure patterns, and dependency issues.",
+  "checks": [
+    {
+      "type": "check",
+      "pass": "✅ No SQL injection vulnerabilities found",
+      "fail": "❌ Found potential SQL injection vulnerabilities",
+      "failSeverity": "critical"
+    },
+    {
+      "type": "check",
+      "pass": "✅ No XSS vulnerabilities found",
+      "fail": "❌ Found potential XSS vulnerabilities",
+      "failSeverity": "critical"
+    },
+    {
+      "type": "check",
+      "pass": "✅ No hardcoded secrets detected",
+      "fail": "❌ Found hardcoded secrets (API keys, passwords, tokens)",
+      "failSeverity": "critical"
+    },
+    {
+      "type": "check",
+      "pass": "✅ No insecure dependencies",
+      "fail": "⚠️  Found dependencies with known vulnerabilities",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "check",
+      "pass": "✅ Authentication/authorization properly implemented",
+      "fail": "⚠️  Found authentication/authorization issues",
+      "failSeverity": "warning"
+    },
+    {
+      "type": "check",
+      "pass": "✅ Cryptography used correctly",
+      "fail": "❌ Found insecure cryptography usage",
+      "failSeverity": "critical"
+    }
+  ],
+  "prompts": {
+    "system": "You are a security analysis expert specializing in static code analysis. Your job is to find security vulnerabilities using ONLY the codebase provided via FTS5 search results (zero hallucinations). Focus on: SQL injection, XSS, CSRF, authentication bypass, leaked secrets, insecure dependencies, cryptography issues, and OWASP Top 10 vulnerabilities.",
+    "task": "Perform comprehensive security scan of the codebase. Search for:\n1. SQL injection patterns (string concatenation in queries)\n2. XSS vulnerabilities (unescaped user input in HTML)\n3. Hardcoded secrets (API keys, passwords, tokens in code)\n4. Insecure dependencies (package.json, requirements.txt with known CVEs)\n5. Authentication/authorization flaws\n6. Insecure cryptography (weak algorithms, hardcoded keys)\n7. CSRF vulnerabilities\n8. Path traversal issues\n9. Command injection\n10. Insecure deserialization\n\nFor each finding:\n- Specify exact file and line number\n- Explain the vulnerability\n- Provide severity (critical/warning)\n- Suggest remediation\n\nUse FTS5 search to verify findings. Do NOT hallucinate code that doesn't exist."
+  },
+  "capabilities": ["security-analysis", "vulnerability-detection", "secret-scanning"]
+}

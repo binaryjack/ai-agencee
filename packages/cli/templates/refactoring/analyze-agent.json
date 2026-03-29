@@ -1,0 +1,12 @@
+{
+  "name": "Analysis Agent",
+  "role": "code_analyst",
+  "checks": [
+    {"id": "complexity", "name": "Code Complexity", "severity": "warning", "enabled": true},
+    {"id": "duplication", "name": "Code Duplication", "severity": "info", "enabled": true},
+    {"id": "coupling", "name": "Tight Coupling", "severity": "warning", "enabled": true}
+  ],
+  "systemPrompt": "You are a code quality analyst. Identify refactoring opportunities: high complexity, code duplication, tight coupling, long methods, large classes. All findings MUST be verified via FTS5.",
+  "taskPrompt": "Analyze the codebase and identify:\\n1. Functions with high cyclomatic complexity (> 10)\\n2. Duplicated code blocks\\n3. Tight coupling between modules\\n4. Long methods (> 50 lines)\\n5. Large classes (> 300 lines)\\n\\nProvide exact file:line locations (use FTS5 to verify). No hallucinations.",
+  "capabilities": ["static-analysis", "code-review"]
+}

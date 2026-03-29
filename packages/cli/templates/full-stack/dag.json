@@ -1,0 +1,58 @@
+{
+  "name": "Full-Stack Development Workflow",
+  "lanes": [
+    {
+      "id": "backend",
+      "name": "backend",
+      "agent": "backend-agent.json",
+      "supervisor": "backend-supervisor.json",
+      "dependencies": [],
+      "capabilities": ["code-generation", "api-development", "database"]
+    },
+    {
+      "id": "frontend",
+      "name": "frontend",
+      "agent": "frontend-agent.json",
+      "supervisor": "frontend-supervisor.json",
+      "dependencies": [],
+      "capabilities": ["code-generation", "ui-development", "react"]
+    },
+    {
+      "id": "testing",
+      "name": "testing",
+      "agent": "testing-agent.json",
+      "supervisor": "testing-supervisor.json",
+      "dependencies": ["backend", "frontend"],
+      "capabilities": ["test-generation", "unit-testing"]
+    },
+    {
+      "id": "integration",
+      "name": "integration",
+      "agent": "integration-agent.json",
+      "supervisor": "integration-supervisor.json",
+      "dependencies": ["testing"],
+      "capabilities": ["integration-testing", "e2e-testing"]
+    },
+    {
+      "id": "deploy",
+      "name": "deploy",
+      "agent": "deploy-agent.json",
+      "supervisor": "deploy-supervisor.json",
+      "dependencies": ["integration"],
+      "capabilities": ["deployment", "ci-cd", "infrastructure"]
+    }
+  ],
+  "barriers": [
+    {
+      "afterLanes": ["backend", "frontend"],
+      "waitForAll": true,
+      "humanReview": true
+    },
+    {
+      "afterLanes": ["integration"],
+      "waitForAll": true,
+      "humanReview": true
+    }
+  ],
+  "modelRouter": "model-router.json"
+}

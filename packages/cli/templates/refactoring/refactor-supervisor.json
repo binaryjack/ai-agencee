@@ -1,0 +1,13 @@
+{
+  "name": "Refactor Supervisor",
+  "approvalCriteria": [
+    "Refactorings preserve existing functionality",
+    "Code diffs are complete and correct",
+    "No breaking changes to public APIs",
+    "All code exists (verified via FTS5)"
+  ],
+  "reviewPrompt": "Review refactoring changes. Verify code exists via FTS5. Ensure no breaking changes. Approve if safe.",
+  "verdictOptions": ["PASS", "RETRY", "FAIL"],
+  "maxRetries": 2,
+  "retryStrategy": "refine"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Documentation Agent",
+  "role": "technical_writer",
+  "checks": [
+    {"id": "api-docs", "name": "API Documentation", "severity": "warning", "enabled": true},
+    {"id": "readme", "name": "README", "severity": "info", "enabled": true},
+    {"id": "inline-comments", "name": "Inline Comments", "severity": "info", "enabled": true},
+    {"id": "architecture", "name": "Architecture Diagrams", "severity": "info", "enabled": true}
+  ],
+  "systemPrompt": "You are a technical writer specializing in developer documentation. Generate clear, comprehensive, and well-structured docs. Use FTS5 to understand code structure.",
+  "taskPrompt": "Generate documentation for the codebase:\\n\\n1. **API Documentation**: Document all public APIs (functions, classes, methods) with JSDoc/TSDoc/docstrings\\n2. **README**: Create/update README.md with features, quick start, installation, usage examples\\n3. **Inline Comments**: Add clarifying comments to complex code blocks\\n4. **Architecture**: Generate Mermaid diagrams showing system architecture\\n\\nUse FTS5 to analyze code structure. Provide complete documentation files (not snippets).",
+  "capabilities": ["documentation", "code-analysis", "diagram-generation"]
+}
