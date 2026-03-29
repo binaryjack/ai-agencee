@@ -5,6 +5,7 @@ import { findProjectRoot, validateProjectRoot } from './find-project-root.js';
 import { printDagSummary } from './print-dag-summary.js';
 import { renderDashboard } from '../../ui/agent-dashboard.js';
 import { estimateDagCost, formatCostEstimate } from '../../utils/cost-estimate.js';
+import { createError, enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js';
 
 export const runDag = async (
   dagFile: string,
@@ -60,7 +61,12 @@ export const runDag = async (
       if (options.json) {
         process.stdout.write(JSON.stringify({ ok: false, error: String(err) }) + '\n');
       } else {
-        console.error(`\n❌ DAG validation failed: ${err}\n`);
+        const richError = enrichError(err, ErrorCategory.VALIDATION, [
+          'Check DAG JSON syntax',
+          'Ensure all referenced agent files exist',
+          'Run "ai-kit check" to validate configuration',
+        ]);
+        exitWithError(richError, { verbose: options.verbose });
       }
       process.exit(1);
     }
@@ -140,7 +146,14 @@ export const runDag = async (
     if (options.json) {
       process.stdout.write(JSON.stringify({ ok: false, error: String(err) }) + '\n');
     } else {
-      console.error(`\n❌ DAG execution failed: ${err}\n`);
+      const richError = enrichError(err, ErrorCategory.RUNTIME, [
+        'Check error message above for details',
+        'Verify API keys are valid',
+        'Ensure all agent files are valid',
+        'Run "ai-kit doctor" to diagnose issues',
+        'Try "ai-kit demo" to test with mock provider',
+      ]);
+      exitWithError(richError, { verbose: options.verbose });
     }
     process.exit(1);
   }

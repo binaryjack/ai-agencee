@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { createError, exitWithError } from '../../utils/error-formatter.js';
 
 /**
  * Walk up the directory tree from `startDir` until a directory containing
@@ -55,5 +56,6 @@ export const validateProjectRoot = (projectRoot: string, explicitFlag: boolean):
     : `Could not locate project root from: ${projectRoot}\n` +
       `  Pass --project <repo-root> to set the correct root explicitly.`;
 
-  throw new Error(`❌ Project root not found: ${hint}`);
+  const richError = createError('PROJECT_ROOT_NOT_FOUND', { hint });
+  exitWithError(richError);
 };

@@ -10,6 +10,7 @@
 import prompts from 'prompts'
 import { runDag } from '../dag/index.js'
 import * as path from 'path'
+import { enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js'
 
 // Get templates directory
 const getTemplatesDir = (): string => {
@@ -137,15 +138,13 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
     console.log('\nMission: Quality code that lasts. Sustainable AI. Full transparency.')
     console.log('Codernic doesn\'t compete with GitHub Copilot — it overpasses them.\n')
   } catch (error) {
-    console.error('\n❌ Demo failed:\n')
-    if (error instanceof Error) {
-      console.error(error.message)
-      if (options.verbose && error.stack) {
-        console.error('\nStack trace:')
-        console.error(error.stack)
-      }
-    }
-    process.exit(1)
+    const richError = enrichError(error, ErrorCategory.RUNTIME, [
+      'Check if project is initialized (run "ai-kit init")',
+      'Ensure demo DAG files exist',
+      'Try a different demo scenario',
+      'Run "ai-kit doctor" to diagnose issues',
+    ]);
+    exitWithError(richError, { verbose: options.verbose });
   }
 }
 

@@ -16,6 +16,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import { runInit } from '../init/index.js'
 import { runDemo } from '../demo/index.js'
+import { enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js'
 
 interface SetupOptions {
   verbose?: boolean
@@ -199,8 +200,12 @@ export async function runSetup(options: SetupOptions = {}): Promise<void> {
   try {
     await runInit({ strict: false })
   } catch (err) {
-    console.error(`\n❌ Failed to initialize project: ${err}\n`)
-    process.exit(1)
+    const richError = enrichError(err, ErrorCategory.FILE_SYSTEM, [
+      'Ensure you have write permissions',
+      'Check disk space is available',
+      'Try running in a different directory',
+    ]);
+    exitWithError(richError);
   }
 
   // Step 6: Generate use case template files
