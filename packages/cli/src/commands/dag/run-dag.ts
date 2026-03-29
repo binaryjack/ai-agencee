@@ -1,7 +1,8 @@
-import { DagOrchestrator, DagResult } from '@ai-agencee/engine';
+import { DagOrchestrator, DagResult, getGlobalEventBus } from '@ai-agencee/engine';
 import * as path from 'path';
 import { findProjectRoot, validateProjectRoot } from './find-project-root.js';
 import { printDagSummary } from './print-dag-summary.js';
+import { renderDashboard } from '../../ui/agent-dashboard.js';
 
 export const runDag = async (
   dagFile: string,
@@ -13,6 +14,7 @@ export const runDag = async (
     budget?: string;
     provider?: string;
     json?: boolean;
+    dashboard?: boolean; // Enable live terminal dashboard
   },
 ): Promise<void> => {
   const explicitProject = Boolean(options.project);
@@ -84,6 +86,16 @@ export const runDag = async (
       interactive: options.interactive,
       forceProvider: options.provider,
     });
+
+    // Load DAG to get lane IDs for dashboard
+    const dag = await orchestrator.loadDag(dagFilePath);
+
+    // Enable live dashboard if requested (not in JSON mode)
+    if (options.dashboard && !options.json) {
+      const bus = getGlobalEventBus();
+      renderDashboard(bus, dag.name, dag.lanes.map(l => l.id));
+    }
+
     const result: DagResult = await orchestrator.run(dagFilePath);
     if (options.json) {
       process.stdout.write(JSON.stringify(result) + '\n');

@@ -117,6 +117,7 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
       verbose: options.verbose ?? false,
       interactive: options.interactive ?? false,
       dryRun: false,
+      dashboard: true, // Always show dashboard in demo mode
     })
 
     // Success message
@@ -125,9 +126,11 @@ export async function runDemo(options: DemoOptions = {}): Promise<void> {
     console.log('\n🎯 Next steps:\n')
     console.log('  1. Run with real provider:')
     console.log('     ANTHROPIC_API_KEY=sk-ant-... ai-kit agent:dag agents/dag.json\n')
-    console.log('  2. Interactive setup wizard:')
+    console.log('  2. Try the live dashboard:')
+    console.log('     ai-kit agent:dag agents/dag.json --dashboard\n')
+    console.log('  3. Interactive setup wizard:')
     console.log('     ai-kit setup\n')
-    console.log('  3. Explore more demos:')
+    console.log('  4. Explore more demos:')
     console.log('     ai-kit demo\n')
     console.log('━'.repeat(60))
     console.log('\nMission: Quality code that lasts. Sustainable AI. Full transparency.')

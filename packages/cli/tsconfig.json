@@ -4,6 +4,9 @@
     "rootDir": ".",
     "outDir": "dist",
     "types": ["node", "jest"],
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@ai-agencee/connectors": ["../connectors/dist/index.d.ts"],
       "@ai-agencee/connectors/langgraph": ["../connectors/dist/langgraph/index.d.ts"],

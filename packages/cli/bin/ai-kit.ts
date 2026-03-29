@@ -156,6 +156,7 @@ program
   .option('--budget <usd>', 'Abort the run when estimated LLM spend exceeds this USD amount')
   .option('--provider <name>', 'Override the LLM provider for all lanes (e.g. anthropic, openai, mock)')
   .option('--json', 'Output machine-readable JSON (suppresses human-friendly progress text)')
+  .option('--dashboard', 'Show live agent dashboard (Phase 1.2 - terminal UI with ink)')
   .action((dagFile, options) =>
     runDag(dagFile ?? `${AGENTS_DIR}/dag.json`, {
       project: options.project,
@@ -165,6 +166,7 @@ program
       budget: options.budget,
       provider: options.provider,
       json: options.json,
+      dashboard: options.dashboard,
     }),
   );
 
