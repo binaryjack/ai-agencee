@@ -13,6 +13,7 @@ import { runImportAutogen, runImportCrew, runImportLangGraph, runImportSkPlan } 
 import { runInit } from '../src/commands/init/index.js'
 import { runMcp } from '../src/commands/mcp/index.js'
 import { runPlan } from '../src/commands/plan/index.js'
+import { runSetup } from '../src/commands/setup/index.js'
 import { runSync } from '../src/commands/sync/index.js'
 import { runVisualize } from '../src/commands/visualize/index.js'
 
@@ -28,6 +29,12 @@ program
   .description('Scaffold AI rule files into the current project')
   .option('-t, --strict', 'Initialize with ULTRA_HIGH strict standards (OWNER rules)')
   .action((options) => runInit({ strict: options.strict }));
+
+program
+  .command('setup')
+  .description('Interactive setup wizard for first-time users')
+  .option('-v, --verbose', 'Show detailed setup information')
+  .action((options) => runSetup({ verbose: options.verbose }));
 
 program
   .command('sync')
