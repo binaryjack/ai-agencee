@@ -6,6 +6,7 @@ import { printDagSummary } from './print-dag-summary.js';
 import { renderDashboard } from '../../ui/agent-dashboard.js';
 import { estimateDagCost, formatCostEstimate } from '../../utils/cost-estimate.js';
 import { createError, enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js';
+import { getModeConfig, applyModeConfig, resolveMode } from '../../utils/execution-modes.js';
 
 export const runDag = async (
   dagFile: string,
@@ -19,27 +20,34 @@ export const runDag = async (
     json?: boolean;
     dashboard?: boolean; // Enable live terminal dashboard
     yes?: boolean;       // Skip cost confirmation
+    mode?: string;       // Execution mode preset
   },
 ): Promise<void> => {
-  const explicitProject = Boolean(options.project);
-  const projectRoot = options.project
-    ? path.resolve(options.project)
+  // Apply execution mode preset (can be overridden by explicit flags)
+  const mode = resolveMode(options.mode);
+  const modeConfig = getModeConfig(mode);
+  const mergedOptions = applyModeConfig(options, modeConfig);
+  
+  const explicitProject = Boolean(mergedOptions.project);
+  const projectRoot = mergedOptions.project
+    ? path.resolve(mergedOptions.project)
     : findProjectRoot();
   validateProjectRoot(projectRoot, explicitProject);
   const dagFilePath = path.isAbsolute(dagFile) ? dagFile : path.resolve(projectRoot, dagFile);
 
-  if (!options.json) {
+  if (!mergedOptions.json) {
     console.log('\n🗂️  DAG Supervised Agent Executor');
     console.log('─'.repeat(52));
     console.log(`  DAG file   : ${path.relative(projectRoot, dagFilePath)}`);
     console.log(`  Project    : ${projectRoot}`);
+    console.log(`  Mode       : ${mode.toUpperCase()}`);
   }
 
-  if (options.dryRun) {
+  if (mergedOptions.dryRun) {
     try {
       const orchestrator = new DagOrchestrator(projectRoot, { verbose: false });
       const dag = await orchestrator.loadDag(dagFilePath);
-      if (options.json) {
+      if (mergedOptions.json) {
         process.stdout.write(JSON.stringify({ ok: true, dag: dag.name, lanes: dag.lanes.map((l) => l.id) }) + '\n');
       } else {
         console.log(`\n✅ DAG validated: "${dag.name}"`);
@@ -58,7 +66,7 @@ export const runDag = async (
         console.log('\n  (dry-run — no lanes executed)\n');
       }
     } catch (err) {
-      if (options.json) {
+      if (mergedOptions.json) {
         process.stdout.write(JSON.stringify({ ok: false, error: String(err) }) + '\n');
       } else {
         const richError = enrichError(err, ErrorCategory.VALIDATION, [
@@ -66,41 +74,41 @@ export const runDag = async (
           'Ensure all referenced agent files exist',
           'Run "ai-kit check" to validate configuration',
         ]);
-        exitWithError(richError, { verbose: options.verbose });
+        exitWithError(richError, { verbose: mergedOptions.verbose });
       }
       process.exit(1);
     }
     return;
   }
 
-  if (!options.json) console.log('');
+  if (!mergedOptions.json) console.log('');
 
-  const budgetCapUSD = options.budget !== undefined ? parseFloat(options.budget) : undefined;
-  if (!options.json) {
-    if (options.budget !== undefined) {
+  const budgetCapUSD = mergedOptions.budget !== undefined ? parseFloat(mergedOptions.budget) : undefined;
+  if (!mergedOptions.json) {
+    if (mergedOptions.budget !== undefined) {
       console.log(`  Budget cap  : $${budgetCapUSD} USD`);
     }
-    if (options.interactive) {
+    if (mergedOptions.interactive) {
       console.log('  Interactive : enabled (needs-human-review prompts will pause for operator input)');
     }
-    if (options.provider) {
-      console.log(`  Provider    : ${options.provider}`);
+    if (mergedOptions.provider) {
+      console.log(`  Provider    : ${mergedOptions.provider}`);
     }
   }
 
   try {
     const orchestrator = new DagOrchestrator(projectRoot, {
-      verbose: options.json ? false : (options.verbose ?? true),
+      verbose: mergedOptions.json ? false : (mergedOptions.verbose ?? true),
       budgetCapUSD,
-      interactive: options.interactive,
-      forceProvider: options.provider,
+      interactive: mergedOptions.interactive,
+      forceProvider: mergedOptions.provider,
     });
 
     // Load DAG to get lane IDs for dashboard
     const dag = await orchestrator.loadDag(dagFilePath);
 
     // Phase 1.3: Pre-flight cost estimate (unless JSON mode or --yes flag)
-    if (!options.json && !options.yes) {
+    if (!mergedOptions.json && !mergedOptions.yes) {
       try {
         const costEstimate = await estimateDagCost(orchestrator, dagFilePath, projectRoot);
         console.log(formatCostEstimate(costEstimate));
@@ -128,13 +136,13 @@ export const runDag = async (
 
     // 
     // Enable live dashboard if requested (not in JSON mode)
-    if (options.dashboard && !options.json) {
+    if (mergedOptions.dashboard && !mergedOptions.json) {
       const bus = getGlobalEventBus();
       renderDashboard(bus, dag.name, dag.lanes.map(l => l.id));
     }
 
     const result: DagResult = await orchestrator.run(dagFilePath);
-    if (options.json) {
+    if (mergedOptions.json) {
       process.stdout.write(JSON.stringify(result) + '\n');
     } else {
       printDagSummary(result, projectRoot);
@@ -143,7 +151,7 @@ export const runDag = async (
       process.exit(1);
     }
   } catch (err) {
-    if (options.json) {
+    if (mergedOptions.json) {
       process.stdout.write(JSON.stringify({ ok: false, error: String(err) }) + '\n');
     } else {
       const richError = enrichError(err, ErrorCategory.RUNTIME, [
@@ -153,7 +161,7 @@ export const runDag = async (
         'Run "ai-kit doctor" to diagnose issues',
         'Try "ai-kit demo" to test with mock provider',
       ]);
-      exitWithError(richError, { verbose: options.verbose });
+      exitWithError(richError, { verbose: mergedOptions.verbose });
     }
     process.exit(1);
   }

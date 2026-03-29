@@ -165,6 +165,7 @@ program
   .option('--json', 'Output machine-readable JSON (suppresses human-friendly progress text)')
   .option('--dashboard', 'Show live agent dashboard (Phase 1.2 - terminal UI with ink)')
   .option('-y, --yes', 'Skip pre-flight cost confirmation prompt')
+  .option('--mode <mode>', 'Execution mode preset: quick, standard, thorough, ci, dev (auto-detects if not specified)')
   .action((dagFile, options) =>
     runDag(dagFile ?? `${AGENTS_DIR}/dag.json`, {
       project: options.project,
@@ -176,6 +177,7 @@ program
       json: options.json,
       dashboard: options.dashboard,
       yes: options.yes,
+      mode: options.mode,
     }),
   );
 
