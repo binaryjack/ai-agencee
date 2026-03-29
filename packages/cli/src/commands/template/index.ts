@@ -13,15 +13,15 @@
  * - Uses @cli/errors for proper error handling
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import prompts from 'prompts';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import prompts from 'prompts'
 
 // Phase 1: Use centralized constants and types
-import { PATHS, getPath } from '../../constants/index.js';
-import { createLogger } from '../../services/logger/index.js';
-import type { TemplateOptions } from '../../types/index.js';
-import { FileNotFoundError, FileReadError } from '../../errors/index.js';
+import { PATHS, getPath } from '../../constants/index.js'
+import { FileNotFoundError, UserCancelledError } from '../../errors/index.js'
+import { createLogger } from '../../services/logger/index.js'
+import type { TemplateOptions } from '../../types/index.js'
 
 // Create namespaced logger
 const logger = createLogger('template');
@@ -137,9 +137,8 @@ export async function showTemplateInfo(templateId: string): Promise<void> {
     }
 
     // Load metadata
-    try {
-      const metadataContent = await fs.readFile(metadataPath, 'utf-8');
-      const metadata: TemplateMetadata = JSON.parse(metadataContent);
+    const metadataContent = await fs.readFile(metadataPath, 'utf-8');
+    const metadata: TemplateMetadata = JSON.parse(metadataContent);
 
     // Display info
     console.log('\n📦 Template Information\n');
@@ -245,8 +244,8 @@ export async function installTemplate(
       });
 
       if (!overwrite) {
-        console.log('\n❌ Installation cancelled.\n');
-        process.exit(0);
+        logger.info('Installation cancelled');
+        throw new UserCancelledError('template installation');
       }
     }
 
@@ -271,17 +270,13 @@ export async function installTemplate(
     console.log(`  2. Customize agent prompts and checks`);
     console.log(`  3. Run the workflow:`);
     console.log(`     ai-kit agent:dag ${targetDir}/dag.json\n`);
-    console.log(`💡 Cost estimate: $${metadata.estimatedCost.min.toFixed(2)}-${metadata.estimatedCost.max.toFixed(2)}\n`);
-  } catch (err) {
-    const richError = enrichError(err, ErrorCategory.FILE_SYSTEM, [
-      'Ensure you have write permissions',
-      'Check target directory exists',
-      'Verify template files are valid',
-    ]);
-    exitWithError(richError);
+    console.log(`💡 Cost estimate: $${metadata.estimatedCost.min.toFixed(2)}-$${metadata.estimatedCost.max.toFixed(2)}\n`);
+  } catch (error) {
+    logger.error('Failed to install template', { error });
+    throw error;
   }
 }
 
 // Exports for CLI registration
-export { showTemplateInfo as runTemplateInfo, installTemplate as runTemplateInstall, listTemplates as runTemplateList };
+export { showTemplateInfo as runTemplateInfo, installTemplate as runTemplateInstall, listTemplates as runTemplateList }
 

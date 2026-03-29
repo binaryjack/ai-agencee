@@ -14,15 +14,14 @@
  * - Uses @cli/errors for proper error handling
  */
 
-import * as path from 'path'
 import prompts from 'prompts'
 import { runDag } from '../dag/index.js'
 
 // Phase 1: Use centralized constants and types
-import { PATHS, getPath } from '../../constants/index.js'
+import { getPath } from '../../constants/index.js'
+import { UserCancelledError } from '../../errors/index.js'
 import { createLogger } from '../../services/logger/index.js'
 import type { DemoOptions } from '../../types/index.js'
-import { UserCancelledError } from '../../errors/index.js'
 
 // Create namespaced logger
 const logger = createLogger('demo')

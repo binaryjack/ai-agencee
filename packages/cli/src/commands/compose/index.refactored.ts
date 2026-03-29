@@ -23,14 +23,13 @@ import prompts from 'prompts';
 // Phase 1: Use centralized constants and types
 import { PATHS } from '@cli/constants';
 import { createLogger } from '@cli/services/logger';
-import type { ComposeOptions } from '@cli/types';
-import type { Dag } from '@cli/types';
-import { 
-  JsonParseError, 
-  InvalidDagError, 
-  LlmRequestError, 
-  UserCancelledError,
-  FileWriteError 
+import type { ComposeOptions, Dag } from '@cli/types';
+import {
+    FileWriteError,
+    InvalidDagError,
+    JsonParseError,
+    LlmRequestError,
+    UserCancelledError
 } from '../../errors/index.js';
 
 // Create namespaced logger

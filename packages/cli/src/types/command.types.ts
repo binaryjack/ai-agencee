@@ -72,6 +72,15 @@ export interface TemplateOptions extends BaseCommandOptions {
   
   /** Output directory */
   output?: string;
+  
+  /** Target directory for template installation */
+  dir?: string;
+  
+  /** Custom name for the template */
+  name?: string;
+  
+  /** Force overwrite existing files without prompting */
+  force?: boolean;
 }
 
 /**

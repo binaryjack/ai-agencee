@@ -98,13 +98,13 @@ export class ValidationError extends CliError {
   }
 }
 
-export class InvalidDagError extends ValidationError {
+export class InvalidDagError extends CliError {
   constructor(reason: string, errors: string[] = []) {
     super(
       `Invalid DAG: ${reason}`,
-      errors
+      'INVALID_DAG',
+      { reason, errors }
     );
-    this.code = 'INVALID_DAG';
   }
 }
 
@@ -190,10 +190,13 @@ export class UserCancelledError extends CliError {
   }
 }
 
-export class SetupCancelledError extends UserCancelledError {
+export class SetupCancelledError extends CliError {
   constructor() {
-    super('setup');
-    this.code = 'SETUP_CANCELLED';
+    super(
+      'Setup operation cancelled by user',
+      'SETUP_CANCELLED',
+      { operation: 'setup' }
+    );
   }
 }
 

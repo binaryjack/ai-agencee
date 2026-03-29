@@ -26,10 +26,10 @@ import { runDemo } from '../demo/index.js'
 import { runInit } from '../init/index.js'
 
 // Phase 1: Use centralized constants and types
-import { PATHS, PROVIDERS, getProviderConfig } from '../../constants/index.js'
+import { PATHS, getProviderConfig } from '../../constants/index.js'
+import { FileWriteError, UserCancelledError } from '../../errors/index.js'
 import { createLogger } from '../../services/logger/index.js'
 import type { SetupOptions } from '../../types/index.js'
-import { UserCancelledError, FileWriteError } from '../../errors/index.js'
 
 // Create namespaced logger
 const logger = createLogger('setup')

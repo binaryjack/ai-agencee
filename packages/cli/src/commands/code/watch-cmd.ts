@@ -3,8 +3,8 @@
  * Watch a project directory and automatically re-index on changes
  */
 
-import chokidar from 'chokidar';
 import chalk from 'chalk';
+import chokidar from 'chokidar';
 import * as path from 'node:path';
 import { runCodeIndex } from './index-cmd.js';
 
@@ -132,11 +132,6 @@ export const runCodeWatch = async function(options: WatchOptions = {}): Promise<
   process.on('SIGTERM', shutdown);
 
   // Prevent Node from exiting while watcher is active (no-op keep-alive)
-  await new Promise<void>(() => {
-    // Intentionally never resolves — process exits via SIGINT/SIGTERM handlers
-  });
-};
-
   await new Promise<void>(() => {
     // Intentionally never resolves — process exits via SIGINT/SIGTERM handlers
   });

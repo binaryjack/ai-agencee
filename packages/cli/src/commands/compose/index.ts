@@ -22,15 +22,15 @@ import prompts from 'prompts';
 
 // Phase 1: Use centralized constants and types
 import { PATHS } from '../../constants/index.js';
+import {
+    FileWriteError,
+    InvalidDagError,
+    JsonParseError,
+    LlmRequestError,
+    UserCancelledError
+} from '../../errors/index.js';
 import { createLogger } from '../../services/logger/index.js';
 import type { ComposeOptions, Dag } from '../../types/index.js';
-import { 
-  JsonParseError, 
-  InvalidDagError, 
-  LlmRequestError, 
-  UserCancelledError,
-  FileWriteError 
-} from '../../errors/index.js';
 
 // Create namespaced logger
 const logger = createLogger('compose');
