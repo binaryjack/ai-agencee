@@ -1,12 +1,17 @@
 import { DagOrchestrator, DagResult, getGlobalEventBus } from '@ai-agencee/engine';
-import * as path from 'path';
+import * as path from 'node:path';
 import prompts from 'prompts';
 import { findProjectRoot, validateProjectRoot } from './find-project-root.js';
 import { printDagSummary } from './print-dag-summary.js';
 import { renderDashboard } from '../../ui/agent-dashboard.js';
 import { estimateDagCost, formatCostEstimate } from '../../utils/cost-estimate.js';
-import { createError, enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js';
+import { enrichError, exitWithError, ErrorCategory } from '../../utils/error-formatter.js';
 import { getModeConfig, applyModeConfig, resolveMode } from '../../utils/execution-modes.js';
+import { generateDagPreview, printDagPreview } from './dag-preview.js';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execAsync = promisify(exec);
 
 export const runDag = async (
   dagFile: string,
@@ -14,6 +19,7 @@ export const runDag = async (
     project?: string;
     verbose?: boolean;
     dryRun?: boolean;
+    preview?: boolean;  // Phase 3.1: Enhanced preview with detailed analysis
     interactive?: boolean;
     budget?: string;
     provider?: string;
@@ -93,6 +99,58 @@ export const runDag = async (
     }
     if (mergedOptions.provider) {
       console.log(`  Provider    : ${mergedOptions.provider}`);
+    }
+  }
+
+  // Phase 3.1: Enhanced DAG Preview with detailed analysis
+  if (mergedOptions.preview && !mergedOptions.json) {
+    try {
+      const preview = await generateDagPreview(dagFilePath, projectRoot, budgetCapUSD);
+      printDagPreview(preview);
+
+      // Interactive approval with edit option
+      const { action } = await prompts({
+        type: 'select',
+        name: 'action',
+        message: 'What would you like to do?',
+        choices: [
+          { title: '✅ Proceed with execution', value: 'proceed' },
+          { title: '✏️  Edit DAG file', value: 'edit' },
+          { title: '❌ Cancel', value: 'cancel' }
+        ],
+        initial: 0
+      });
+
+      if (action === 'cancel') {
+        console.log('\n❌ Execution cancelled by user.\n');
+        process.exit(0);
+      } else if (action === 'edit') {
+        // Open DAG file in default editor
+        const editor = process.env.EDITOR || process.env.VISUAL || 'code';
+        console.log(`\n✏️  Opening ${path.relative(projectRoot, dagFilePath)} in ${editor}...`);
+        
+        try {
+          await execAsync(`${editor} "${dagFilePath}"`);
+          console.log('\n  💡 Tip: Run the preview command again after editing.\n');
+        } catch (err) {
+          console.warn(`\n⚠️  Could not open editor (${editor}): ${err}`);
+          console.log(`  Please edit manually: ${dagFilePath}\n`);
+        }
+        
+        process.exit(0);
+      }
+
+      // If 'proceed', continue to execution below
+      console.log('\n🚀 Starting DAG execution...\n');
+
+    } catch (err) {
+      const richError = enrichError(err, ErrorCategory.VALIDATION, [
+        'Check DAG JSON syntax',
+        'Ensure all referenced agent files exist',
+        'Run "ai-kit check" to validate configuration',
+      ]);
+      exitWithError(richError, { verbose: mergedOptions.verbose });
+      process.exit(1);
     }
   }
 
