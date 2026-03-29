@@ -7,7 +7,9 @@
     "jsx": "react",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
     "paths": {
+      // External packages
       "@ai-agencee/connectors": ["../connectors/dist/index.d.ts"],
       "@ai-agencee/connectors/langgraph": ["../connectors/dist/langgraph/index.d.ts"],
       "@ai-agencee/connectors/crewai": ["../connectors/dist/crewai/index.d.ts"],
@@ -16,7 +18,18 @@
       "@ai-agencee/engine": ["../agent-executor/dist/index.d.ts"],
       "@ai-agencee/engine/code-assistant": ["../agent-executor/dist/code-assistant/index.d.ts"],
       "@ai-agencee/engine/code-assistant/storage": ["../agent-executor/dist/code-assistant/storage/index.d.ts"],
-      "@ai-agencee/engine/code-assistant/parsers": ["../agent-executor/dist/code-assistant/parsers/index.d.ts"]
+      "@ai-agencee/engine/code-assistant/parsers": ["../agent-executor/dist/code-assistant/parsers/index.d.ts"],
+      
+      // Internal CLI modules (Phase 1.2: Path Aliases)
+      "@cli/constants": ["src/constants/index.ts"],
+      "@cli/constants/*": ["src/constants/*"],
+      "@cli/services": ["src/services/index.ts"],
+      "@cli/services/*": ["src/services/*"],
+      "@cli/types": ["src/types/index.ts"],
+      "@cli/types/*": ["src/types/*"],
+      "@cli/utils": ["src/utils/index.ts"],
+      "@cli/utils/*": ["src/utils/*"],
+      "@cli/commands/*": ["src/commands/*"]
     }
   },
   "include": ["bin", "src", "tests"],
