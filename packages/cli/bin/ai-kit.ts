@@ -6,6 +6,7 @@ import { runBenchmark } from '../src/commands/benchmark/index.js'
 import { runCheck } from '../src/commands/check/index.js'
 import { runTemplateList, runTemplateInfo, runTemplateInstall } from '../src/commands/template/index.js'
 import { runCodeGenerate, runCodeIndex, runCodeSearch, runCodeStats, runCodeWatch } from '../src/commands/code/index.js'
+import { runAsk } from '../src/commands/ask/index.js'
 import { runDag, runDagStream } from '../src/commands/dag/index.js'
 import { runDataDelete, runDataExport, runDataListTenants } from '../src/commands/data/index.js'
 import { runDemo } from '../src/commands/demo/index.js'
@@ -72,6 +73,21 @@ program
       scenario,
       verbose: options.verbose,
       interactive: options.interactive,
+    });
+  });
+
+// Ask command (Phase 2.6 - ASK mode instant FTS5 results)
+program
+  .command('ask <query>')
+  .description('Instant zero-cost code search using FTS5 (no LLM, no hallucinations)')
+  .option('-p, --project <path>', 'Project root directory (default: cwd)')
+  .option('--limit <n>', 'Maximum results to return', '30')
+  .option('--json', 'Output machine-readable JSON')
+  .action(async (query, options) => {
+    await runAsk(query, {
+      project: options.project,
+      limit: parseInt(options.limit, 10),
+      json: options.json,
     });
   });
 
